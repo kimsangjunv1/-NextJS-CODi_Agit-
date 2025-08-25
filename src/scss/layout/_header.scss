@@ -1,0 +1,15 @@
+header {
+    width: 100%;
+    height: var(--header-height);
+
+    margin: 0 auto;
+    backdrop-filter: blur(20px);
+    mask-image: linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0) 12.5%, rgb(0, 0, 0) 57.5%, rgba(0, 0, 0, 0));
+    
+    .header-inner {
+        height: 100%;
+        width: 100%;
+        margin: 0 auto;
+        max-width: var(--size-pc);
+    }
+}

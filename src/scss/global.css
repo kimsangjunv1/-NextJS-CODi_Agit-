@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'tailwindcss';
+
+
+@layer components {
+    .flex-center {
+      @apply flex items-center justify-center;
+    }
+  
+    .flex-row {
+      @apply flex flex-row items-center justify-between;
+    }
+  
+    .flex-column {
+      @apply flex flex-col items-start justify-center;
+    }
+  
+    .flex-space-between {
+      @apply flex items-stretch justify-between;
+    }
+  
+    .flex-around {
+      @apply flex items-center justify-around;
+    }
+}
+
+@layer utilities {
+  .border-gradient {
+    background-image: linear-gradient(#ffffff, #ffffff), linear-gradient(0deg, #C165FF, #FF3284);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+    border: 1px solid transparent;
+  }
+  .border-gradient-coupon-left {
+    background-image: linear-gradient(#f4f5f9, #f4f5f9), linear-gradient(90deg, #f4f5f9 50%, #D2D5DB 50%);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+    border: 1px solid transparent;
+  }
+  .border-gradient-coupon-right {
+    background-image: linear-gradient(#f4f5f9, #f4f5f9), linear-gradient(270deg, #f4f5f9 50%, #D2D5DB 50%);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+    border: 1px solid transparent;
+  }
+}

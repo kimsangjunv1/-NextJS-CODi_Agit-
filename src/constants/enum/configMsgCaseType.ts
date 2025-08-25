@@ -1,0 +1,21 @@
+export enum ErrorMsg {
+    PAYMENT_SO_FAR = "매장 근처에서 다시 시도해주세요.",
+    PAYMENT_SOMETHING_REASON = "결제 실패, 확인 후 다시 시도해주세요.",
+    PAYMENT_YOUTH_LIMIT_TIME = "결제 실패, 미성년자 출입 제한 시간이에요.",
+    PAYMENT_ALREADY_USING = "결제 실패, 다른 사용자가 먼저 선택한 방이에요.",
+
+    COUPON_UNHANDLED_EXCEPTION = "저장 실패. Unhandled Exception",
+    COUPON_SAVE_FUNCTION_OFF = "저장 실패. 쿠폰 저장 설정이 비활성화 되어있어요.",
+    COUPON_UNPAID_PRODUCT_EXISTS = "저장 실패. 결제해야할 상품이 남았어요.",
+    COUPON_SAVE_VALUE_LOWER_THAN_DEFAULT = "저장 실패. 기본 차감값보다 적은 값은 저장이 불가능해요.",
+    COUPON_REMAIN_NEED_PAYMENT = "저장 실패. 결제해야할 금액이 남았어요.",
+    COUPON_EMPTY_SAVE_SONG = "저장 실패. 보관할 곡이 없어요.",
+    COUPON_NO_SAVE_ON_GIFT = "저장 실패. 이용권 사용 시 저장 불가해요.",
+    COUPON_NO_SAVE_ON_NOW = "저장 실패. 현재 시간에는 곡 보관이 불가해요.",
+    COUPON_SP = "저장 실패. SP에러가 발생하였습니다.",
+    COUPON_SAVE_ONLY_FIRST_PERSON = "저장 실패. 처음 결제한 분만 저장이 가능해요.",
+    COUPON_SAVE_OTHER_DEVICE_SAVE = "다른 기기에서 추가 결제되어 저장할 수 없어요.",
+    COUPON_SAVE_ON_MINUS = "저장 실패. 현재 곡 이하로는 저장 불가해요.",
+    COUPON_FOUND_SAVE_IN_FIVE_MINUTES = "저장 실패. 5분 이내 저장 내역이 존재해요.",
+    COUPON_FOUND_SERVICE_HISTORY = "저장 실패. 기존 서비스 내역이 존재해요.",
+}

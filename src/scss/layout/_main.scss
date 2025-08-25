@@ -1,0 +1,12 @@
+main {
+    min-height: 100dvh;
+    // max-width: var(--size-pc);
+    margin: 0 auto;
+    
+    .main-inner {
+        > article {
+            height: 100%;
+            width: 100%;
+        }
+    }
+}

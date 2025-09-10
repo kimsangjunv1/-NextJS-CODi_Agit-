@@ -1,94 +1,12 @@
 "use client"
 
-import UI from '@/components/common/InputComponent'
+import UI from '@/components/common/UIComponent'
+import { DUMMY_POST_LIST_RESPONSE } from '@/constants/lists/configDummyResponse'
 import useNavigate from '@/hooks/common/useNavigate'
 import { useLayoutStore } from '@/stores/useLayoutStore'
 import { AnimatePresence, motion, PanInfo } from 'motion/react'
 import { useRouter } from 'next/navigation'
 import { Fragment, useEffect, useRef, useState } from 'react'
-
-const DATA = [
-    {   
-        id: 1,
-        category: 1,
-        thumbnail: "/images/picture/img-dummy-thumbnail-01.png",
-        title: "네이버를 분석해보았다",
-        desc: "항상 토이프로젝트를 만들다 보면 문득 고민에 빠지는 것들이 있었습니다.\n공용 컴포넌트의 경우, 이 컴포넌트는 여러 곳에서 사용되지만, 모든 곳에서 쓰지는 않습니다.\n과연 여기 위치해도 괜찮은 것일까요?\n전역 사용 컴포넌트의 경우, 이 컴포넌트는 모든 곳에서 사용되긴 하는데, 하나의 컴포넌트 때문에 공용으로 사용하는 폴더에 넣는 것이 올바른 선택인지 고민됩니다.\n그 고민을 해결해보고자 이번에는 FSD에 대해 알아보고자 합니다.",
-        created_at: "2025-02-02"
-    },
-    {
-        id: 2,
-        category: 2,
-        thumbnail: "/images/picture/img-dummy-thumbnail-02.png",
-        title: "배달의 민족에 대한 고찰(1)",
-        desc: "항상 토이프로젝트를 만들다 보면 문득 고민에 빠지는 것들이 있었습니다.\n공용 컴포넌트의 경우, 이 컴포넌트는 여러 곳에서 사용되지만, 모든 곳에서 쓰지는 않습니다.\n과연 여기 위치해도 괜찮은 것일까요?\n전역 사용 컴포넌트의 경우, 이 컴포넌트는 모든 곳에서 사용되긴 하는데, 하나의 컴포넌트 때문에 공용으로 사용하는 폴더에 넣는 것이 올바른 선택인지 고민됩니다.\n그 고민을 해결해보고자 이번에는 FSD에 대해 알아보고자 합니다.",
-        created_at: "2025-02-02"
-    },
-    {
-        id: 3,
-        category: 1,
-        thumbnail: "/images/picture/img-dummy-thumbnail-03.png",
-        title: "테스팅 코드 에디터 만들어보기",
-        desc: "항상 토이프로젝트를 만들다 보면 문득 고민에 빠지는 것들이 있었습니다.\n공용 컴포넌트의 경우, 이 컴포넌트는 여러 곳에서 사용되지만, 모든 곳에서 쓰지는 않습니다.\n과연 여기 위치해도 괜찮은 것일까요?\n전역 사용 컴포넌트의 경우, 이 컴포넌트는 모든 곳에서 사용되긴 하는데, 하나의 컴포넌트 때문에 공용으로 사용하는 폴더에 넣는 것이 올바른 선택인지 고민됩니다.\n그 고민을 해결해보고자 이번에는 FSD에 대해 알아보고자 합니다.",
-        created_at: "2025-02-02"
-    },
-    {
-        id: 4,
-        category: 1,
-        thumbnail: "/images/picture/img-dummy-thumbnail-04.png",
-        title: "모바일 청접장 서비스 개발기 (1)",
-        desc: "항상 토이프로젝트를 만들다 보면 문득 고민에 빠지는 것들이 있었습니다.\n공용 컴포넌트의 경우, 이 컴포넌트는 여러 곳에서 사용되지만, 모든 곳에서 쓰지는 않습니다.\n과연 여기 위치해도 괜찮은 것일까요?\n전역 사용 컴포넌트의 경우, 이 컴포넌트는 모든 곳에서 사용되긴 하는데, 하나의 컴포넌트 때문에 공용으로 사용하는 폴더에 넣는 것이 올바른 선택인지 고민됩니다.\n그 고민을 해결해보고자 이번에는 FSD에 대해 알아보고자 합니다.",
-        created_at: "2025-02-02"
-    },
-    {   
-        id: 5,
-        category: 1,
-        thumbnail: "/images/picture/img-dummy-thumbnail-05.png",
-        title: "스타벅스 이제 배민도 가능하데용",
-        desc: "항상 토이프로젝트를 만들다 보면 문득 고민에 빠지는 것들이 있었습니다.\n공용 컴포넌트의 경우, 이 컴포넌트는 여러 곳에서 사용되지만, 모든 곳에서 쓰지는 않습니다.\n과연 여기 위치해도 괜찮은 것일까요?\n전역 사용 컴포넌트의 경우, 이 컴포넌트는 모든 곳에서 사용되긴 하는데, 하나의 컴포넌트 때문에 공용으로 사용하는 폴더에 넣는 것이 올바른 선택인지 고민됩니다.\n그 고민을 해결해보고자 이번에는 FSD에 대해 알아보고자 합니다.",
-        created_at: "2025-02-02"
-    },
-    {
-        id: 6,
-        category: 2,
-        thumbnail: "/images/picture/img-dummy-thumbnail-06.png",
-        title: "토스 창립이 벌써 10주년?!",
-        desc: "항상 토이프로젝트를 만들다 보면 문득 고민에 빠지는 것들이 있었습니다.\n공용 컴포넌트의 경우, 이 컴포넌트는 여러 곳에서 사용되지만, 모든 곳에서 쓰지는 않습니다.\n과연 여기 위치해도 괜찮은 것일까요?\n전역 사용 컴포넌트의 경우, 이 컴포넌트는 모든 곳에서 사용되긴 하는데, 하나의 컴포넌트 때문에 공용으로 사용하는 폴더에 넣는 것이 올바른 선택인지 고민됩니다.\n그 고민을 해결해보고자 이번에는 FSD에 대해 알아보고자 합니다.",
-        created_at: "2025-02-02"
-    },
-    {
-        id: 7,
-        category: 1,
-        thumbnail: "/images/picture/img-dummy-thumbnail-07.png",
-        title: "도깨비 나오긴 하나",
-        desc: "항상 토이프로젝트를 만들다 보면 문득 고민에 빠지는 것들이 있었습니다.\n공용 컴포넌트의 경우, 이 컴포넌트는 여러 곳에서 사용되지만, 모든 곳에서 쓰지는 않습니다.\n과연 여기 위치해도 괜찮은 것일까요?\n전역 사용 컴포넌트의 경우, 이 컴포넌트는 모든 곳에서 사용되긴 하는데, 하나의 컴포넌트 때문에 공용으로 사용하는 폴더에 넣는 것이 올바른 선택인지 고민됩니다.\n그 고민을 해결해보고자 이번에는 FSD에 대해 알아보고자 합니다.",
-        created_at: "2025-02-02"
-    },
-    {
-        id: 8,
-        category: 1,
-        thumbnail: "/images/picture/img-dummy-thumbnail-08.png",
-        title: "모바일 청접장 서비스 개발기 (1)",
-        desc: "항상 토이프로젝트를 만들다 보면 문득 고민에 빠지는 것들이 있었습니다.\n공용 컴포넌트의 경우, 이 컴포넌트는 여러 곳에서 사용되지만, 모든 곳에서 쓰지는 않습니다.\n과연 여기 위치해도 괜찮은 것일까요?\n전역 사용 컴포넌트의 경우, 이 컴포넌트는 모든 곳에서 사용되긴 하는데, 하나의 컴포넌트 때문에 공용으로 사용하는 폴더에 넣는 것이 올바른 선택인지 고민됩니다.\n그 고민을 해결해보고자 이번에는 FSD에 대해 알아보고자 합니다.",
-        created_at: "2025-02-02"
-    },
-    {
-        id: 9,
-        category: 1,
-        thumbnail: "/images/picture/img-dummy-thumbnail-09.png",
-        title: "네이버의 복지를 파보았다",
-        desc: "항상 토이프로젝트를 만들다 보면 문득 고민에 빠지는 것들이 있었습니다.\n공용 컴포넌트의 경우, 이 컴포넌트는 여러 곳에서 사용되지만, 모든 곳에서 쓰지는 않습니다.\n과연 여기 위치해도 괜찮은 것일까요?\n전역 사용 컴포넌트의 경우, 이 컴포넌트는 모든 곳에서 사용되긴 하는데, 하나의 컴포넌트 때문에 공용으로 사용하는 폴더에 넣는 것이 올바른 선택인지 고민됩니다.\n그 고민을 해결해보고자 이번에는 FSD에 대해 알아보고자 합니다.",
-        created_at: "2025-02-02"
-    },
-    {
-        id: 10,
-        category: 1,
-        thumbnail: "/images/picture/img-dummy-thumbnail-010.png",
-        title: "카카오 아지트 둘러보기",
-        desc: "항상 토이프로젝트를 만들다 보면 문득 고민에 빠지는 것들이 있었습니다.\n공용 컴포넌트의 경우, 이 컴포넌트는 여러 곳에서 사용되지만, 모든 곳에서 쓰지는 않습니다.\n과연 여기 위치해도 괜찮은 것일까요?\n전역 사용 컴포넌트의 경우, 이 컴포넌트는 모든 곳에서 사용되긴 하는데, 하나의 컴포넌트 때문에 공용으로 사용하는 폴더에 넣는 것이 올바른 선택인지 고민됩니다.\n그 고민을 해결해보고자 이번에는 FSD에 대해 알아보고자 합니다.",
-        created_at: "2025-02-02"
-    },
-];
 
 const ListSection = () => {
     const [ isShow, setIsShow ] = useState(false);
@@ -297,7 +215,7 @@ const Slider = () => {
 						damping: 10,
 					}}
 				>
-					{ DATA.map((e, i) => (
+					{ DUMMY_POST_LIST_RESPONSE.map((e, i) => (
 							<motion.section
 								ref={CardRef}
 								key={`${e}-${i}`}
@@ -421,7 +339,7 @@ const List = () => {
     const [filter, setFilter] = useState<number | null>(null);
     const { categoryFilter, setCategoryFilter } = useLayoutStore();
 
-    const filtered = categoryFilter !== 999 ? DATA.filter(item => item.category === categoryFilter) : DATA;
+    const filtered = categoryFilter !== 999 ? DUMMY_POST_LIST_RESPONSE.filter(item => item.category === categoryFilter) : DUMMY_POST_LIST_RESPONSE;
 
     return (
         <article

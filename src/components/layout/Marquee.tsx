@@ -20,7 +20,7 @@ const Marquee = ({ title }: { title: string }) => {
         //     mode="wait"
         // >
             <div
-                className="fixed bottom-0 left-0 w-full overflow-hidden bg-[#000000ed] py-[1.2rem]"
+                className="fixed bottom-0 left-0 w-full overflow-hidden bg-[#000000b5] backdrop-blur-sm py-[1.2rem]"
                 // initial={{ opacity: 0, scale: 0.9 }}
                 // exit={{ opacity: 0, scale: 0.9 }}
                 // animate={{ opacity: 0, scale: 0.9 }}

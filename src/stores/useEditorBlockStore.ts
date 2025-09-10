@@ -2,10 +2,11 @@ import { create } from "zustand";
 
 export type Block = {
     id: string;
-    type: "text";
+    type: number;
     title?: string;
     subtitle?: string;
     content: string;
+    imageUrl?: string;
 };
 
 export type Row = Block[];
@@ -32,7 +33,7 @@ interface BlockStore {
 
 export const useBlockStore = create<BlockStore>((set, get) => ({
     rows: [
-        [{ id: Date.now().toString(), type: "text", title: "", subtitle: "", content: "<p>새 블록</p>" }],
+        [{ id: Date.now().toString(), type: 0, title: "", subtitle: "", content: "<p>새 블록</p>", imageUrl: "" }],
     ],
     copiedBlock: null,
     selectedPosition: null,
@@ -42,10 +43,11 @@ export const useBlockStore = create<BlockStore>((set, get) => ({
     addBlock: (rowIndex, direction) => {
         const newBlock: Block = {
             id: Date.now().toString(),
-            type: "text",
+            type: 0,
             title: "",
             subtitle: "",
             content: "<p>새 블록</p>",
+            imageUrl: "",
         };
         set((state) => {
             const newRows = state.rows.map((row, i) =>
@@ -103,6 +105,7 @@ export const useBlockStore = create<BlockStore>((set, get) => ({
                 : row
         );
         set({ rows: newRows });
+        set({ copiedBlock: null });
     },
 
     selectBlock: (rowIndex, blockIndex) => set({ selectedPosition: { rowIndex, blockIndex } }),

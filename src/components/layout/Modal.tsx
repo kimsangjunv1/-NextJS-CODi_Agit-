@@ -2,7 +2,7 @@
 
 import ReactDOM from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Fragment, ReactNode, useEffect, useState } from 'react';
+import { Fragment, ReactNode, useEffect, useRef, useState } from 'react';
 
 import { util } from "@/utils/util";
 import { useModalStore } from "@/stores/useModalStore";
@@ -11,6 +11,7 @@ import { configAnimation } from "@/constants/config/animationSettings";
 
 import ButtonComponent from "@/components/common/ButtonComponent";
 import DimmedComponent from "@/components/common/DimmedComponent";
+import UI from "../common/UIComponent";
 
 interface ModalBodyProps {
     className?: string;
@@ -44,6 +45,8 @@ const Modal = () => {
     const [ intervalId, setIntervalId ] = useState<NodeJS.Timeout | null>(null);
     
     const { initModal, modal, setModal } = useModalStore();
+
+    const containerRef = useRef<HTMLElement>( null );
 
     // 함수: 모달 닫음
     const closeModalState = () => {
@@ -96,6 +99,12 @@ const Modal = () => {
             break;
         }
     }
+
+    const detectOutsideClick = (e: MouseEvent) => {
+        // if ( containerRef.current && !containerRef.current.contains(e.target as Node) ) {
+        //     closeModalState();
+        // }
+    };
     
     useEffect(() => {
         if ( modal ) {
@@ -112,10 +121,12 @@ const Modal = () => {
     useEffect(() => {
         if ( modal.isOpen ) {
             window.addEventListener("keydown", preventEnterKey);
+            document.addEventListener("click", detectOutsideClick);
         }
         
         return () => {
             window.removeEventListener("keydown", preventEnterKey)
+            document.removeEventListener("click", detectOutsideClick);
         }
     }, [ modal.isOpen ])
 
@@ -135,12 +146,13 @@ const Modal = () => {
             { modal.isOpen &&
                 <Fragment>
                     <section
-                        className="fixed z-[100000] top-2 left-2 w-full h-full inset-0 flex items-center justify-center"
+                        ref={ containerRef }
+                        className="fixed z-[100000] top-0 left-0 w-full h-full inset-0 flex items-center justify-center"
                         role="dialog"
                         aria-modal="true"
                     >
                         <motion.div
-                            className="flex flex-col max-w-[var(--modal-width)] w-full bg-white rounded-[1.2rem] mx-[1.6rem] relative z-10 max-h-[calc(100dvh-(1.6rem*2))] overflow-y-auto shadow-custom"
+                            className={`flex flex-col w-full bg-white rounded-[1.2rem] mx-[1.6rem] relative z-10 max-h-[calc(100dvh-(1.6rem*3))] overflow-y-auto shadow-custom ${ modal.className?.container !== "" ? modal.className?.container : "max-w-[var(--modal-width)]" }`}
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
@@ -152,7 +164,7 @@ const Modal = () => {
                                 damping: 10,
                             }}
                         >
-                            <section className="flex flex-col gap-[0.4rem] p-[2.4rem]">
+                            <section className="flex flex-col gap-[2.4rem] p-[2.4rem] max-h-[calc(100dvh-(1.6rem*7))]">
                                 <Header title={ modal.title } />
                                 <Body />
                             </section>
@@ -172,6 +184,7 @@ const Modal = () => {
                             { currentTime ? <Guide currentTime={ currentTime }/> : null }
                         </motion.div>
                     </section>
+
                     <DimmedComponent isVisible={ modal.isOpen } />
                 </Fragment>
             }
@@ -227,28 +240,28 @@ const Footer = ({ className, confirm, cancel, currentTime }: ModalFooterProps) =
     return (
         <section className={`modal-footer px-[2.0rem] pb-[2.0rem] flex flex-wrap justify-end gap-[1.0rem] ${ className }`}>
             { cancel && cancel?.title !== " " && (
-                <ButtonComponent
-                    className={`text-[1.3rem] font-medium rounded-[0.6rem] w-[6.5rem]`}
-                    content={ cancel.title }
-                    size="md"
-                    colorBackground='bg-[var(--color-gray-200)]'
-                    colorText='text-[var(--color-gray-700)]'
+                // <ButtonComponent
+                //     className={`text-[1.3rem] font-medium rounded-[0.6rem] w-[6.5rem]`}
+                //     content={ cancel.title }
+                //     size="md"
+                //     colorBackground='bg-[var(--color-gray-200)]'
+                //     colorText='text-[var(--color-gray-700)]'
+                //     onClick={ cancel.onClick }
+                //     test="cancel"
+                // />
+                <UI.Button
+                    className={`bg-[var(--color-gray-200)] font-medium whitespace-nowrap rounded-[0.6rem] px-[2.0rem] h-[4.2rem]`}
                     onClick={ cancel.onClick }
-                    test="cancel"
-                />  
+                >
+                    { cancel.title }
+                </UI.Button>
             )}
 
             { !isPrevent ? (
                 <Fragment>
                     { confirm && confirm?.title !== " " && (
-                        <ButtonComponent
-                            content={ confirm.title }
-                            className={`text-[1.3rem] font-medium whitespace-nowrap rounded-[0.6rem] w-[12.8rem]`}
-                            colorBackground='bg-[var(--color-blue-500)]'
-                            colorText='text-white'
-                            size="md"
-                            test="confirm"
-                            loading={ confirm?.loading ?? true }
+                        <UI.Button
+                            className={`text-white bg-[var(--color-blue-1000)] font-medium whitespace-nowrap rounded-[0.6rem] px-[2.0rem] w-[12.8rem] h-[4.2rem]`}
                             onClick={() => {
                                 confirm.onClick();
                                 setPreventAfterClick();
@@ -257,22 +270,27 @@ const Footer = ({ className, confirm, cancel, currentTime }: ModalFooterProps) =
                                     closeModalState();
                                 }
                             }}
-                        />
+                        >
+                            { confirm.title }
+                        </UI.Button>
                     )}
                 </Fragment>
             ) : (
                 <Fragment>
                     { confirm && confirm?.title !== " " && (
-                        <ButtonComponent
-                            content={ confirm.title }
-                            className={`text-[1.3rem] font-medium flex-1 whitespace-nowrap rounded-[0.6rem] pointer-events-none`}
-                            colorBackground='bg-[var(--color-blue-500)]'
-                            colorText='text-white'
-                            size="md"
-                            test="confirm"
-                            onClick={() => {}}
-                            loading={ false }
-                        />
+                        <UI.Button
+                            className={`text-white bg-[var(--color-blue-1000)] font-medium whitespace-nowrap rounded-[0.6rem] w-[12.8rem] h-[4.2rem]`}
+                            onClick={() => {
+                                confirm.onClick();
+                                setPreventAfterClick();
+                                
+                                if ( !modal.isNeedNext ) {
+                                    closeModalState();
+                                }
+                            }}
+                        >
+                            { confirm.title }
+                        </UI.Button>
                     )}
                 </Fragment>
             ) }

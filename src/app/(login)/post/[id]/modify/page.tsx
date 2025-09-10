@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 
 import Main from "@/components/layout/Main";
 
-import ListSection from "@/containers/post/ListSection";
+import ListSection from "@/containers/post/modify/ListSection";
 
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;  // result 값 가져오기

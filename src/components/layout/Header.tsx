@@ -7,8 +7,8 @@ import useNavigate from "@/hooks/common/useNavigate"
 import { useLayoutStore } from "@/stores/useLayoutStore"
 import IconComponent from "@/components/common/IconComponent"
 import { menuList } from "@/constants/lists/configServiceList"
-import TextShimmer from "../common/TextShimmerComponent"
-import UI from "../common/InputComponent"
+import TextShimmer from "@/components/common/TextShimmerComponent"
+import UI from '@/components/common/UIComponent'
 
 const Header = () => {
     const [ noticeStatus, setNoticeStatus ] = useState( true );
@@ -22,6 +22,7 @@ const Header = () => {
     }, [ currentPathName ])
 
     console.log("currentPathName", currentPathName)
+    const IS_ROUTE_POST_EDIT = currentPathName.includes("edit");
     const IS_ROUTE_POST = currentPathName.includes("post");
 
     return (
@@ -122,6 +123,7 @@ const Header = () => {
                                     </motion.section>
                                 }
 
+
                                 { IS_ROUTE_POST &&
                                     <motion.section
                                         key={"post"}
@@ -146,7 +148,7 @@ const Header = () => {
                                             }}
                                             className="font-extrabold"
                                         >
-                                            포스트 생성
+                                            글 보기
                                         </TextShimmer>
                                     </motion.section>
                                 }

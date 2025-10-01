@@ -36,8 +36,6 @@ export default function RootLayout({ children, modal }: Readonly<{ children: Rea
                         {/* { modal } */}
                     </PathCheckComponent>
                     {/* <Notice /> */}
-                    {/* <PageTransitionOverlay>
-                    </PageTransitionOverlay> */}
                     <Footer />
 
                     <Modal />

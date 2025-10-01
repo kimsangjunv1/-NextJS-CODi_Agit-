@@ -1,8 +1,10 @@
 "use client"
 
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ErrorBoundary } from "react-error-boundary"
+import { QueryErrorResetBoundary } from '@tanstack/react-query'
 import { AnimatePresence, motion, useMotionValue, useScroll } from 'motion/react'
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import useNavigate from '@/hooks/common/useNavigate'
 import { useGetPostLatestListQuery, useGetPostListQuery } from '@/hooks/api/post.query'
@@ -10,74 +12,72 @@ import { useGetPostLatestListQuery, useGetPostListQuery } from '@/hooks/api/post
 import { util } from '@/utils/util'
 import UI from '@/components/common/UIComponent'
 import { useLayoutStore } from '@/stores/useLayoutStore'
-import { GetPostLatestListResponseType, GetPostListResponseType } from '@/types/post.type'
+import { GetPostListResponseType } from '@/types/post.type'
+
 
 const ListSection = () => {
-    const { mainViewMode, setMainViewMode } = useLayoutStore();
-    const { data: getPostListData, refetch: getPostListDataFetch } = useGetPostListQuery();
-    const { data: getPostLatestListData, refetch: getPostLatestListFetch } = useGetPostLatestListQuery();
+    const { mainViewMode } = useLayoutStore();
 
     return (
         <AnimatePresence mode='popLayout'>
-            {/* 최근 업로드한 컨텐츠 */}
-            { mainViewMode === 1 &&
-                <motion.section
-                    key={"slider"}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{
-                        // delay: 0.05 * (i + 1),
-                        type: "spring",
-                        mass: 0.1,
-                        stiffness: 100,
-                        damping: 10,
-                    }}
-                    className='flex-1 w-full h-full overflow-hidden'
-                >
-                    <Slider data={ getPostLatestListData } />
-                </motion.section>
-                }
-            {/* 최근 업로드한 컨텐츠 END */}
+  {mainViewMode === 1 && (
+    <motion.section
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{
+        type: "spring",
+        mass: 0.1,
+        stiffness: 100,
+        damping: 10,
+      }}
+      className="flex-1 w-full h-full overflow-hidden"
+    >
+      <UI.ErrorBoundaryWrapper>
+        <Slider />
+      </UI.ErrorBoundaryWrapper>
+    </motion.section>
+  )}
 
-            {/* 목록 */}
-            { mainViewMode === 2 &&
-                <motion.section
-                    key={"list"}
-                    initial={{ opacity: 0, transform: "scale(0.9)" }}
-                    animate={{ opacity: 1, transform: "scale(1)" }}
-                    exit={{ opacity: 0, transform: "scale(0.9)" }}
-                    transition={{
-                        // delay: 0.05 * (i + 1),
-                        type: "spring",
-                        mass: 0.1,
-                        stiffness: 100,
-                        damping: 10,
-                    }}
-                    className='w-full h-full pt-[var(--header-height)] pb-[calc(1.6rem*4)]'
-                >
-                    <List data={ getPostListData } />
-                </motion.section>
-            }
-            {/* 목록 END */}
-        </AnimatePresence>
+  {mainViewMode === 2 && (
+    <motion.section
+      key="list"
+      initial={{ opacity: 0, transform: "scale(0.9)" }}
+      animate={{ opacity: 1, transform: "scale(1)" }}
+      exit={{ opacity: 0, transform: "scale(0.9)" }}
+      transition={{
+        type: "spring",
+        mass: 0.1,
+        stiffness: 100,
+        damping: 10,
+      }}
+      className="w-full h-full pt-[var(--header-height)] pb-[calc(1.6rem*4)]"
+    >
+      <UI.ErrorBoundaryWrapper>
+        <List />
+      </UI.ErrorBoundaryWrapper>
+    </motion.section>
+  )}
+</AnimatePresence>
     )
 }
 
-const Slider = ({ data }: { data: GetPostLatestListResponseType }) => {
-    const scrollRef = useRef<HTMLDivElement | null>(null);
-    const containerRef = useRef<HTMLDivElement | null>(null);
-    const sliderRef = useRef<HTMLDivElement | null>(null);
+const Slider = () => {
+    const { data, refetch: getPostLatestListFetch } = useGetPostLatestListQuery();
+
     const cardRefs = useRef<(HTMLElement | null)[]>([]);
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+    const sliderRef = useRef<HTMLDivElement | null>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    
+    const x = useMotionValue(0);
 
-    const RULE_HEIGHT = 50;
-
-    const [maxTranslate, setMaxTranslate] = useState<number>(0);
-    const [isDragging, setIsDragging] = useState(false);
+    const [ maxTranslate, setMaxTranslate ] = useState<number>(0);
+    const [ isDragging, setIsDragging ] = useState(false);
 
     const { replaceToUrl } = useNavigate();
 
-    const x = useMotionValue(0);
+
     const { scrollYProgress } = useScroll({
         target: scrollRef,
         offset: ["start start", "end end"],
@@ -863,7 +863,9 @@ const SliderOld = ({ data }: { data: GetPostListResponseType }) => {
 	);
 }
 
-const List = ({ data }: { data: GetPostListResponseType }) => {
+const List = () => {
+    const { data, refetch: getPostListDataFetch } = useGetPostListQuery();
+
     const { categoryFilter, setCategoryFilter } = useLayoutStore();
     const { pushToUrl } = useNavigate();
 

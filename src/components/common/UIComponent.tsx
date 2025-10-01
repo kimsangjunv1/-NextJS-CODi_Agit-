@@ -1,7 +1,7 @@
 "use client"
 
 import { AnimatePresence, motion, Reorder, useDragControls } from 'motion/react';
-import React, { forwardRef, Fragment, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
+import React, { forwardRef, Fragment, Suspense, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 
 import {
     ButtonProps,
@@ -28,6 +28,8 @@ import IconComponent from '@/components/common/IconComponent';
 import { util } from '@/utils/util';
 import { useDirtyStore } from '@/stores/useDirtyStore';
 import { useModalStore } from '@/stores/useModalStore';
+import { QueryErrorResetBoundary } from '@tanstack/react-query';
+import { ErrorBoundary } from 'react-error-boundary';
 
 const CheckBox = ({ defaultState = false, className, checked, guide, desc_no, preventClick = false, onChange }: CheckBoxProps) => {
     const [ currentState, setCurrentState ] = useState<boolean>( defaultState );
@@ -2020,6 +2022,31 @@ const ColorPicker = ({ defaultValue, onChange }: { defaultValue?: string, onChan
 	);
 };
 
+interface ErrorBoundaryWrapperProps {
+    children: React.ReactNode;
+    fallback?: React.ComponentType<{ error: Error; resetErrorBoundary: () => void }>;
+}
+
+const ErrorBoundaryWrapper: React.FC<ErrorBoundaryWrapperProps> = ({
+  children,
+  fallback: Fallback = UI.Error,
+}) => {
+    return (
+        <QueryErrorResetBoundary>
+            {({ reset }) => (
+                <ErrorBoundary
+                    FallbackComponent={Fallback}
+                    onReset={reset}
+                >
+                    <Suspense fallback={<p>Loading...</p>}>
+                        {children}
+                    </Suspense>
+                </ErrorBoundary>
+            )}
+        </QueryErrorResetBoundary>
+    );
+};
+
 const Empty = ({
     title = "결과가 없습니다",
     desc_no,
@@ -2039,33 +2066,38 @@ const Empty = ({
     )
 }
 
-const Error = ({
-    title = "일시적인 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.",
-    desc_no,
-    className,
-    onClick
-}: {
-    title?: string
-    desc_no?: string
-    className?: string;
-    onClick?: () => void;
-}) => {
+const Error = ({ error, resetErrorBoundary }: any) => {
     return (
-        <article
-            className={`${ className ? className : "" } col-span-3 w-full flex items-center justify-center h-[var(--empty-element-height)]`}
-            data-description={ desc_no }
-        >
-            <div className={`error-inner flex-1 h-full items-center justify-center p-[2.0rem] bg-[var(--color-gray-100)] rounded-[1.2rem] flex flex-col gap-[1.6rem]`}>
-                <p className='whitespace-break-spaces leading-[1.5] pointer-events-none text-center text-[var(--color-gray-500)]'>{ title }</p>
+        <article role='alert' className='h-[100dvh!important] w-[100dvw!important] flex flex-col items-center justify-center gap-[1.6rem]'>
+            <div className='alert-inner flex flex-col gap-[1.6rem] shadow-[var(--shadow-normal)] rounded-[1.6rem] bg-white p-[0.4rem]'>
+                <section className='flex flex-col gap-[1.6rem] px-[1.6rem] py-[0.8rem]'>
+                    <p>에러 발생!</p>
+                    <pre>{error.message}</pre>
+                </section>
+                
                 <UI.Button
-                    onClick={ onClick }
-                    // className='bg-[var(--color-blue-1000)] rounded-[0.8rem]'
-                    className='h-[4.2rem] rounded-[0.6rem] text-white bg-[var(--color-blue-1000)] px-[5.2rem]'
+                    onClick={resetErrorBoundary}
+                    className='p-[1.6rem] shadow-[var(--shadow-normal)] bg-[var(--color-orange-500)] rounded-[1.2rem]'
                 >
                     다시 시도
                 </UI.Button>
             </div>
         </article>
+        // <article
+        //     className={`${ className ? className : "" } col-span-3 w-full flex items-center justify-center h-[var(--empty-element-height)]`}
+        //     data-description={ desc_no }
+        // >
+        //     <div className={`error-inner flex-1 h-full items-center justify-center p-[2.0rem] bg-[var(--color-gray-100)] rounded-[1.2rem] flex flex-col gap-[1.6rem]`}>
+        //         <p className='whitespace-break-spaces leading-[1.5] pointer-events-none text-center text-[var(--color-gray-500)]'>{ title }</p>
+        //         <UI.Button
+        //             onClick={ onClick }
+        //             // className='bg-[var(--color-blue-1000)] rounded-[0.8rem]'
+        //             className='h-[4.2rem] rounded-[0.6rem] text-white bg-[var(--color-blue-1000)] px-[5.2rem]'
+        //         >
+        //             다시 시도
+        //         </UI.Button>
+        //     </div>
+        // </article>
     )
 }
 
@@ -2090,6 +2122,7 @@ const UI = {
     ColorPicker,
     Empty,
     Error,
+    ErrorBoundaryWrapper,
     Table: Object.assign(Table, {
         Header: TableHeader,
         Body: TableBody,

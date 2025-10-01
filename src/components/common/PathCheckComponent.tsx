@@ -2,11 +2,10 @@
 
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from 'motion/react'
-import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 
 import useNavigate from "@/hooks/common/useNavigate";
 import { useLayoutStore } from '@/stores/useLayoutStore';
-import { menuList } from "@/constants/lists/configServiceList";
 
 const PathCheckComponent = ({ children }: { children: ReactNode }) => {
     const [ isNowOnMobile, setIsNowOnMobile ] = useState<boolean>();
@@ -17,7 +16,6 @@ const PathCheckComponent = ({ children }: { children: ReactNode }) => {
     const pathname = usePathname();
     const prevPathName = useRef( currentPathName );
     const setMobileEnvironment = ( e?: boolean ) => setIsNowOnMobile( e );
-    const FIND_ITEM = menuList.home.find((e) => e.route === currentPathName);
 
     useEffect(() => {
         if ( isRouteChange === 1 ) {

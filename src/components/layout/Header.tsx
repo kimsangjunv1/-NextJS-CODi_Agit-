@@ -10,13 +10,13 @@ import TextShimmer from "@/components/common/TextShimmerComponent"
 
 import useNavigate from "@/hooks/common/useNavigate"
 import { useLayoutStore } from "@/stores/useLayoutStore"
-import { menuList } from "@/constants/lists/configServiceList"
 import { useGetPostDetailQuery } from "@/hooks/api/post.query"
 
 const Header = () => {
     const params = useParams();
 
     const [ showMenu, setShowMenu ] = useState(false);
+    
     const { currentPathName, pushToUrl } = useNavigate();
     const { mainViewMode, setMainViewMode, categoryFilter, setCategoryFilter  } = useLayoutStore();
     const { data: getPostListData, refetch: getPostListFetch } = useGetPostDetailQuery(parseInt( (params?.id) as string ));
@@ -25,9 +25,6 @@ const Header = () => {
         setShowMenu( !showMenu )
     }, [ currentPathName ])
 
-    // const IS_ROUTE_POST_EDIT = currentPathName.includes("modify");
-    // const IS_ROUTE_POST = currentPathName.includes("post");
-
     const IS_ROUTE_HOME = currentPathName === "/";
     const IS_ROUTE_POST = currentPathName.includes("post") && !currentPathName.includes("modify") && !currentPathName.includes("create");
     const IS_ROUTE_POST_EDIT = currentPathName.includes("post") && currentPathName.includes("modify");
@@ -35,15 +32,7 @@ const Header = () => {
 
     return (
         <Fragment>
-            {/* { noticeStatus && 
-                <div className="notice bg-[var(--color-blue-500)] py-[0.8rem] relative">
-                    <p className="font-bold text-center text-white">현재 보고계신 화면은 DEV 서버 입니다, 모든 스타일, 기능은 확정이 아닌 개발 대기&진행 중 입니다.</p>
-                    <button type="button" className="absolute top-[50%] right-0 transform translate-y-[-50%] translate-x-[-50%] text-white border border-white px-[0.4rem] py-[0.2rem] rounded-[0.4rem] text-[1.2rem] font-bold" onClick={() => setNoticeStatus( !noticeStatus )}>닫기</button>
-                </div>
-            } */}
-            
-            {/* <header className="h-[var(--header-height)] fixed top-0 left-[50%] transform translate-x-[-50%] z-[100]"> */}
-            <header className="">
+            <header>
                 <div className="header-inner">
                     <section className="menu flex gap-[4.8rem]">
                         <button
@@ -313,55 +302,7 @@ const Header = () => {
                     }`}
                 />
             </button>
-
-            <AnimatePresence mode="wait">
-                {/* { showMenu ? ( */}
-                { false ? (
-                    <motion.section
-                        className="mobile flex flex-col justify-center items-center gap-[4.8rem] fixed top-0 left-0 w-full h-full bg-[#edededab] backdrop-blur-[10px] z-[1000]"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{
-                            delay: 0,
-                            type: "spring",
-                            mass: 0.1,
-                            stiffness: 100,
-                            damping: 10,
-                        }}
-                    >
-                        { menuList.home.map((e, i) => 
-                            <motion.div
-                                key={`${e}-${i}`}
-                                initial={{ opacity: 0, transform: "scale(0.8)" }}
-                                animate={{ opacity: 1, transform: "scale(1)" }}
-                                exit={{ opacity: 0, transform: "scale(0.8)" }}
-                                transition={{
-                                    delay: 0.05 * (i + 1),
-                                    type: "spring",
-                                    mass: 0.1,
-                                    stiffness: 100,
-                                    damping: 10,
-                                }}
-                            >
-                                <Item href={ e.route } title={ e.title } icon={ e.icon }/>
-                                {/* <Item href={ e.route } title={ e.title } icon={ e.icon } onClick={() => setShowMenu( !showMenu ) } /> */}
-                            </motion.div>
-                        )}
-                    </motion.section>
-                ) : "" }
-            </AnimatePresence>
         </Fragment>
-    )
-}
-
-const Item = ({ title, icon, href }: { title: string, icon: string, href: string }) => {
-    const { pushToUrl } = useNavigate();
-    return (
-        <button type="button" className="flex gap-[0.4rem] items-center font-semibold" onClick={() => pushToUrl(href)}>
-            <IconComponent type={`graphic-${ icon }`} alt={ title } />
-            {/* <p className="text-[1.6rem] font-semibold whitespace-nowrap">{ title }</p> */}
-        </button>
     )
 }
 

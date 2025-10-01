@@ -1,8 +1,9 @@
 "use client"
 
+import { useState } from "react";
+
 import UI from "@/components/common/UIComponent";
 import { DUMMY_IMAGE_RESPONSE } from "@/constants/lists/configDummyResponse";
-import { useState } from "react";
 
 // 이미지: 관리
 
@@ -21,7 +22,7 @@ const Box = ({ onChange }: { onChange: (e: any) => void }) => {
 
     return (
         <article className="flex flex-col gap-[1.6rem]">
-            <section className="grid grid-cols-[1fr_1fr_1fr_1fr] pb-[3.2rem] h-[calc(1.6rem*10)] overflow-y-auto">
+            <section data-lenis-prevent="true" className="grid grid-cols-[1fr_1fr_1fr_1fr] pb-[3.2rem] h-[calc(1.6rem*10)] overflow-y-auto">
                 { DUMMY_IMAGE_RESPONSE.map((e, i) =>
                     <UI.Button
                         key={i}

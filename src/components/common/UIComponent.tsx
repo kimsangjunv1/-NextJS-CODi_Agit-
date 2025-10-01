@@ -15,6 +15,7 @@ import {
     MultiSelectProps,
     NumberInputProps,
     PaginationProps,
+    PasswordInputProps,
     RadioProps,
     SelectProps,
     SwitchProps,
@@ -24,7 +25,9 @@ import {
 import useNavigate from "@/hooks/common/useNavigate";
 import { useToastStore } from "@/stores/useToastStore";
 import IconComponent from '@/components/common/IconComponent';
-import { highlightCode } from '@/utils/highlight';
+import { util } from '@/utils/util';
+import { useDirtyStore } from '@/stores/useDirtyStore';
+import { useModalStore } from '@/stores/useModalStore';
 
 const CheckBox = ({ defaultState = false, className, checked, guide, desc_no, preventClick = false, onChange }: CheckBoxProps) => {
     const [ currentState, setCurrentState ] = useState<boolean>( defaultState );
@@ -121,7 +124,7 @@ const Switch = ({ states, onChange, desc_no }: SwitchProps) => {
     );
 };
 
-const Input = forwardRef<{ reset: () => void }, InputProps>(({
+const Input = forwardRef<{ reset: () => void }, InputProps & { phoneNumber?: boolean }>(({
     disabled = false,
     name = "input",
     desc_no,
@@ -132,15 +135,13 @@ const Input = forwardRef<{ reset: () => void }, InputProps>(({
     guide,
     className,
     autoComplete = "on",
+    phoneNumber = false, // 새 옵션
     onChange,
     onInput,
     onBlur
-}, ref) => {
-    const [value, setValue] = useState(defaultValue || "");
+}, ref ) => {
+    const [ value, setValue ] = useState(defaultValue || "");
 
-    // 사용법
-    // const inputRef = useRef<{ reset: () => void }>(null); <- 선언
-    // inputRef.current?.reset(); <- 함수 실행
     useImperativeHandle(ref, () => ({
         reset() {
             setValue("");
@@ -153,71 +154,46 @@ const Input = forwardRef<{ reset: () => void }, InputProps>(({
     useEffect(() => {
         if (defaultValue !== undefined) {
             setValue(defaultValue);
-            if (onChange) {
-                onChange({ target: { value: defaultValue } } as React.ChangeEvent<HTMLInputElement>);
-            }
         }
     }, [defaultValue]);
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let val = e.target.value;
+        if (phoneNumber) {
+            // 숫자만 허용
+            val = val.replace(/\D/g, "");
+        }
+        setValue(val);
+        if (onChange) {
+            onChange({ ...e, target: { ...e.target, value: val } });
+        }
+    };
+
     return (
         <section
-            className={`flex items-center gap-[0.8rem] px-[1.6rem] max-h-[var(--input-height)] h-full border border-[var(--color-gray-200)] hover:border-[var(--color-gray-500)] focus:border-[var(--color-gray-500)] transition-colors rounded-[0.8rem] relative ${className ? className : ""}`}
+            className={`flex items-center gap-[0.8rem] max-h-[var(--input-height)] h-full transition-colors bg-[#ffffff28] relative ${className?.container ? className?.container : " border border-[var(--color-gray-200)] hover:border-[var(--color-gray-500)] focus:border-[var(--color-gray-500)] px-[1.6rem]"}`}
             data-description={desc_no}
         >
-            { guide && <p className="absolute top-[50%] right-[1.6rem] transform -translate-y-1/2">{guide}</p> }
+            {guide && <p className="absolute top-[50%] right-[1.6rem] transform -translate-y-1/2">{guide}</p>}
             <input
                 name={name}
                 disabled={disabled}
                 type={type}
                 placeholder={placeholder}
                 onInput={onInput}
-                onChange={(e) => {
-                    setValue(e.target.value);
-                    onChange?.(e);
-                }}
+                onChange={handleChange} // 여기서 숫자 필터 적용
                 onBlur={onBlur}
                 value={value}
                 autoComplete={autoComplete}
                 data-description={desc_no}
-                className='w-full'
+                className={`w-full ${ className?.input ? className.input : "" } `}
             />
-            {icon && <IconComponent type="colored-lens" alt='돋보기' />}
+            {icon && <IconComponent type="colored-lens" alt="돋보기" />}
         </section>
     );
 });
 
 Input.displayName = "Input";
-
-const InputBackup = ({ disabled = false, name = "input", desc_no, defaultValue, icon = false, type = "text", placeholder = "placeholder 지정이 필요해요", guide, className, autoComplete = "on", onChange, onInput, onBlur }: InputProps) => {
-    // const InputRef = useRef(defaultValue);
-    useEffect(() => {
-        if ( defaultValue ) {
-            onChange({ target: { value: defaultValue }});
-        }
-    }, [ defaultValue ])
-    return (
-        <section
-            className={`flex items-center gap-[0.8rem] px-[1.6rem] max-h-[var(--input-height)] h-full border border-[var(--color-gray-200)] hover:border-[var(--color-gray-500)] focus:border-[var(--color-gray-500)] transition-colors rounded-[0.8rem] relative ${ className ? className : "" }`}
-            data-description={ desc_no }
-        >
-            { guide && <p className="absolute top-[50%] right-[1.6rem] transform translate-y-[-50%] translate-x-0">{ guide }</p> }
-            { icon && <IconComponent type="colored-lens" alt='돋보기' /> }
-            <input
-                name={ name }
-                disabled={ disabled }
-                type={ type }
-                placeholder={ placeholder }
-                onInput={ onInput }
-                onChange={ onChange }
-                onBlur={ onBlur }
-                defaultValue={ defaultValue }
-                autoComplete={ autoComplete }
-				data-description={ desc_no }
-                className='w-full'
-            />
-        </section>
-    )
-}
 
 const NumberInput = ({
 	disabled = false,
@@ -229,15 +205,16 @@ const NumberInput = ({
 	guide,
 	className,
 	autoComplete = "off",
+	max = 1_000_000, // 기본 상한 10억
+    comma = true,
 	onChange,
 	onInput,
 	onBlur,
-	max = 1_000_000_000, // 기본 상한 10억
 }: NumberInputProps) => {
     const inputValueRef = useRef<HTMLInputElement>( null );
 
 	const handleChange = (e: any) => {
-		let value = e.target.value;
+		let value = e.target.value.replace(/,/g, "");
 
 		// 숫자만 허용
 		value = value.replace(/[^0-9]/g, "");
@@ -255,7 +232,9 @@ const NumberInput = ({
 		if (numValue > max) numValue = max;
 
 		// input 값 강제 업데이트
-		e.target.value = numValue.toString();
+        const FINAL_VALUE = parseInt( value ) >= max ? max : numValue;
+
+		e.target.value = `${ comma ? util.string.getCommaOnPrice( FINAL_VALUE ) : FINAL_VALUE }`;
 
 		onChange?.({ target: { value: numValue.toString() } });
 	};
@@ -274,19 +253,16 @@ const NumberInput = ({
 	};
 
     useEffect(() => {
-		if (defaultValue !== undefined && defaultValue !== null) {
-			onChange?.({ target: { value: defaultValue.toString() } });
-		}
-
-        console.log("defaultValue : ", defaultValue)
         if ( inputValueRef.current ) {
-            inputValueRef.current.value = `${ defaultValue }`
+            const INIT_VALUE = comma ? util.string.getCommaOnPrice( defaultValue ) : defaultValue;
+
+            inputValueRef.current.value = `${ INIT_VALUE }`
         }
 	}, [defaultValue]);
 
 	return (
 		<section
-			className={`flex items-center gap-[0.8rem] px-[1.6rem] border border-[var(--color-gray-200)] hover:border-[var(--color-blue-1000)] focus:border-[var(--color-blue-1000)] transition-colors rounded-[0.8rem] relative ${className ? className : ""}`}
+			className={`flex items-center gap-[0.8rem] px-[1.6rem] border border-[var(--color-gray-200)] hover:border-[var(--color-blue-1000)] focus:border-[var(--color-blue-1000)] transition-colors rounded-[0.8rem] relative ${className?.container ? className.container : ""}`}
 			data-description={desc_no}
 		>
 			{guide && (
@@ -306,6 +282,7 @@ const NumberInput = ({
 				onChange={ handleChange }
 				onBlur={ handleBlur }
                 // value={ `${ defaultValue }` }
+                className={`w-full ${ className?.input ? className.input : "" }`}
 				defaultValue={ defaultValue }
 				autoComplete={ autoComplete }
 				data-description={ desc_no }
@@ -314,46 +291,139 @@ const NumberInput = ({
 	);
 };
 
+const PasswordInput = ({
+    disabled = false,
+    name = "password-input",
+    desc_no,
+    defaultValue = "",
+    placeholder = "비밀번호를 입력하세요",
+    guide,
+    className,
+    autoComplete = "off",
+    digit,
+    showToggle = true,
+    onChange,
+    onInput,
+    onBlur,
+}: PasswordInputProps & { digit?: number }) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const [visible, setVisible] = useState(false);
+    const { setToast } = useToastStore();
+
+    const handleChange = (e: any) => {
+        let value = e.target.value;
+
+        // 숫자만 허용
+		value = value.replace(/[^0-9]/g, "");
+
+        // digit 제한 적용
+        if (digit && value.length > digit) {
+            // 이전 값으로 되돌림
+            e.target.value = inputRef.current?.value || "";
+            return;
+        }
+
+        // 값 업데이트
+        e.target.value = value;
+        onChange?.({ target: { value } });
+    };
+
+    const handleBlur = (e: any) => {
+        onBlur?.(e);
+    };
+
+    useEffect(() => {
+        if (inputRef.current) {
+            inputRef.current.value = defaultValue;
+        }
+    }, [defaultValue]);
+
+    return (
+        <section
+            className={`flex items-center gap-[0.8rem] px-[1.6rem] border border-[var(--color-gray-200)] hover:border-[var(--color-blue-1000)] focus-within:border-[var(--color-blue-1000)] transition-colors rounded-[0.8rem] relative ${className?.container ?? ""}`}
+            data-description={desc_no}
+        >
+            {guide && (
+                <p className="absolute top-[50%] right-[1.6rem] transform -translate-y-1/2">
+                    {guide}
+                </p>
+            )}
+            <input
+                ref={inputRef}
+                type={visible ? "text" : "password"}
+                name={name}
+                disabled={disabled}
+                placeholder={placeholder}
+                onInput={onInput}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                onKeyUp={(e) => {
+                    if (!digit) return;
+
+                    const input = e.currentTarget;
+                    
+                    if (input.value.length > digit) {
+                        setToast({ msg: `최대 ${ digit }자리까지 입력이 가능해요`, time: 2 })
+                        input.value = input.value.slice(0, digit);
+                    }
+                }}
+                className={`w-full ${className?.input ?? ""}`}
+                autoComplete={autoComplete}
+            />
+            {showToggle && (
+                <button
+                    type="button"
+                    className={`ml-2 ${className?.toggle ?? ""}`}
+                    onClick={() => setVisible((prev) => !prev)}
+                >
+                    {visible ? "숨기기" : "보기"}
+                </button>
+            )}
+        </section>
+    );
+};
+
 const TextArea = ({
     onChange,
     maxLength,
     placeholder = "내용을 입력하세요.",
-    className = "",
-    value = "",
+    className,
+    defaultValue = "",
     desc_no,
 }: TextAreaProps) => {
-    const [ currentValue, setCurrentValue ] = useState( value );
+    const [ currentValue, setCurrentValue ] = useState( defaultValue );
+    
     return (
         <div
-            className="relative w-full"
+            className={`relative w-full ${ className?.container }`}
             data-description={ desc_no }
         >
             <textarea
-                value={currentValue}
+                value={ currentValue }
                 onChange={(e) => {
-                    setCurrentValue(e.target.value);
-                    onChange(e);
+                    setCurrentValue( e.target.value );
+                    onChange( e );
                 }}
-                maxLength={maxLength}
-                placeholder={placeholder}
-                className={`w-full p-2 border rounded resize-none tab-size-[4] ${className}`}
+                maxLength={ maxLength }
+                placeholder={ placeholder }
+                className={`w-full border rounded resize-none tab-size-[4] ${className?.textarea}`}
             />
-            {maxLength && (
+            { maxLength && (
                 <span className="absolute text-[var(--color-gray-600)] bottom-[1.6rem] right-[1.6rem]">
-                    {value.length}/{maxLength}자
+                    {defaultValue.length}/{maxLength}자
                 </span>
             )}
         </div>
     );
 };
 
-const Select = ({ list = [], defaultValue, className, desc_no, onChange }: SelectProps) => {
-    const INIT_VALUE = list[0];
+const Select = ({ list = [], trackingData, defaultValue, className, desc_no, onChange }: SelectProps) => {
     const containerRef = useRef<HTMLElement>( null );
     const buttonRef = useRef<HTMLButtonElement>( null );
 
     const [ showMenu, setShowMenu ] = useState( false );
-    const [ currentValue, setCurrentValue ] = useState( defaultValue ?? INIT_VALUE?.value );
+    const [ currentValue, setCurrentValue ] = useState();
+    // const [ currentValue, setCurrentValue ] = useState( defaultValue ? defaultValue : INIT_VALUE?.value );
     const [ positionStyle, setPositionStyle ] = useState<{ left?: number; right?: number; top?: number; bottom?: number }>({ left: 0 });
 
     const detectOutsideClick = (e: MouseEvent) => {
@@ -393,6 +463,10 @@ const Select = ({ list = [], defaultValue, className, desc_no, onChange }: Selec
         };
     }, [ showMenu ]);
 
+    useEffect(() => {
+        setCurrentValue( defaultValue );
+    }, [ trackingData, defaultValue ])
+
     return (
         <section
             ref={ containerRef }
@@ -403,14 +477,14 @@ const Select = ({ list = [], defaultValue, className, desc_no, onChange }: Selec
             <button
                 ref={ buttonRef }
                 className={`${
-                    className?.button ? className.button : ""
+                    className?.button ? className.button : "min-w-[12.8rem] h-[var(--input-height)] rounded-[0.8rem] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)] px-[1.2rem]"
                     // className?.button ? className.button : "h-full"
-                } min-w-[12.8rem] flex justify-between items-center h-[var(--input-height)] text-left px-[1.2rem] rounded-[0.8rem] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)] transition-colors`}
+                } flex justify-between items-center text-left transition-colors`}
                 onClick={() => setShowMenu( !showMenu )}
                 data-description={ desc_no }
             >
-                {/* <p className='pointer-events-none'>{list.find((e) => e.value === currentValue)?.title}</p> */}
-                <p className='pointer-events-none'>{list.find((e) => e.value === currentValue)?.title}</p>
+                <p className='pointer-events-none'>{ list.find((e) => e.value === currentValue)?.title }</p>
+                
                 <IconComponent
                     type="colored-arrow-below"
                     alt="더보기"
@@ -421,7 +495,7 @@ const Select = ({ list = [], defaultValue, className, desc_no, onChange }: Selec
             <AnimatePresence>
                 { showMenu && (
                     <motion.section
-                        className="absolute bg-white flex flex-col gap-[0.4rem] shadow-[var(--shadow-normal)] p-[0.4rem] rounded-[1.2rem] z-1 overflow-hidden"
+                        className="absolute bg-[#ffffff90] backdrop-blur-sm max-h-[23.0rem] min-w-[calc(1.6rem*5)] overflow-y-auto flex flex-col gap-[0.4rem] shadow-[var(--shadow-normal)] p-[0.4rem] rounded-[1.2rem] z-1 overflow-hidden"
                         style={{
                             width: buttonRef.current?.offsetWidth,
                             ...positionStyle
@@ -442,9 +516,10 @@ const Select = ({ list = [], defaultValue, className, desc_no, onChange }: Selec
                                 <motion.button
                                     key={`${e}-${i}`}
                                     type="button"
-                                    className={`text-left hover:bg-[var(--color-gray-200)] text-[var(--color-gray-700)] rounded-[1.2rem] p-[1.2rem] transition-colors ${
+                                    className={`text-left hover:bg-[#ffffff90] text-[var(--color-gray-700)] rounded-[1.2rem] p-[1.2rem] transition-colors ${
+                                        // e.value === defaultValue
                                         e.value === currentValue
-                                            ? "bg-[var(--color-gray-100)]"
+                                            ? "bg-white shadow-[var(--shadow-normal)]"
                                             : "bg-transparent"
                                     }`}
                                     onClick={() => {
@@ -486,6 +561,7 @@ const Filter = forwardRef<{ reset: () => void }, FilterProps>(
 
         const { setToast } = useToastStore();
 
+        const filterContainerRef = useRef<HTMLElement>(null);
         const containerRef = useRef<HTMLElement>(null);
         const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -544,21 +620,17 @@ const Filter = forwardRef<{ reset: () => void }, FilterProps>(
             setCurrentIndex(0);
 
             if (!activeItems?.length) return;
-
-            const interval = setInterval(() => {
-                setCurrentIndex(prev => (prev + 1) % activeItems.length);
-            }, 2000);
-
-            return () => clearInterval(interval);
         }, [currentList]);
-
-        useEffect(() => {
-            setContainerHeight(elementRef?.current?.offsetHeight ?? 0);
-        }, [showMenu]);
 
         useEffect(() => {
             setInitList( list );
         }, [])
+
+        useEffect(() => {
+            if ( filterContainerRef.current ) {
+                setContainerHeight(filterContainerRef.current?.scrollHeight)
+            }
+        }, [ filterContainerRef.current ])
 
         return (
             <motion.section
@@ -568,24 +640,26 @@ const Filter = forwardRef<{ reset: () => void }, FilterProps>(
                 <motion.button
                     ref={buttonRef}
                     layout="size"
-                    className={`${className?.button ?? "h-full"} min-w-[19.0rem] flex justify-between items-center text-left px-[1.2rem] rounded-[0.8rem] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)] transition-colors`}
+                    className={`${className?.button ?? "h-full"} min-w-[20.0rem] flex items-center text-left px-[1.2rem] rounded-[0.8rem] bg-[var(--color-gray-100)] hover:bg-[var(--color-gray-200)] transition-colors`}
                     data-description={desc_no}
                     onClick={() => setShowMenu(!showMenu)}
                 >
-                    {activeItems?.length > 0 ? (
-                        <div className="overflow-hidden h-[1.6rem] relative flex-1 flex items-center">
+                    { activeItems?.length > 0 ? (
+                        // <div className="h-[1.6rem] max-w-[calc(1.6rem*7)] relative whitespace-nowrap overflow-hidden text-ellipsis">
+                        <div className="h-[1.6rem] max-w-[calc(1.6rem*7)] relative">
                             <AnimatePresence mode="wait">
                                 {activeItems.map((item, i) =>
                                     i === currentIndex ? (
                                         <motion.p
-                                            key={item.title}
-                                            className="w-full pointer-events-none"
+                                            layout
+                                            key={`${ activeItems[currentIndex] }`}
+                                            className="w-full overflow-hidden pointer-events-none whitespace-nowrap text-ellipsis"
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             exit={{ opacity: 0 }}
                                             transition={{ type: "spring", mass: 0.1, stiffness: 100, damping: 10 }}
                                         >
-                                            {item.title}
+                                            { item.title }
                                         </motion.p>
                                     ) : null
                                 )}
@@ -604,20 +678,29 @@ const Filter = forwardRef<{ reset: () => void }, FilterProps>(
                         </motion.p>
                     )}
 
-                    {activeItems.length ? (
-                        <p>{activeItems.length === allItems.length ? ` ・ 전체` : ` ・ ${activeItems.length}개`}</p>
+                    { activeItems.length ? (
+                        <motion.p
+                            key={`${ activeItems[currentIndex] }`}
+                            // key={ activeItems.find((e, idx) => idx === currentIndex )?.title }
+                            layout="position"
+                            className='ml-[0.4rem]'
+                        >
+                            {activeItems.length === allItems.length ? ` ・ 전체` : ` ・ ${activeItems.length}개`}
+                        </motion.p>
                     ) : ""}
 
                     <IconComponent
                         type="colored-arrow-below"
                         alt="더보기"
-                        className={`${showMenu ? "rotate-180" : ""} transition-transform`}
+                        className={`${showMenu ? "rotate-180" : ""} transition-transform absolute right-[1.6rem] top-[50%] transform translate-y-[-50%]`}
                     />
                 </motion.button>
 
                 <AnimatePresence>
                     {showMenu && (
                         <motion.section
+                            key={"as"}
+                            ref={filterContainerRef}
                             className={`absolute bg-white overflow-y-auto scrollbar-hide top-[calc(4.2rem+0.8rem)] flex flex-col gap-[0.4rem] shadow-[var(--shadow-normal)] p-[0.4rem] rounded-[1.2rem] min-w-[26.0rem] z-1 ${className?.container ?? ""}`}
                             style={{
                                 width: buttonRef.current?.offsetWidth,
@@ -628,11 +711,14 @@ const Filter = forwardRef<{ reset: () => void }, FilterProps>(
                             animate={{
                                 opacity: 1,
                                 transform: "scale(1)",
-                                height: ref
-                                    ? (containerHeight > currentList.length * (26 + 38 + 16 + 24)
-                                        ? `auto`
-                                        : `calc(${containerHeight}px - 4.2rem - (1.6rem * 2))`)
-                                    : "auto"
+                                height: containerHeight
+                                // height: containerHeight + (16 * currentList.length) + 24
+                                // height: (filterContainerRef.current?.scrollHeight ?? 0) + (16*currentList.length) + 24
+                                // height: ref
+                                //     ? (containerHeight > currentList.length * (26 + 38 + 16 + 24)
+                                //         ? `auto`
+                                //         : `calc(${containerHeight}px - 4.2rem - (1.6rem * 2))`)
+                                //     : "auto"
                             }}
                             exit={{ opacity: 0, transform: "scale(0.99)", height: `0px` }}
                             transition={{
@@ -643,37 +729,37 @@ const Filter = forwardRef<{ reset: () => void }, FilterProps>(
                                 damping: 10
                             }}
                         >
-                            <AnimatePresence>
-                                <motion.section
-                                    key={`mini-modal-header`}
-                                    className={`text-left text-[var(--color-gray-700)] rounded-[1.2rem] transition-colors`}
-                                    initial={{ opacity: 0, transform: "scale(0.8)" }}
-                                    animate={{ opacity: 1, transform: "scale(1)" }}
-                                    exit={{ opacity: 0, transform: "scale(0.8)" }}
-                                    transition={{
-                                        delay: 0.1 * 1,
-                                        type: "spring",
-                                        mass: 0.1,
-                                        stiffness: 100,
-                                        damping: 10
+                            <motion.section
+                                key={`mini-modal-header`}
+                                className={`text-left text-[var(--color-gray-700)] rounded-[1.2rem] transition-colors`}
+                                initial={{ opacity: 0, transform: "scale(0.8)" }}
+                                animate={{ opacity: 1, transform: "scale(1)" }}
+                                exit={{ opacity: 0, transform: "scale(0.8)" }}
+                                transition={{
+                                    delay: 0.1 * 1,
+                                    type: "spring",
+                                    mass: 0.1,
+                                    stiffness: 100,
+                                    damping: 10
+                                }}
+                            >
+                                <UI.Button
+                                    onClick={() => {
+                                        setCurrentList(prev =>
+                                            prev.map(items => ({
+                                                ...items,
+                                                state: true
+                                                // state: currentList.some(e => e.state === true) ? false : true
+                                            }))
+                                        );
                                     }}
+                                    className="text-right w-full py-[1.2rem] underline"
                                 >
-                                    <UI.Button
-                                        onClick={() => {
-                                            setCurrentList(prev =>
-                                                prev.map(items => ({
-                                                    ...items,
-                                                    state: true
-                                                    // state: currentList.some(e => e.state === true) ? false : true
-                                                }))
-                                            );
-                                        }}
-                                        className="text-right w-full py-[1.2rem] underline"
-                                    >
-                                        전체선택
-                                    </UI.Button>
-                                </motion.section>
+                                    전체선택
+                                </UI.Button>
+                            </motion.section>
 
+                            <section className='max-h-[22.0rem] overflow-y-auto'>
                                 { currentList.map((item, key) => (
                                     <motion.div
                                         key={`${item}-${key}`}
@@ -718,44 +804,44 @@ const Filter = forwardRef<{ reset: () => void }, FilterProps>(
                                         />
                                     </motion.div>
                                 ))}
+                            </section>
 
-                                <motion.section
-                                    key={`mini-modal-footer`}
-                                    className={`text-left flex flex-1 justify-end gap-[0.8rem] text-[var(--color-gray-700)] mt-[2.4rem] rounded-[1.2rem] transition-colors`}
-                                    initial={{ opacity: 0, transform: "scale(0.8)" }}
-                                    animate={{ opacity: 1, transform: "scale(1)" }}
-                                    exit={{ opacity: 0, transform: "scale(0.8)" }}
-                                    transition={{
-                                        delay: 0.1 * 3,
-                                        type: "spring",
-                                        mass: 0.1,
-                                        stiffness: 100,
-                                        damping: 10
+                            <motion.section
+                                key={`mini-modal-footer`}
+                                className={`text-left flex flex-1 justify-end gap-[0.8rem] text-[var(--color-gray-700)] mt-[2.4rem] rounded-[1.2rem] transition-colors`}
+                                initial={{ opacity: 0, transform: "scale(0.8)" }}
+                                animate={{ opacity: 1, transform: "scale(1)" }}
+                                exit={{ opacity: 0, transform: "scale(0.8)" }}
+                                transition={{
+                                    delay: 0.1 * 3,
+                                    type: "spring",
+                                    mass: 0.1,
+                                    stiffness: 100,
+                                    damping: 10
+                                }}
+                            >
+                                <UI.Button
+                                    className={`bg-[var(--color-gray-200)] font-medium whitespace-nowrap rounded-[0.6rem] px-[1.6rem] h-[4.2rem]`}
+                                    onClick={() => {
+                                        close();
+                                        
+                                        onCancel?.( initList );
                                     }}
                                 >
-                                    <UI.Button
-                                        className={`bg-[var(--color-gray-200)] font-medium whitespace-nowrap rounded-[0.6rem] px-[1.6rem] h-[4.2rem]`}
-                                        onClick={() => {
-                                            close();
-                                            
-                                            onCancel?.( initList );
-                                        }}
-                                    >
-                                        닫기
-                                    </UI.Button>
+                                    닫기
+                                </UI.Button>
 
-                                    <UI.Button
-                                        className={`text-white bg-[var(--color-blue-1000)] font-medium whitespace-nowrap rounded-[0.6rem] w-[12.8rem] h-[4.2rem]`}
-                                        onClick={(e) => {
-                                            setShowMenu(false);
-                                            
-                                            onConfirm?.( currentList );
-                                        }}
-                                    >
-                                        완료
-                                    </UI.Button>
-                                </motion.section>
-                            </AnimatePresence>
+                                <UI.Button
+                                    className={`text-white bg-[var(--color-blue-1000)] font-medium whitespace-nowrap rounded-[0.6rem] w-[12.8rem] h-[4.2rem]`}
+                                    onClick={(e) => {
+                                        setShowMenu(false);
+                                        
+                                        onConfirm?.( currentList );
+                                    }}
+                                >
+                                    완료
+                                </UI.Button>
+                            </motion.section>
                         </motion.section>
                     )}
                 </AnimatePresence>
@@ -934,6 +1020,7 @@ const MiniModal = ({ element, className, defaultValue, desc_no, onConfirm, onCan
 
 const DropDown = ({ children, className, list, height = "var(--input-height)", desc_no, prevent=false }: DropDownProps) => {
     const containerRef = useRef<HTMLElement>(null);
+    const floatingRef = useRef<HTMLElement>(null);
 
     const [ isShowList, setIsShowList ] = useState( false );
     const [ positionStyle, setPositionStyle ] = useState<{ left?: number; right?: number; top?: number; bottom?: number }>({ left: 0 });
@@ -978,26 +1065,26 @@ const DropDown = ({ children, className, list, height = "var(--input-height)", d
     }, [isShowList]);
 
     return (
-        <AnimatePresence>
-            <section
-                ref={ containerRef }
-                className={`${ className?.container ?? "" } relative cursor-pointer`}
-                onClick={(e) => {
-                    if ( prevent ) {
-                        e.preventDefault();
-                    }
-                    setIsShowList( !isShowList );
-                }}
-                data-description={ desc_no }
-            >
-                { children }
-
+        <section
+            ref={ containerRef }
+            className={`${ className?.container ?? "" } relative cursor-pointer`}
+            onClick={(e) => {
+                if ( prevent ) {
+                    e.preventDefault();
+                }
+                setIsShowList( !isShowList );
+            }}
+            data-description={ desc_no }
+        >
+            { children }
+            <AnimatePresence>
                 { isShowList && (
                     <motion.section
-                        className={`${ className?.inner ?? "" } absolute z-[100] flex flex-col cursor-pointer whitespace-nowrap rounded-2xl p-[0.4rem] bg-white border border-[var(--color-gray-100)]`}
-                        initial={{ opacity: 0, transform: "scale(0.99)" }}
-                        animate={{ opacity: 1, transform: "scale(1)" }}
-                        exit={{ opacity: 0, transform: "scale(0.99)" }}
+                        ref={floatingRef}
+                        className={`${ className?.inner ?? "" } absolute z-[100] flex flex-col cursor-pointer whitespace-nowrap rounded-2xl p-[0.4rem] bg-[#ffffff90] backdrop-blur-sm shadow-[var(--shadow-normal)]`}
+                        initial={{ opacity: 0, transform: "scale(0.99)", height: "0px" }}
+                        animate={{ opacity: 1, transform: "scale(1)", height: (floatingRef.current?.scrollHeight ? floatingRef.current?.scrollHeight : 0) + 10 }}
+                        exit={{ opacity: 0, transform: "scale(0.99)", height: "0px" }}
                         transition={{
                             delay: 0,
                             type: "spring",
@@ -1016,26 +1103,36 @@ const DropDown = ({ children, className, list, height = "var(--input-height)", d
                                         { e.element }
                                     </Fragment>
                                 ) : (
-                                    <button
+                                    <motion.button
                                         key={ index }
                                         type="button"
                                         value={ e.value }
-                                        className={`${ e.className } item px-[1.6rem] py-[1.3rem]`}
+                                        initial={{ opacity: 0, transform: "scale(0.8)" }}
+                                        animate={{ opacity: 1, transform: "scale(1)" }}
+                                        exit={{ opacity: 0, transform: "scale(0.8)" }}
+                                        transition={{
+                                            delay: 0,
+                                            type: "spring",
+                                            mass: 0.1,
+                                            stiffness: 100,
+                                            damping: 10
+                                        }}
+                                        className={`${ e.className } item px-[1.6rem] py-[1.3rem] hover:bg-[var(--color-gray-200)] rounded-[0.8rem] transition-colors`}
                                         onClick={() => {
                                             e.onClick?.();
                                         }}
                                         data-description={ desc_no }
                                     >
                                         { e.title }
-                                    </button>
+                                    </motion.button>
                                 ) }
                             </Fragment>
                             
                         ))}
                     </motion.section>
                 )}
-            </section>
-        </AnimatePresence>
+            </AnimatePresence>
+        </section>
     );
 };
 
@@ -1043,196 +1140,200 @@ const Calendar = ({
     className = "bg-[var(--color-gray-100)] text-[var(--color-gray-1000)] rounded-[0.8rem] px-[1.2rem] h-[4.2rem]",
     icon = false,
     desc_no,
+    defaultValue = new Date(),
     onClose,
     onDateSelect,
-    limitMonths = 12, // 추가
-    limitMessage = "더 이상 이전 달을 조회할 수 없습니다.", // 추가
-}: CalendarModalProps) => {
-    const [ modalOpen, setModalOpen ] = useState(false);
-    const [ currentDate, setCurrentDate ] = useState(new Date());
-    const [ selectedDate, setSelectedDate ] = useState<Date>();
-    const [ positionStyle, setPositionStyle ] = useState<{ left?: number; right?: number }>({ left: 0 });
+    limitMonths = 12,
+    limitMessage = "더 이상 이전 달을 조회할 수 없습니다.",
+    ruleDate, // "YYYY-MM-DD" string
+    center = false,
+    onRuleAdjust, // 상대 Calendar를 보정하기 위한 callback
+}: CalendarModalProps & { ruleDate?: string; onRuleAdjust?: (newDate: string) => void }) => {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [currentDate, setCurrentDate] = useState(defaultValue);
+    const [positionStyle, setPositionStyle] = useState<{ left?: number; right?: number }>({ left: 0 });
 
     const { setToast } = useToastStore();
-
-    const containerRef = useRef<HTMLElement>( null );
-    const calendarRef = useRef<HTMLButtonElement>( null );
+    const containerRef = useRef<HTMLElement>(null);
+    const calendarRef = useRef<HTMLButtonElement>(null);
 
     const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
-    const getDaysInMonth = (year: number, month: number) => {
-        return new Date(year, month + 1, 0).getDate();
-    };
-
-    const getFirstDayOfMonth = (year: number, month: number) => {
-        return new Date(year, month, 1).getDay();
-    };
+    const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+    const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
 
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-
     const daysInMonth = getDaysInMonth(year, month);
     const firstDay = getFirstDayOfMonth(year, month);
 
+    const parseRuleDate = () => ruleDate ? new Date(ruleDate) : null;
+
+    const convertDateToStr = ( date: Date ) => {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    // 달력에서 날짜 이동 시 범위 보정
+    const adjustDateToLimit = (date: Date) => {
+        if (!ruleDate || !limitMonths) return date;
+
+        const rule = parseRuleDate()!;
+        
+        // min/max 날짜 생성
+        const min = new Date(rule.getFullYear(), rule.getMonth(), 1, 12); // 정오 기준
+        min.setMonth(min.getMonth() - limitMonths);
+        min.setDate(1); // ← setMonth로 밀린 날짜 보정
+
+        const max = new Date(rule.getFullYear(), rule.getMonth(), 1, 12);
+        max.setMonth(max.getMonth() + limitMonths);
+        max.setDate(getDaysInMonth(max.getFullYear(), max.getMonth())); // 마지막 날로 보정
+
+        if (date.getTime() < min.getTime()) return min;
+        if (date.getTime() > max.getTime()) return max;
+
+        return date;
+    };
+
     const handleDateClick = (day: number) => {
-        const SELECTED_DATE = new Date(Date.UTC(year, month, day));
-        const CONVERT = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        // 로컬 기준으로 날짜 생성
+        const SELECTED_DATE = new Date(currentDate.getFullYear(), currentDate.getMonth(), day, 12); 
 
-        setSelectedDate(SELECTED_DATE);
+        setCurrentDate(SELECTED_DATE);
         setModalOpen(false);
-        if (onDateSelect) onDateSelect(CONVERT);
+
+        const dateStr = `${SELECTED_DATE.getFullYear()}-${String(SELECTED_DATE.getMonth() + 1).padStart(2, "0")}-${String(SELECTED_DATE.getDate()).padStart(2, "0")}`;
+        if (onDateSelect) onDateSelect(dateStr);
     };
 
-    // 이전 달 이동
     const prevMonth = () => {
-        if (limitMonths) {
-            const today = new Date();
-            const limitDate = new Date(today.getFullYear(), today.getMonth() - limitMonths, 1);
+        const PREV_DATE = new Date(year, month - 1, 1, 12);
 
-            // 현재 달이 limitDate 보다 이전으로 가려 할 경우 막기
-            if (new Date(year, month - 1, 1) < limitDate) {
-                console.log(limitMessage);
-                setToast({ msg: `조회 가능한 최대 기간은 ${ limitMonths }개월입니다.`, time: 2 })
-                return;
-            }
-        }
-        setCurrentDate(new Date(year, month - 1, 1));
+        const dateStr = `${PREV_DATE.getFullYear()}-${String(PREV_DATE.getMonth() + 1).padStart(2, "0")}-${String(PREV_DATE.getDate()).padStart(2, "0")}`;
+        if (onDateSelect) onDateSelect(dateStr);
+
+        setCurrentDate(PREV_DATE)
     };
-
-    // 다음 달 이동
+    
     const nextMonth = () => {
-        setCurrentDate(new Date(year, month + 1, 1));
+        const NEXT_DATE = new Date(year, month + 1, 1, 12);
+
+        const dateStr = `${NEXT_DATE.getFullYear()}-${String(NEXT_DATE.getMonth() + 1).padStart(2, "0")}-${String(NEXT_DATE.getDate()).padStart(2, "0")}`;
+        if (onDateSelect) onDateSelect(dateStr);
+        
+        setCurrentDate(NEXT_DATE)
     };
 
     const detectOutsideClick = (e: MouseEvent) => {
-        if ( containerRef.current && !containerRef.current.contains(e.target as Node) ) {
-            setModalOpen(false);
-        }
+        if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+            // handleDateClick(1);
+            setModalOpen(false)
+        };
     };
 
     useEffect(() => {
-        if ( modalOpen ) {
+        if (modalOpen) {
             document.addEventListener("click", detectOutsideClick);
-
+            
             if (calendarRef.current) {
                 const rect = calendarRef.current.getBoundingClientRect();
-                const calendarWidth = 320; // 예상 너비 (w-[calc(1.6rem*20)] 약 320px)
+                const calendarWidth = 320;
                 const viewportWidth = window.innerWidth;
-
-                if (rect.left + calendarWidth > viewportWidth) {
-                    setPositionStyle({ right: 0 });
-                } else {
-                    setPositionStyle({ left: 0 });
-                }
+                if (rect.left + calendarWidth > viewportWidth) setPositionStyle({ right: 0 });
+                else setPositionStyle({ left: 0 });
             }
         }
-        return () => {
-            document.removeEventListener("click", detectOutsideClick);
-        };
-    }, [ modalOpen ]);
+        return () => document.removeEventListener("click", detectOutsideClick);
+    }, [modalOpen]);
+
+    useEffect(() => {
+        if (!ruleDate) return;
+        
+        const descriptionKey = `${ desc_no }`
+        const rule = new Date(ruleDate);
+
+        // 종료일 달력일 때
+        if (descriptionKey.includes("종료일") && rule > currentDate) {
+            setCurrentDate(rule);
+
+            if (onDateSelect) onDateSelect(convertDateToStr(rule));
+            return;
+        }
+
+        // 시작일 달력일 때
+        if (descriptionKey.includes("시작일") && rule < currentDate) {
+            setCurrentDate(rule);
+
+            if (onDateSelect) onDateSelect(convertDateToStr(rule));
+            return;
+        }
+
+        // 범위 제한 (limitMonths 처리)
+        const SELECTED_DATE = adjustDateToLimit(currentDate);
+        
+        setCurrentDate(SELECTED_DATE);
+
+        if (onDateSelect) onDateSelect(convertDateToStr(SELECTED_DATE));
+    }, [ruleDate]);
+
+    // useEffect(() => {
+    //     console.log("currentDate", currentDate)
+    // }, [ currentDate ])
 
     return (
-        <section
-            ref={ containerRef }
-            className="relative calendar"
-        >
+        <section ref={containerRef} className="relative calendar">
             <motion.button
-                ref={ calendarRef }
-                onClick={() => setModalOpen( !modalOpen )}
-                className={`${ className } ${
-                    icon ? "flex gap-[2.8rem] items-center justify-between" : ""
-                } hover:bg-[var(--color-gray-200)] transition-colors`}
+                ref={calendarRef}
+                onClick={() => setModalOpen(!modalOpen)}
+                className={`${className} ${icon ? "flex gap-[2.8rem] items-center justify-between" : ""} hover:bg-[var(--color-gray-200)] transition-colors`}
                 whileTap={{ scale: 0.95 }}
-                data-description={ desc_no }
+                data-description={desc_no}
             >
-                {(selectedDate || currentDate).toISOString().split("T")[0]}
-                { icon && <IconComponent type="colored-calendar" alt="캘린더" /> }
+                {(currentDate).toISOString().split("T")[0]}
+                {icon && <IconComponent type="colored-calendar" alt="캘린더" />}
             </motion.button>
 
             <AnimatePresence>
-                { modalOpen && (
+                {modalOpen && (
                     <motion.section
-                        className="absolute flex items-center justify-center z-[1000] bg-white rounded-[1.2rem] shadow-[var(--shadow-normal)] overflow-hidden"
-                        onClick={() => {
-                            const VALUE = selectedDate
-                                ? selectedDate.toLocaleDateString("ko-KR")
-                                : currentDate.toLocaleDateString("ko-KR")
-                                
-                            // onClose( VALUE );
-                        }}
-                        style={{
-                            top: (calendarRef.current?.offsetHeight ?? 0) + 4,
-                            ...positionStyle,
-                        }}
+                        className={`${ center ? "fixed top-[50%!important] left-[50%!important] transform translate-x-[-50%!important] translate-y-[-50%!important]" : "absolute" } flex items-center justify-center z-[1000] bg-white rounded-[1.2rem] shadow-[var(--shadow-normal)] overflow-hidden`}
+                        style={{ top: (calendarRef.current?.offsetHeight ?? 0) + 4, ...positionStyle }}
                         initial={{ opacity: 0, transform: "scale(0.99)", height: "0px" }}
                         animate={{ opacity: 1, transform: "scale(1)", height: "auto" }}
                         exit={{ opacity: 0, transform: "scale(0.99)", height: "0px" }}
-                        transition={{
-                            delay: 0,
-                            type: "spring",
-                            mass: 0.1,
-                            stiffness: 150,
-                            damping: 10,
-                        }}
+                        transition={{ delay: 0, type: "spring", mass: 0.1, stiffness: 150, damping: 10 }}
                     >
-                        <div
-                            className="p-[2.4rem] w-[calc(1.6rem*20)] flex flex-col gap-[2.4rem]"
-                            onClick={(e) => e.stopPropagation()}
-                        >
+                        <div className="p-[2.4rem] w-[calc(1.6rem*20)] flex flex-col gap-[2.4rem]" onClick={(e) => e.stopPropagation()}>
                             <section className="flex items-center justify-between mb-4">
-                                <button
-                                    onClick={prevMonth}
-                                    className="px-2 py-1 rounded hover:bg-gray-200"
-                                    type="button"
-                                >
-                                    &lt;
-                                </button>
-                                <h6 className="font-semibold text-[2.0rem]">
-                                    {month + 1}월 {year}
-                                </h6>
-                                <button
-                                    onClick={nextMonth}
-                                    className="px-2 py-1 rounded hover:bg-gray-200"
-                                    type="button"
-                                >
-                                    &gt;
-                                </button>
+                                <button onClick={prevMonth} className="px-2 py-1 rounded hover:bg-gray-200" type="button">&lt;</button>
+                                <h6 className="font-semibold text-[2.0rem]">{month + 1}월 {year}</h6>
+                                <button onClick={nextMonth} className="px-2 py-1 rounded hover:bg-gray-200" type="button">&gt;</button>
                             </section>
 
                             <section>
                                 <section className="grid w-full grid-cols-7 mb-2 text-sm text-center gap-[1.8rem]">
                                     {DAYS.map((day, index) => (
-                                        <p
-                                            key={day}
-                                            className={`${
-                                                index === 0
-                                                    ? "text-[var(--color-red-500)]"
-                                                    : "text-[var(--color-gray-1000)]"
-                                            } w-[2.8rem] place-self-center`}
-                                        >
+                                        <p key={day} className={`${index === 0 ? "text-[var(--color-red-500)]" : "text-[var(--color-gray-1000)]"} w-[2.8rem] place-self-center`}>
                                             {day}
                                         </p>
                                     ))}
                                 </section>
 
                                 <section className="grid grid-cols-7 gap-[1.8rem]">
-                                    {Array(firstDay).fill(null).map((_, idx) => (
-                                        <div key={"empty-" + idx} />
-                                    ))}
-
+                                    {Array(firstDay).fill(null).map((_, idx) => <div key={"empty-" + idx} />)}
                                     {Array(daysInMonth).fill(null).map((_, idx) => {
                                         const day = idx + 1;
+                                        const dateObj = new Date(year, month, day, 12); // ← 여기 추가
+
                                         const today = new Date();
                                         const isToday =
-                                            day === today.getDate() &&
-                                            month === today.getMonth() &&
-                                            year === today.getFullYear();
+                                            dateObj.getDate() === today.getDate() &&
+                                            dateObj.getMonth() === today.getMonth() &&
+                                            dateObj.getFullYear() === today.getFullYear();
 
                                         const isSelected =
-                                            selectedDate &&
-                                            day === selectedDate.getDate() &&
-                                            month === selectedDate.getMonth() &&
-                                            year === selectedDate.getFullYear();
+                                            dateObj.getDate() === currentDate.getDate() &&
+                                            dateObj.getMonth() === currentDate.getMonth() &&
+                                            dateObj.getFullYear() === currentDate.getFullYear();
 
                                         return (
                                             <motion.button
@@ -1240,11 +1341,7 @@ const Calendar = ({
                                                 type="button"
                                                 onClick={() => handleDateClick(day)}
                                                 className={`text-center py-1 hover:bg-[var(--color-gray-200)] transition-colors w-[2.8rem] h-[2.8rem] rounded-full
-                                                    ${isSelected // 사용자가 선택
-                                                    ? "bg-[var(--color-blue-1000)] text-white" 
-                                                    : isToday // 오늘 일 경우
-                                                        ? "bg-[var(--color-gray-100)] text-[var(--color-gray-700)]" 
-                                                        : ""}`}
+                                                    ${isSelected ? "bg-[var(--color-blue-1000)] text-white" : isToday ? "bg-[var(--color-gray-100)] text-[var(--color-gray-700)]" : ""}`}
                                             >
                                                 {day}
                                             </motion.button>
@@ -1366,12 +1463,32 @@ const Tab = ({ list, type = "button", className, preventTargetIdx = 999, prevent
     const [ menuState, setMenuState ] = useState( defaultSelect );
 
     const { setToast } = useToastStore();
+    const { isDirty, resetDirty } = useDirtyStore();
+    const { setModal } = useModalStore();
+
     const { pushToUrl } = useNavigate();
+
+    const setPreventModal = ({ onClick }: { onClick: () => void }) => setModal({
+        type: "CHECK",
+        title: "저장하지 않고 나가시겠어요?",
+        description: "변경 사항이 모두 사라져요.",
+        // description: msg,
+        cancel: { text: "취소" },
+        confirm: {
+            text: "나가기",
+            onClick: () => {
+                onClick();
+                resetDirty();
+            }
+        },
+        isOpen: true
+    });
     
     useEffect(() => {
         setMenuState( defaultSelect );
         onClick( defaultSelect )
     }, [ defaultSelect ])
+    
     
     return (
         <section className={`${ className?.container ? className.container : "" }`}>
@@ -1383,15 +1500,27 @@ const Tab = ({ list, type = "button", className, preventTargetIdx = 999, prevent
                         // className={ `${ e.value === menuState ? `${ className?.active }` : `${ className?.normal }` } ${ className?.button }` }
                         className="px-[2.0rem] py-[1.2rem]"
                         onClick={() => {
+                            const MOVE_TAB = () => {
+                                setMenuState( e.value );
+                                onClick( e.value );
+                            }
+
                             if ( preventTargetIdx !== 999 && preventTargetIdx !== i ) {
                                 setToast({ msg: preventMsg })
 
                                 return;
                             }
 
+                            if ( isDirty ) {
+                                setPreventModal({
+                                    onClick: () => MOVE_TAB()
+                                });
+
+                                return
+                            }
+
                             if ( type === "button" ) {
-                                setMenuState( e.value );
-                                onClick( e.value );
+                                MOVE_TAB();
                             } else {
                                 pushToUrl( e.route ?? "/" );
                             }
@@ -1415,69 +1544,51 @@ const Tab = ({ list, type = "button", className, preventTargetIdx = 999, prevent
     )
 }
 
-const Button = ({ children, className, type = "button", disabled = false, ref, test, desc_no, onClick, onPointerDown }: ButtonProps) => {
-    const [ripples, setRipples] = useState<
-        { x: number; y: number; id: number }[]
-    >([]);
-
-    // const ButtonRef = useRef<any>(null);
-
-    const handleClick = (e: any) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const newRipple = { x, y, id: Date.now() };
-        setRipples((prev) => [...prev, newRipple]);
-
-        // 외부 onClick 실행
-        if ( onClick ) {
-            onClick(e);
-        }
-
-        // 일정 시간 뒤 ripple 제거
-        setTimeout(() => {
-            setRipples((prev) => prev.filter((r) => r.id !== newRipple.id));
-        }, 600);
-    };
+const Button = ({ children, className, type = "button", disabled = false, rippleColor = "#ffffff", ref, test, desc_no, onClick, onPointerDown }: ButtonProps) => {
+    const [ ripples, setRipples ] = useState<{ x: number; y: number; id: number }[]>([]);
 
     return (
         <motion.button
-            type={ type }
-            ref={ ref }
-            onClick={ handleClick }
-            onPointerDown={ onPointerDown }
-            className={`${ className } relative overflow-hidden transition-opacity ${ disabled ? "opacity-[0.5]" : "" }`}
-            disabled={ disabled }
-            whileTap={{ 
-                scale: 0.95 
+            type={type}
+            ref={ref}
+            onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const newRipple = { x, y, id: Date.now() };
+                setRipples((prev) => [...prev, newRipple]);
+
+                if (onClick) onClick(e);
+
+                // 0.8초 후 리플 제거
+                setTimeout(() => {
+                    setRipples((prev) => prev.filter((r) => r.id !== newRipple.id));
+                }, 1500);
             }}
-            data-testid={`${ test ? test : "" }`}
-            data-description={ desc_no }
+            onPointerDown={ onPointerDown }
+            className={`${className ? className : "relative"} overflow-hidden transition-opacity ${disabled ? "opacity-[0.5]" : ""}`}
+            disabled={disabled}
+            whileTap={{ scale: 0.95 }}
+            data-testid={test ?? ""}
+            data-description={desc_no}
         >
-            {/* Ripple 효과 */}
-            {/* {ripples.map((ripple) => (
-                <motion.span
+            { ripples.map((ripple) => (
+                <motion.div
                     key={ripple.id}
-                    initial={{ scale: 0, opacity: 0.5 }}
-                    animate={{ scale: 10, opacity: 0 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="absolute pointer-events-none w-full h-full z-10 rounded-[50%] blur-[10px]"
                     style={{
-                        position: "absolute",
-                        top: ripple.y,
-                        left: ripple.x,
+                        left: `calc(${ripple.x}px - 50%)`,
+                        top: `calc(${ripple.y}px - 50%)`,
+                        background: `radial-gradient(circle, ${ rippleColor }00 0%, ${ rippleColor } 50%, ${ rippleColor }00 70%)`,
                         transform: "translate(-50%, -50%)",
-                        borderRadius: "50%",
-                        background:
-                            "radial-gradient(circle, rgba(20, 20, 20, 1) 0%, rgba(221, 79, 27, 0) 80%)",
-                        width: `${ ButtonRef.current.offsetWidth / 2 }px`,
-                        height: `${ ButtonRef.current.offsetWidth / 2 }px`,
-                        pointerEvents: "none",
                     }}
+                    initial={{ scale: 0, opacity: 0.6 }}
+                    animate={{ scale: 8, opacity: 0 }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
                 />
-            ))} */}
-            {/* Ripple 효과 END */}
-            
+            ))}
+
             { children }
         </motion.button>
     )
@@ -1503,13 +1614,14 @@ const Pagination = ({ totalCount, pageSize, currentPage, desc_no, onPageChange }
             data-description={ desc_no }
         >
             {/* 처음 */}
-            {/* <button
-                onClick={() => onPageChange(1)}
+            <button
+                onClick={() => onPageChange((currentPage - 10) <= 1 ? 1 : (currentPage - 10) )}
                 disabled={currentPage === 1}
-                className="px-3 py-1 border border-[var(--color-gray-300)] rounded disabled:opacity-50"
+                className="bg-transparent rounded-full p-[0.4rem] hover:bg-[var(--color-gray-200)] disabled:opacity-50"
             >
-                처음
-            </button> */}
+                - 10(임시)
+                {/* <IconComponent type='colored-arrow-below' className='rotate-90' width={24} height={24} alt='이전' /> */}
+            </button>
 
             {/* 이전 */}
             <button
@@ -1545,13 +1657,14 @@ const Pagination = ({ totalCount, pageSize, currentPage, desc_no, onPageChange }
             </button>
 
             {/* 끝 */}
-            {/* <button
-                onClick={() => onPageChange(totalPages)}
+            <button
+                onClick={() => onPageChange((currentPage + 10) >= totalPages ? totalPages : (currentPage + 10))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 border border-[var(--color-gray-300)] rounded disabled:opacity-50"
+                className="bg-transparent rounded-full p-[0.4rem] hover:bg-[var(--color-gray-200)] disabled:opacity-50"
             >
-                끝
-            </button> */}
+                + 10(임시)
+                {/* <IconComponent type='colored-arrow-below' className='rotate-270' width={24} height={24} alt='이전' /> */}
+            </button>
         </div>
     );
 };
@@ -1673,12 +1786,7 @@ const TableRow = ({
   }
 
   return (
-    <div
-      className={`
-        ${className ?? ""} 
-        grid border-b border-b-[var(--color-gray-200)] last:border-b-0 p-[0.4rem]
-      `}
-    >
+    <div className={`${className ?? ""} grid border-b border-b-[var(--color-gray-200)] last:border-b-0 p-[0.4rem]`}>
       {children}
     </div>
   );
@@ -1691,7 +1799,10 @@ const TableCell = ({
     onClick,
 }: {
     children?: React.ReactNode;
-    className?: string;
+    className?: {
+        container?: string;
+        text?: string;
+    };
     desc_no?: string;
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }) => {
@@ -1699,7 +1810,7 @@ const TableCell = ({
         <div
             className={`
                 ${ typeof children === "string" ? "pointer-events-none" : "" }
-                ${ className ? className : "px-[2.0rem] py-[1.3rem]" } 
+                ${ className?.container ? className.container : "px-[2.0rem] py-[1.3rem]" } 
                 flex items-center justify-center flex-1 rounded-[0.8rem]
             `}
             onClick={ onClick }
@@ -1707,7 +1818,8 @@ const TableCell = ({
         >
             { typeof children === "string" ? (
                 <p
-                    className={`${className ?? ""} flex-1`}
+                    className={`${className?.text ?? ""} flex-1`}
+                    // className={`${className ?? ""} flex-1`}
                     data-description={ desc_no }
                 >
                     { children }
@@ -1719,47 +1831,241 @@ const TableCell = ({
     );
 };
 
-const Code = ({ initialContent }: { initialContent: string }) => {
-    const [content, setContent] = useState(initialContent);
-    const [html, setHtml] = useState(initialContent);
-    const debounceRef = useRef<NodeJS.Timeout | null>(null);
+const ColorPicker = ({ defaultValue, onChange }: { defaultValue?: string, onChange: (e: string) => void }) => {
+    const [ colorMode, setColorMode ] = useState( 0 );
+	const [ selectedColor, setSelectedColor ] = useState("");
+    const [ isColorPickerOpen, setIsColorPickerOpen ] = useState( false );
+    const [ positionStyle, setPositionStyle ] = useState<{ left?: number; right?: number; top?: number; bottom?: number }>({ left: 0 });
+    
+    const containerRef = useRef<HTMLElement>(null);
 
-    const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-        const text = (e.target as HTMLDivElement).innerText;
-        setContent(text);
-
-        // 디바운스 초기화
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-
-        debounceRef.current = setTimeout(() => {
-            setHtml(text);
-        }, 2000); // 2초 후 하이라이팅 적용
+	const COLOR_GROUPS: Record<string, string[]> = {
+        transparent: ["#FFFFFF00"],
+        red: ["#FFE0E0"],
+        orange: ["#FFE5CC"],
+        yellow: ["#FFFCD9"],
+        green: ["#D6FADC"],
+        sky: ["#D1F1FF"],
+        blue: ["#D6E4FF"],
+        purple: ["#E8D6FF"],
+        gray: ["#F3F4F6"]
     };
 
-    return (
-        <div
-            contentEditable
-            className="p-4 font-mono text-white whitespace-pre-wrap bg-gray-900 rounded code-block editable-code"
-            dangerouslySetInnerHTML={{ __html: highlightCode(html) }}
-            onInput={handleInput}
-        />
-    );
-}
+    const COLOR_SPECIAL_GROUPS: Record<string, string[]> = {
+        transparent: ["#FFFFFF00"],
+        red: ["#993333"],
+        orange: ["#994600"],
+        yellow: ["#997F00"],
+        green: ["#147F37"],
+        sky: ["#0D6E99"],
+        blue: ["#164899"],
+        purple: ["#4B1699"],
+        gray: ["#1F2937"]
+    };
+
+	const baseColors = Object.keys(COLOR_GROUPS);
+	const baseSpecialColors = Object.keys(COLOR_SPECIAL_GROUPS);
+
+    const detectOutsideClick = (e: MouseEvent) => {
+        if ( containerRef.current && !containerRef.current.contains(e.target as Node) ) {
+            setIsColorPickerOpen(false);
+        }
+    };
+
+    useEffect(() => {
+        if ( isColorPickerOpen ) {
+            document.addEventListener("click", detectOutsideClick);
+        }
+        
+        return () => {
+            document.removeEventListener("click", detectOutsideClick);
+        };
+    }, [ isColorPickerOpen ]);
+
+     useEffect(() => {
+        if ( isColorPickerOpen ) {
+            if ( containerRef.current ) {
+                const rect = containerRef.current.getBoundingClientRect();
+
+                const dropdownWidth = containerRef.current.offsetWidth;
+                const dropdownHeight = 200; // 예상 높이 (필요하면 동적 측정 가능)
+                
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+
+                // 가로 위치 계산
+                if (rect.left + dropdownWidth > viewportWidth) {
+                    setPositionStyle({ right: 0 });
+                } else {
+                    setPositionStyle({ left: 0 });
+                }
+
+                // 세로 위치 계산
+                if (rect.bottom + dropdownHeight > viewportHeight) {
+                    setPositionStyle({ bottom: rect.height + 4 });
+                } else {
+                    setPositionStyle({ top: rect.height + 4 });
+                }
+            }
+
+            document.addEventListener("click", detectOutsideClick);
+        }
+        return () => {
+            document.removeEventListener("click", detectOutsideClick);
+        };
+    }, [isColorPickerOpen]);
+
+	return (
+		<section className="relative" ref={containerRef}>
+			{/* 상위 색상 선택 */}
+			<section className="flex items-center justify-center h-full">
+                <button
+                    className='w-[2.0rem] h-[2.0rem] border border-[var(--color-gray-200)] rounded-full'
+                    type="button"
+                    style={{
+                        backgroundColor: selectedColor !== "" ? selectedColor : (defaultValue ? defaultValue : "black")
+                    }}
+                    onClick={() => {
+                        setIsColorPickerOpen( !isColorPickerOpen );
+                    }}
+                />
+                {/* <input
+                    type="text"
+                    onChange={(e) => {
+                        const VALUE = e.target.value ?? "#ffffff";
+                        setSelectedColor( VALUE );
+                        onChange({
+                            target: field.id,       // "info.style.align"
+                            value: VALUE    // "left"
+                        });
+                    }}
+                    value={ value || "#ffffff"}
+                />
+                <section>
+                    <input type="text" defaultValue={ 100 } />
+                    <p>%</p>
+                </section> */}
+			</section>
+
+			{/* 세부 색상 선택 */}
+			{ isColorPickerOpen && (
+				<section
+                    className={`absolute z-[100] flex flex-col cursor-pointer whitespace-nowrap rounded-2xl p-[0.4rem] bg-white shadow-[var(--shadow-normal)]`}
+                    // className={`absolute left-0 z-[100] top-[calc(3.8rem+0.8rem)] backdrop-blur-[20px] bg-white shadow-[var(--shadow-popup)] rounded-[1.6rem] flex flex-col overflow-hidden detect`}
+                    style={{
+                        ...positionStyle
+                    }}
+                >
+                    <div className="flex items-center justify-between p-[0.8rem]">
+                        <section className="title">
+                            <h6>colors</h6>
+                        </section>
+
+                        <section className="function">
+                            <section className="backdrop-blur-[20px] bg-gray-100 rounded-[0.8rem] gap-[0.4rem] p-[0.4rem] flex">
+                                <button className={`text-[#9198a0] rounded-[0.4rem] p-[0.4rem] text-[1.2rem] font-semibold transition-colors duration-250 ease-[cubic-bezier(.075,.82,.165,1)] ${ colorMode === 0 ? "text-gray-700 bg-white shadow-[var(--shadow-normal)]" : "" } detect`} onClick={() => setColorMode(0)}>
+                                    일반
+                                </button>
+                                <button className={`text-[#9198a0] rounded-[0.4rem] p-[0.4rem] text-[1.2rem] font-semibold transition-colors duration-250 ease-[cubic-bezier(.075,.82,.165,1)] ${ colorMode === 1 ? "text-gray-700 bg-white shadow-[var(--shadow-normal)]" : "" } detect`} onClick={() => setColorMode(1)}>
+                                    특별
+                                </button>
+                            </section>
+                        </section>
+                    </div>
+
+                    {/* <div className="p-[0.4rem] rounded-[1.2rem] h-[3.8rem] gap-[0.8rem] flex justify-between items-center bg-[#ffffff8a]">
+                        <input
+                            type="text"
+                            className="detect bg-transparent rounded-[0.8rem] text-gray-500 p-0 h-auto transition-[background] duration-500 ease-[cubic-bezier(0.075,0.82,0.9,1)] bg-white"
+                            onChange={(e) => {
+                                const VALUE = e.target.value ?? "#ffffff";
+                                setSelectedColor( VALUE );
+                                onChange({
+                                    target: field.id,       // "info.style.align"
+                                    value: VALUE    // "left"
+                                });
+                            }}
+                            value={value || "#ffffff"}
+                        />
+
+                        <div>
+                            <input type="text" defaultValue={ 100} className="detect" />
+                            <p>%</p>
+                        </div>
+                    </div> */}
+
+                    <div>
+                        {( colorMode === 0 ? baseColors : baseSpecialColors ).map(( colorKey, i) => 
+                            <section key={i} className='flex-1'>
+                                {( colorMode === 0 ? COLOR_GROUPS : COLOR_SPECIAL_GROUPS )[ colorKey ].map((shade, i) => (
+                                    <button
+                                        key={i}
+                                        className={`detect h-[1.2rem] w-[1.2rem]`}
+                                        style={{
+                                            backgroundColor: shade
+                                        }}
+                                        onClick={() => {
+                                            setSelectedColor( shade );
+                                            // setValue( shade );
+                                            onChange( shade );
+                                        }}
+                                    />
+                                ))}
+                            </section>
+                        )}
+                    </div>
+				</section>
+			)}
+		</section>
+	);
+};
 
 const Empty = ({
     title = "결과가 없습니다",
-    desc_no
+    desc_no,
+    className
 }: {
     title?: string
     desc_no?: string
+    className?: string
 }) => {
     return (
         <div
-            className='col-span-3 p-[2.0rem] w-full flex items-center justify-center h-[var(--empty-element-height)] bg-[var(--color-gray-100)] rounded-[1.2rem]'
+            className={`col-span-3 p-[2.0rem] w-full flex items-center justify-center ${ className ? className : "" }`}
             data-description={ desc_no }
         >
-            <p className='pointer-events-none text-center text-[var(--color-gray-500)]'>{ title }</p>
+            <p className='text-center text-black pointer-events-none'>{ title }</p>
         </div>
+    )
+}
+
+const Error = ({
+    title = "일시적인 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.",
+    desc_no,
+    className,
+    onClick
+}: {
+    title?: string
+    desc_no?: string
+    className?: string;
+    onClick?: () => void;
+}) => {
+    return (
+        <article
+            className={`${ className ? className : "" } col-span-3 w-full flex items-center justify-center h-[var(--empty-element-height)]`}
+            data-description={ desc_no }
+        >
+            <div className={`error-inner flex-1 h-full items-center justify-center p-[2.0rem] bg-[var(--color-gray-100)] rounded-[1.2rem] flex flex-col gap-[1.6rem]`}>
+                <p className='whitespace-break-spaces leading-[1.5] pointer-events-none text-center text-[var(--color-gray-500)]'>{ title }</p>
+                <UI.Button
+                    onClick={ onClick }
+                    // className='bg-[var(--color-blue-1000)] rounded-[0.8rem]'
+                    className='h-[4.2rem] rounded-[0.6rem] text-white bg-[var(--color-blue-1000)] px-[5.2rem]'
+                >
+                    다시 시도
+                </UI.Button>
+            </div>
+        </article>
     )
 }
 
@@ -1779,9 +2085,11 @@ const UI = {
     MiniModal,
     DropDown,
     NumberInput,
+    PasswordInput,
     Filter,
-    Code,
+    ColorPicker,
     Empty,
+    Error,
     Table: Object.assign(Table, {
         Header: TableHeader,
         Body: TableBody,

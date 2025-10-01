@@ -3,11 +3,13 @@ import { ChangeEvent, CSSProperties, ReactNode, RefObject } from "react";
 export interface CalendarModalProps {
     className?: string;
     icon?: boolean;
+    defaultValue?: Date;
     desc_no?: string | number;
     onClose?: (value: string) => void;
     onDateSelect?: (value: string) => void;
     limitMonths?: number;          // 추가
     limitMessage?: string;         // 추가
+    center?: boolean;
 }
 
 export interface MultiSelectProps {
@@ -54,6 +56,7 @@ export interface ButtonProps {
     onClick?: (e: any) => void;
     onPointerDown?: (e: any) => void;
     desc_no?: string;
+    rippleColor?: string;
 }
 
 export interface PaginationProps {
@@ -98,6 +101,7 @@ export interface SelectProps {
         title: string;
         value: any;
     }[];
+    trackingData?: any;
     defaultValue?: any;
     // onConfirm: (e: any) => void;
     // onCancel: (e: any) => void;
@@ -152,7 +156,10 @@ export interface InputProps {
     placeholder?: string;
     guide?: string;
     // emptyValue?: string | number;
-    className?: string;
+    className?: {
+        container?: string;
+        input?: string;
+    };
     name?: string;
     disabled?: boolean;
     desc_no?: string;
@@ -162,24 +169,53 @@ export interface InputProps {
     onBlur?: (e: any) => void;
 }
 
+export interface PasswordInputProps {
+    disabled?: boolean;
+    name?: string;
+    desc_no?: string | number;
+    defaultValue?: string;
+    placeholder?: string;
+    guide?: string;
+    className?: {
+        container?: string;
+        input?: string;
+        toggle?: string;
+    };
+    autoComplete?: "on" | "off";
+    digit?: number; // 최대 입력 자리수
+    showToggle?: boolean; // 비밀번호 보기 버튼
+    onChange?: (e: { target: { value: string } }) => void;
+    onInput?: (e: any) => void;
+    onBlur?: (e: any) => void;
+}
+
 export interface SwitchProps {
     states: boolean;
     onChange: (e: boolean) => void;
     desc_no?: string;
 }
 
-export interface NumberInputProps extends Omit<InputProps, "type"> {
+export interface NumberInputProps extends Omit<InputProps, "type" | "className"> {
 	defaultValue?: number;
 	max?: number;
+    type?: string;
     allowedChars?: string[]; // ["-","+","@"] 이런식으로 배열 전달    
+    comma?: boolean;
+    className?: {
+        container?: string;
+        input?: string;
+    }
 }
 
 export interface TextAreaProps {
     onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
     maxLength?: number;
     placeholder?: string;
-    value?: string;
-    className?: string;
+    defaultValue?: string;
+    className?: {
+        container?: string;
+        textarea?: string
+    };
     desc_no?: string;
 }
 

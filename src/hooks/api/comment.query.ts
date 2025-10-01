@@ -1,15 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { setManager, deleteManager, getManagerList } from "@/services/settings.api";
-import { getPostListFetch, patchPostFetch, setPostFetch } from "@/services/post.api";
-
-import { useToastStore } from "@/stores/useToastStore";
+import { patchPostFetch } from "@/services/post.api";
+import { getCommentLatestListFetch, getCommentListFetch, setCommentFetch } from "@/services/comment.api";
 
 import { ApiHeaderResponseType } from "@/types/common.type";
-import { GetPostDetailResponseType, GetPostListResponseType } from "@/types/post.type";
-import { SetManagerType, DeleteManagerType, GetManagerListType } from "@/types/settings.type";
-import { getCommentLatestListFetch, getCommentListFetch, setCommentFetch } from "@/services/comment.api";
+import { GetPostListResponseType } from "@/types/post.type";
 import { GetCommentDetailResponseType, GetCommentLatestListResponseType } from "@/types/comment.type";
+
+import { useToastStore } from "@/stores/useToastStore";
 
 /**
  * 포스트 - 글 목록 불러오기
@@ -139,28 +137,4 @@ export const usePatchCommentQuery = () => {
     const body = data?.body;
     
     return { mutate, mutateAsync, isError, isIdle, isSuccess, isPending, isPaused, data: body, error, reset }
-};
-
-/**
- * 설정 - 매장/계정관리 - 관리자 계성 생성/수정
- */
-export const useSetManager = () => {
-    return useMutation({
-        mutationKey: ["setManager"],
-        mutationFn: (payload: SetManagerType) => setManager(payload),
-        onSuccess: (data) => console.log("useSetManager success", data),
-        onError: (err) => console.error("useSetManager error", err),
-    });
-};
-
-/**
- * 설정 - 매장/계정관리 - 재고 관리자 삭제
- */
-export const useDeleteManager = () => {
-    return useMutation({
-        mutationKey: ["deleteManager"],
-        mutationFn: (payload: DeleteManagerType) => deleteManager(payload),
-        onSuccess: (data) => console.log("useDeleteManager success", data),
-        onError: (err) => console.error("useDeleteManager error", err),
-    });
 };

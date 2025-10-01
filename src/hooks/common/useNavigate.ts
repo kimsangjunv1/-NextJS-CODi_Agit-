@@ -1,92 +1,103 @@
-"use client"
-
-// hooks/useNavigate.ts
-import { useEffect, useState } from "react";
+// useNavigate.ts
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+
+import { useDirtyStore } from "@/stores/useDirtyStore";
+import { useModalStore } from "@/stores/useModalStore";
 import { useLayoutStore } from "@/stores/useLayoutStore";
 
 const useNavigate = ( fallbackUrl = "/new-home" ) => {
     const router = useRouter();
     const pathName = usePathname();
 
+    const { setModal } = useModalStore();
+    const { isDirty, resetDirty } = useDirtyStore();
     const { setIsRouteChange, setIsRouteChangeType } = useLayoutStore();
 
-    const DEFENCE_ROUTE =
-        pathName === "/"
-        || pathName === "/new-home"
-        || pathName === "/check"
-        || pathName === "/password"
-        || pathName === "/exit/receipt"
-        || pathName === "/exit/payment";
+    const DEFENCE_ROUTE = ["/", "/new-home", "/check", "/password", "/exit/receipt", "/exit/payment"];
     
-    const [ currentPathName, setCurrentPathName ] = useState("");
-    const [ isLandingPage, setIsLandingpage ] = useState( DEFENCE_ROUTE );
-    
-    // isRouteChange
-    // 0: 아무것도 이동 안함
-    // 1: 앞으로 이동
-    // 99: 뒤로 이동
+    const setPreventModal = ({ onClick }: { onClick: () => void }) => setModal({
+        type: "CHECK",
+        title: "저장하지 않고 나가시겠어요?",
+        description: "변경 사항이 모두 사라져요.",
+        // description: msg,
+        cancel: { text: "취소" },
+        confirm: {
+            text: "나가기",
+            onClick: () => {
+                onClick();
+                resetDirty();
+            }
+        },
+        isOpen: true
+    });
 
-    // isRouteChangeType
-    // 0: 대기
-    // 1: 앞으로
-    // 2: 뒤로
+    const pushToUrl = (url: string, delay?: number) => {
+        const MOVE = () => {
+            setIsRouteChange(1);
+            setIsRouteChangeType(1);
 
-    // 설명: 뒤로가기 지원 O
-    const pushToUrl = ( url: string, delay?: number ) => {
-        setIsRouteChange(1);
-        setIsRouteChangeType(1);
+            setTimeout(() => router.push(url), 300);
+        }
 
-        // if ( delay ) {
-        //     setTimeout(() => router.push( url ) , delay )
-        // } else {
-        //     router.push( url );
-        // }
-        
-        setTimeout(() => router.push( url ) , 100 )
-
+        if (isDirty) {
+            setPreventModal({
+                onClick: () => MOVE()
+            });
+        } else {
+            MOVE();
+        }
     };
 
-    // 설명: 뒤로가기 지원 X
-    const replaceToUrl = ( url: string, animation: boolean = true ) => {
-        console.log("들어옴", animation)
+    const replaceToUrl = (url: string, animation: boolean = true) => {
+        const MOVE = () => {
+            setIsRouteChange(animation ? 1 : 0);
+            setIsRouteChangeType(animation ? 1 : 0);
 
-        setIsRouteChange( animation ? 1 : 0 );
-        setIsRouteChangeType( animation ? 1 : 0 );
+            router.replace(url);
+        }
 
-        setTimeout(() => router.push( url ) , 1000 )
-        // router.replace( url );
+        if (isDirty) {
+            setPreventModal({
+                onClick: () => MOVE()
+            });
+        } else {
+            MOVE()
+        }
     };
 
     const backToUrl = () => {
-        setIsRouteChange(99);
-        setIsRouteChangeType(2);
+        const MOVE = () => {
+            setIsRouteChange(99);
+            setIsRouteChangeType(2);
 
-        // 이전 로직
-        // setTimeout(() => {
-        //     if ( paymentCurrentType === 99 ) {
-        //         if ( typeof window !== "undefined" && window.history.length > 2 ) {
-        //             router.back();
-        //         } else {
-        //             router.replace( fallbackUrl )
-        //         }
-        //     } else {
-        //         router.replace( fallbackUrl )
-        //     }
-        // }, 500)
+            setTimeout(() => router.back(), 500);
+        }
 
-        // 최신 로직
-        setTimeout(() => {
-            router.back();
-        }, 500)
+        if ( isDirty ) {
+            setPreventModal({
+                onClick: () => MOVE()
+            });
+        } else {
+            MOVE();
+        }
     };
 
+    // 브라우저 새로고침 / 탭 닫기 경고
     useEffect(() => {
-        setCurrentPathName( pathName );
-        setIsLandingpage( DEFENCE_ROUTE );
-    }, [ pathName ])
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if ( isDirty ) {
+                e.preventDefault();
+                e.returnValue = "";
+            }
+        };
 
-    return { pushToUrl, replaceToUrl, backToUrl, currentPathName, isLandingPage };
+        window.addEventListener("beforeunload", handleBeforeUnload);
+
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    }, [ isDirty ]);
+
+    return { pushToUrl, replaceToUrl, backToUrl, currentPathName: pathName, isLandingPage: DEFENCE_ROUTE.includes(pathName) };
 };
 
 export default useNavigate;

@@ -13,10 +13,9 @@ const nextConfig: NextConfig = {
     },
 
     images: {
-        domains: ['lh3.googleusercontent.com', 'nwezfnytabthwgbgajso.supabase.co'], // ✅ 여기에 도메인 추가
+        domains: ['lh3.googleusercontent.com', 'nwezfnytabthwgbgajso.supabase.co'],
     },
 
-    // ✅ SWC 최적화 옵션
     compiler: {
         removeConsole: false
     }

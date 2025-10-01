@@ -1,15 +1,35 @@
 header {
+    position: fixed;
+    left: 0;
     width: 100%;
     height: var(--header-height);
-
     margin: 0 auto;
-    backdrop-filter: blur(20px);
-    mask-image: linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0) 12.5%, rgb(0, 0, 0) 57.5%, rgba(0, 0, 0, 0));
+    z-index: 1000000;
+    background: linear-gradient(180deg, #ededed, #ededed00);
     
     .header-inner {
         height: 100%;
         width: 100%;
         margin: 0 auto;
         max-width: var(--size-pc);
+        display: flex;
+        align-items: center;
+        padding: 0 2.0rem;
+
+        position: relative;
+    }
+
+    &::after {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        content: '';
+        width: 100%;
+        height: var(--header-height);
+
+        margin: 0 auto;
+        backdrop-filter: blur(20px);
+        mask-image: linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0) 2.5%, rgb(0, 0, 0) 50%, rgba(0, 0, 0, 0));
     }
 }

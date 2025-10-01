@@ -17,7 +17,6 @@ async function request<T>(
 ): Promise<T> {
     const ACCESS_KEY_TYPE = AccessKeyType.IMACHINE;
     const { accessKey, signature, timestamp } = util.api.createKey( method, ACCESS_KEY_TYPE, endpoint );
-    // console.log("이게몬디 2 ", `${accessKey} ${signature} ${timestamp}`)
     
     const res = await fetch(`${REQUEST_URL}${endpoint}`, {
         method,

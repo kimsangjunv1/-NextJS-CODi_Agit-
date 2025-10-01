@@ -11,7 +11,7 @@
 // }
 
 // pre.code-block .tag {
-//   color: #dd4f1b; /* pink */
+//   color: var(--color-brand-500); /* pink */
 //   font-weight: bold;
 // }
 
@@ -32,7 +32,7 @@
 // }
 
 // pre.code-block .keyword-gray {
-//   color: #dd4f1b; /* gray */
+//   color: var(--color-brand-500); /* gray */
 //   font-weight: bold;
 // }
 
@@ -47,10 +47,9 @@
 // }
 
 pre.code-block {
-  color: #D0E3FF;
+  color: #ededed;
   white-space: pre-wrap;
   background-color: #252525;
-  border-radius: .5rem;
   padding: 1rem;
   font-family: Fira Code, monospace;
   font-size: 14px;
@@ -58,10 +57,10 @@ pre.code-block {
   overflow-x: auto;
 }
 
-.tag { color: #dd4f1b; font-weight: bold; }        /* pink */
+.tag { color: var(--color-brand-500); font-weight: bold; }        /* pink */
 .comment, .bracket { color: #9ca3af; font-style: italic; } /* gray */
 .key { color: #ec4899; font-weight: bold; }         /* white */
 .string, .number { color: #3b82f6; }               /* blue */
 .keyword-gray { color: #9ca3af; font-weight: bold; }/* gray */
 .function-name { color: #8b5cf6; font-weight: bold; } /* purple */
-.type-name { color: #ef4444; font-weight: bold; }  /* red */
+.type-name { color: var(--color-brand-500); font-weight: bold; }  /* red */

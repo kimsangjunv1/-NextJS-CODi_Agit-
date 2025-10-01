@@ -38,7 +38,7 @@ const PageTransitionOverlay = ({ children }: { children: ReactNode }) => {
             { currentPathName !== "/check" && currentPathName !== "/password" && currentPathName !== "/appcard" && currentPathName !== "/result" && prevPathName.current !== "/appcard" ? (
                 <AnimatePresence>
                     {/* 앞으로 가기: 전환에 사용되는 화면 */}
-                    { isRouteChange === 1 && (
+                    {/* { isRouteChange === 1 && (
                         <motion.div
                             key={`route-${ isRouteChange }`}
                             // initial={{ translateX: "100dvw" }}
@@ -69,7 +69,7 @@ const PageTransitionOverlay = ({ children }: { children: ReactNode }) => {
                                 </div>
                             </motion.nav>
                         </motion.div>
-                    )}
+                    )} */}
                     {/* 전환에 사용되는 화면 END */}
         
                     {/* 사용자가 바라보던 화면 */}
@@ -88,7 +88,7 @@ const PageTransitionOverlay = ({ children }: { children: ReactNode }) => {
                     {/* 사용자가 바라보던 화면 END */}
 
                     {/* 뒤로가기: 전환에 사용되는 화면 */}
-                    { isRouteChange === 99 && (
+                    {/* { isRouteChange === 99 && (
                         <motion.div
                             // layout={ false }
                             layout
@@ -110,10 +110,8 @@ const PageTransitionOverlay = ({ children }: { children: ReactNode }) => {
                                 >
                                     로딩 중
                                 </motion.nav>
-                            {/* { currentPathName !== "/new-home" ? (
-                            ): ""} */}
                         </motion.div>
-                    )}
+                    )} */}
                     {/* 전환에 사용되는 화면 END */}
                 </AnimatePresence>
             ) : <Fragment>{ children }</Fragment> }

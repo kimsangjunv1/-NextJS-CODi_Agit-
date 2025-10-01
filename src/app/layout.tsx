@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import ReactLenis from "lenis/react";
         
 import QueryProvider from "@/provider/QueryProvider";
 
@@ -6,13 +7,11 @@ import Toast from "@/components/layout/Toast";
 import Modal from "@/components/layout/Modal";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
-import BottomSheet from "@/components/layout/BottomSheet";
+import Marquee from "@/components/layout/Marquee";
 import PathCheckComponent from "@/components/common/PathCheckComponent";
 
 import "@/scss/global.css";
 import "@/scss/index.scss";
-import ReactLenis from "lenis/react";
-import Marquee from "@/components/layout/Marquee";
 
 export const metadata: Metadata = {
     title: "agit.",
@@ -43,7 +42,6 @@ export default function RootLayout({ children, modal }: Readonly<{ children: Rea
 
                     <Modal />
                     <Toast />
-                    <BottomSheet />
                     <Marquee title={"THIS PAGE MADE BY REACT | GSAP | SCSS, TAKE A LOOK AROUND"} />
                     {/* <Cursor /> */}
                 </QueryProvider>

@@ -6,11 +6,22 @@ import Bold from "@tiptap/extension-bold";
 import Italic from "@tiptap/extension-italic";
 import Underline from "@tiptap/extension-underline";
 import { TextStyle } from "@tiptap/extension-text-style";
-import { Color } from "@tiptap/extension-color";
+// import { Color } from "@tiptap/extension-color";
 import { BubbleMenu } from "@tiptap/react/menus";
 import CodeBlock from "@tiptap/extension-code-block";
 import { useState } from "react";
 import { highlightCode } from "@/utils/highlight";
+
+// --- Tiptap Core Extensions ---
+// import { StarterKit } from "@tiptap/starter-kit"
+import { Image } from "@tiptap/extension-image"
+import { TaskItem, TaskList } from "@tiptap/extension-list"
+// import { TextAlign } from "@tiptap/extension-text-align"
+// import { Typography } from "@tiptap/extension-typography"
+import { Highlight } from "@tiptap/extension-highlight"
+// import { Subscript } from "@tiptap/extension-subscript"
+// import { Superscript } from "@tiptap/extension-superscript"
+import { Selection } from "@tiptap/extensions"
 
 type Props = {
     content?: string;
@@ -43,15 +54,62 @@ const CustomTextStyle = TextStyle.extend({
 
 const Normal = ({ content = "", onChange }: Props) => {
     const editor = useEditor({
+        // immediatelyRender: false,
+        // extensions: [
+        //     StarterKit,
+        //     Bold,
+        //     Italic,
+        //     Underline,
+        //     TextStyle,
+        //     Color,
+        //     CustomTextStyle,
+        // ],
+        // content,
+        // onUpdate: ({ editor }) => {
+        //     onChange?.(editor.getHTML());
+        // },
         immediatelyRender: false,
+        shouldRerenderOnTransaction: false,
+        editorProps: {
+        attributes: {
+            autocomplete: "off",
+            autocorrect: "off",
+            autocapitalize: "off",
+            "aria-label": "Main content area, start typing to enter text.",
+            class: "simple-editor",
+        },
+        },
         extensions: [
-            StarterKit,
+            StarterKit.configure({
+                horizontalRule: false,
+                link: {
+                openOnClick: false,
+                enableClickSelection: true,
+                },
+            }),
+            // HorizontalRule,
             Bold,
             Italic,
             Underline,
-            TextStyle,
-            Color,
+            // TextStyle,
+            // Color,
             CustomTextStyle,
+            // TextAlign.configure({ types: ["heading", "paragraph"] }),
+            TaskList,
+            TaskItem.configure({ nested: true }),
+            Highlight.configure({ multicolor: true }),
+            Image,
+            // Typography,
+            // Superscript,
+            // Subscript,
+            Selection,
+            // ImageUploadNode.configure({
+            //     accept: "image/*",
+            //     maxSize: MAX_FILE_SIZE,
+            //     limit: 3,
+            //     upload: handleImageUpload,
+            //     onError: (error) => console.error("Upload failed:", error),
+            // }),
         ],
         content,
         onUpdate: ({ editor }) => {
@@ -255,39 +313,23 @@ const Normal = ({ content = "", onChange }: Props) => {
     };
 
     return (
-        <div className="">
-            <MenuBar editor={editor} />
+        <div className=" h-full rounded-[1.2rem]">
+            {/* <MenuBar editor={editor} /> */}
             <EditorContent
                 editor={editor}
-                className="min-h-[150px] border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="min-h-[150px] h-full rounded-[1.6rem] outline-none stroke-none focus:outline-none"
+                onInput={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // console.log("무야호", e)
+                }}
             />
-            <BubbleMenu
+            {/* <BubbleMenu
                 editor={editor}
                 className="flex gap-2 p-2 bg-white border rounded shadow-lg"
             >
                 <MenuBar editor={editor} />
-
-                {/* <button
-                    onClick={() => editor.chain().focus().toggleBold().run()}
-                    className={buttonClass(!!editorState?.isBold)}
-                >
-                    Bold
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleItalic().run()}
-                    className={buttonClass(!!editorState?.isItalic)}
-                >
-                    Italic
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleUnderline().run()}
-                    className={buttonClass(
-                        editorState?.isUnderline as unknown as boolean
-                    )}
-                >
-                    Underline
-                </button> */}
-            </BubbleMenu>
+            </BubbleMenu> */}
         </div>
     );
 }
@@ -307,7 +349,7 @@ const Code = ({ content = "", onChange }: Props) => {
                 strike: false,
                 code: false,
             }),
-            CodeBlock, // 코드 블록만 사용
+            // CodeBlock, // 코드 블록만 사용
         ],
         content,
         onUpdate: ({ editor }) => {
@@ -318,10 +360,10 @@ const Code = ({ content = "", onChange }: Props) => {
     if (!editor) return null;
 
     return (
-        <div className="w-full">
+        <div className="w-full h-full rounded-[2.0rem] overflow-hidden">
             <EditorContent
                 editor={editor}
-                className="min-h-[150px] border border-gray-300 rounded p-2 font-mono bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="min-h-[150px] h-full border border-gray-300 rounded p-2 font-mono bg-[#252525] text-white focus:outline-none focus:ring-2 focus:ring-pink-400"
                 onKeyDown={(e: React.KeyboardEvent) => {
                     if (e.key === "Tab") {
                         e.preventDefault(); // 기본 동작 방지

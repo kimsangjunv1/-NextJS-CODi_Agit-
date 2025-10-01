@@ -1,45 +1,63 @@
 "use client";
 
+import { useGetCommentLatestListQuery } from "@/hooks/api/comment.query";
 import useNavigate from "@/hooks/common/useNavigate";
+import { util } from "@/utils/util";
 import { AnimatePresence, motion } from "framer-motion";
+import { Fragment, useMemo } from "react";
 
 const Marquee = ({ title }: { title: string }) => {
     const { currentPathName } = useNavigate();
-    
-    const items = Array(10).fill(0).map((_, i) => (
-        <div key={i} className="flex gap-[0.8rem] px-4">
-        <p className="whitespace-nowrap text-[#FFFFFF50]">2025.10.10</p>
-        <p className="font-bold text-white whitespace-nowrap">나나_29</p>
-        <p className="whitespace-nowrap text-[#DD4F1B]">너무 재밌어요!</p>
-        </div>
-    ));
-    const IS_ROUTE_POST = currentPathName.includes("post");
+    const { data: getCommentLatestListData, refetch: getCommentLatestListFetch } = useGetCommentLatestListQuery();
+
+    const items = useMemo(() => (
+        getCommentLatestListData?.result?.map((e, i) => (
+            <div key={ e.idx } className="flex gap-[0.8rem] px-4">
+                <p className="whitespace-nowrap text-[#00000050]">{ util.string.getCurrentDate(e.created_at) }</p>
+                <p className="font-bold text-black whitespace-nowrap">{ e.author }</p>
+                <p className="font-bold whitespace-nowrap text-[var(--color-brand-500)]">{ e.msg }</p>
+            </div>
+        ) )
+    ), [ getCommentLatestListData?.result ])
+
+    const RENDERING = currentPathName === "/" || currentPathName === "/profile"
 
     return (
-        // <AnimatePresence
-        //     mode="wait"
-        // >
-            <div
-                className="fixed bottom-0 left-0 w-full overflow-hidden bg-[#000000b5] backdrop-blur-sm py-[1.2rem]"
-                // initial={{ opacity: 0, scale: 0.9 }}
-                // exit={{ opacity: 0, scale: 0.9 }}
-                // animate={{ opacity: 0, scale: 0.9 }}
-            >
+        <AnimatePresence mode="wait">
+            { RENDERING ? (
                 <motion.div
-                    className="flex gap-[3.2rem] flex-nowrap"
-                    animate={{ x: ["0%", "-100%"] }}
+                    key={"marquee"}
+                    className="fixed bottom-0 left-0 w-full overflow-hidden py-[1.2rem] z-10"
+                    // initial={{ y: 100 }}
+                    // exit={{ y: 100 }}
+                    // animate={{ y: 0 }}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 20, opacity: 0 }}
                     transition={{
-                        repeat: Infinity,
-                        ease: "linear",
-                        duration: 20, // 속도 조절
+                        delay: 0.1 * 1,
+                        type: "spring",
+                        mass: 0.1,
+                        stiffness: 100,
+                        damping: 10
                     }}
                 >
-                {/* 같은 내용 두 번 렌더링 (loop 효과) */}
-                {items}
-                {items}
+                    <motion.div
+                        className="flex gap-[3.2rem] flex-nowrap"
+                        animate={{ x: ["0%", "-100%"] }}
+                        transition={{
+                            repeat: Infinity,
+                            ease: "linear",
+                            duration: 30, // 속도 조절
+                        }}
+                    >
+                    {/* 같은 내용 두 번 렌더링 (loop 효과) */}
+                    {items}
+                    {items}
+                    </motion.div>
                 </motion.div>
-            </div>
-        // </AnimatePresence>
+            ) : "" }
+        </AnimatePresence>
     );
 };
 

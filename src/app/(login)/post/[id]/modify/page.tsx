@@ -16,10 +16,8 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
     // 쿠키 관련 END
     // **
 
-    console.log("id", id)
-
     return (
-        <Main id={"home"} className={{ inner: "flex flex-col gap-[2.4rem] pt-[var(--header-height)] pb-[calc(5.2rem+1.6rem)]", container:"" }}>
+        <Main id={"home"} className={{ inner: "flex flex-col gap-[2.4rem] pt-[var(--header-height)] ", container:"" }}>
             <ListSection id={ id } />
         </Main>
     )

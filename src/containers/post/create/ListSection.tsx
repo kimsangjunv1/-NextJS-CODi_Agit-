@@ -8,7 +8,7 @@ import SortableBlock from '@/components/layout/SortableBlock';
 import ModalContent from '@/components/common/ModalComponent';
 
 import { useGetCategoryListQuery } from '@/hooks/api/category.query';
-import { useGetPostDetailQuery, usePatchPostQuery } from '@/hooks/api/post.query';
+import { useGetPostDetailQuery, usePatchPostQuery, useSetPostQuery } from '@/hooks/api/post.query';
 
 import { useModalStore } from '@/stores/useModalStore';
 import { useToastStore } from '@/stores/useToastStore';
@@ -17,11 +17,16 @@ import { Row, useBlockStore } from '@/stores/useEditorBlockStore';
 import { SectionContent } from '@/types/post.type';
 import { DUMMY_POST_RESPONSE_NEW } from '@/constants/lists/configDummyResponse';
 
-const ListSection = ({ id }: { id: string }) => {
+const ListSection = () => {
+    const { reset } = useBlockStore();
+
+    useEffect(() => {
+        reset();
+    }, [])
     return (
         <section className='flex flex-col w-full post bg-[linear-gradient(0deg,var(--color-gray-200)_80%,#00000000)]'>
             <section className='mx-auto post-inner w-full max-w-[var(--size-tablet)] flex flex-col items-center gap-[1.6rem]'>
-                <RenderContents id={ id }/>
+                <RenderContents />
             </section>
         </section>
     )
@@ -35,9 +40,7 @@ type CreatePostState = {
   contents: any[]; // 여기는 실제 타입에 맞게 바꿔주세요
 };
 
-const RenderContents = ({ id }: { id: string }) => {
-    const { data: getPostListData, refetch: getPostListFetch } = useGetPostDetailQuery(parseInt( id ));
-
+const RenderContents = () => {
     const [ createPostState, setCreatePostState ] = useState<CreatePostState>({
         title: "",
         thumbnail: "",
@@ -49,47 +52,25 @@ const RenderContents = ({ id }: { id: string }) => {
     return (
         <Fragment>
             <section className='py-[7.2rem] flex flex-col justify-center items-center gap-[3.2rem]'>
-                <Thumbnail imageUrl={ getPostListData?.result?.thumbnail } contents={ getPostListData?.result?.contents } setCreatePostState={ setCreatePostState }/>
-                <Title title={ getPostListData?.result?.title } summary={ getPostListData?.result?.summary } category_idx={ getPostListData?.result?.category_idx } setCreatePostState={ setCreatePostState }/>
+                <Thumbnail setCreatePostState={ setCreatePostState }/>
+                <Title setCreatePostState={ setCreatePostState }/>
             </section>
-            
-            <Contents contents={ getPostListData?.result?.contents } />
-            <Action id={ parseInt( id ) } createPostState={ createPostState } />
+            <Contents />
+            <Action createPostState={ createPostState } />
         </Fragment>
     )
 }
 
 
-const Title = ({
-    title,
-    summary,
-    category_idx,
-    setCreatePostState,
-}: {
-    title: string;
-    summary: string;
-    category_idx: number;
-    setCreatePostState: React.Dispatch<React.SetStateAction<CreatePostState>>;
-}) => {
+const Title = ({ setCreatePostState }: { setCreatePostState: React.Dispatch<React.SetStateAction<CreatePostState>> }) => {
     const { data: getCategoryListData, refetch } = useGetCategoryListQuery();
-    
-    useEffect(() => {
-        if ( title && summary ) {
-            setCreatePostState((prev) => ({
-                ...prev,
-                title: title,
-                summary: summary,
-                category_idx: category_idx,
-            }));
-        }
-    }, [ title, summary ])
 
     return (
         <article className='flex flex-col items-center justify-between gap-[1.6rem]'>
             <section className='flex flex-col items-center justify-center gap-[1.6rem]'>
                 <UI.Select
-                    trackingData={`${ getCategoryListData?.result?.find((e) => e.idx === category_idx)?.title }`}
-                    defaultValue={ getCategoryListData?.result?.find((e) => e.idx === category_idx)?.idx }
+                    trackingData={`${ getCategoryListData?.result?.find((e, idx) => idx === 0)?.title }`}
+                    defaultValue={ getCategoryListData?.result?.find((e, idx) => idx === 0)?.idx }
 
                     list={ getCategoryListData?.result?.map((e) => {
                         return {
@@ -112,7 +93,7 @@ const Title = ({
                 />
                 
                 <Edit.h2
-                    defaultValue={ title }
+                    defaultValue={"제목을 입력해주세요"}
                     className='h-auto p-0 font-extrabold text-center text-[2.8rem] leading-[1.5]'
                     onKeyUp={(e) => {
                         const value = e.currentTarget.innerText;
@@ -125,7 +106,7 @@ const Title = ({
                 />
                 
                 <Edit.p
-                    defaultValue={ summary }
+                    defaultValue={"내용을 입력해주세요"}
                     className='h-auto p-0 font-medium text-[1.2rem] text-center leading-[1.5]'
                     onKeyUp={(e) => {
                         const value = e.currentTarget.innerText;
@@ -141,19 +122,11 @@ const Title = ({
     )
 }
 
-const Thumbnail = ({
-    imageUrl,
-    contents,
-    setCreatePostState,
-}: {
-    imageUrl: string;
-    contents: SectionContent[][];
-    setCreatePostState: React.Dispatch<React.SetStateAction<CreatePostState>>;
-}) => {
+const Thumbnail = ({ setCreatePostState }: { setCreatePostState: React.Dispatch<React.SetStateAction<CreatePostState>> }) => {
     const { setModal } = useModalStore();
     const { setToast } = useToastStore();
     
-    const [ currentImageUrl, setCurrentImageUrl ] = useState<string>(imageUrl);
+    const [ currentImageUrl, setCurrentImageUrl ] = useState<string>();
     const [ contentImageList, setContentImageList ] = useState<string[]>([]);
 
     const setPreventModal = () => setModal({
@@ -165,7 +138,7 @@ const Thumbnail = ({
                     setCurrentImageUrl(url);
                     setCreatePostState((prev) => ({
                         ...prev,
-                        thumbnail: currentImageUrl,
+                        thumbnail: currentImageUrl ?? "",
                     }));
                     // updateBlock(rowIndex, blockIndex, { imageUrl: url ?? "" })
                 }}
@@ -191,17 +164,17 @@ const Thumbnail = ({
         }
     }, [ currentImageUrl ])
 
-    useEffect(() => {
-        if ( imageUrl ) {
-            setCurrentImageUrl( imageUrl );
-        }
-    }, [ imageUrl ])
+    // useEffect(() => {
+    //     if ( imageUrl ) {
+    //         setCurrentImageUrl( imageUrl );
+    //     }
+    // }, [ imageUrl ])
 
-    useEffect(() => {
-        if ( contents ) {
-            setContentImageList(contents.map((init) => init.find((e) => e.type === 1 )?.imageUrl ?? "/"));
-        }
-    }, [ contents ])
+    // useEffect(() => {
+    //     if ( contents ) {
+    //         setContentImageList(contents.map((init) => init.find((e) => e.type === 1 )?.imageUrl ?? "/"));
+    //     }
+    // }, [ contents ])
 
     return (
         <article className='h-[calc(1.6rem*13)] w-[calc(1.6rem*13)] relative rounded-[2.4rem]'>
@@ -229,15 +202,15 @@ const Thumbnail = ({
     )
 }
 
-const Contents = ({ contents }: { contents: SectionContent[][] }) => {
+const Contents = () => {
     return (
         <article className='flex gap-[0.4rem] w-full'>
-            <SortableBlock contents={ contents }/>
+            <SortableBlock />
         </article>
     )
 }
 
-const Action = ({ id, createPostState }: { id: number, createPostState: CreatePostState }) => {
+const Action = ({ createPostState }: { createPostState: CreatePostState }) => {
     const {
         rows,
         copiedBlock,
@@ -252,7 +225,7 @@ const Action = ({ id, createPostState }: { id: number, createPostState: CreatePo
     } = useBlockStore();
     const { setToast } = useToastStore();
     
-    const { data, mutate: patchPostFetch } = usePatchPostQuery();
+    const { data, mutate: setPostFetch } = useSetPostQuery();
     
     return (
         // <article className='h-[5.2rem] fixed bottom-0 left-0 flex items-center justify-between w-full bg-black'>
@@ -286,10 +259,11 @@ const Action = ({ id, createPostState }: { id: number, createPostState: CreatePo
                         return;
                     }
 
-                    patchPostFetch({ data: PAYLOAD, idx: id });
+
+                    setPostFetch(PAYLOAD);
                 }}
             >
-                수정완료
+                생성하기
             </UI.Button>
         </article>
     )

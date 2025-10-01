@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 
 import Main from "@/components/layout/Main";
 
-import ListSection from "@/containers/post/create/ListSection";
+import ListSection from "@/containers/category/create/ListSection";
 
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;  // result 값 가져오기
@@ -17,7 +17,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
     // **
 
     return (
-        <Main id={"home"} className={{ inner: "flex flex-col gap-[2.4rem] pt-[var(--header-height)]", container:"" }}>
+        <Main id={"home"} className={{ inner: "flex flex-col gap-[2.4rem] pt-[var(--header-height)] pb-[calc(5.2rem+1.6rem)]", container:"" }}>
             <ListSection />
             {/* <ListSection id={ id } /> */}
         </Main>

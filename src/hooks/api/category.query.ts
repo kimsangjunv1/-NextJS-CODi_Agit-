@@ -1,10 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { setManager, deleteManager, getManagerList } from "@/services/settings.api";
-import { SetManagerType, DeleteManagerType, GetManagerListType } from "@/types/settings.type";
-import { getPostListFetch, setPostFetch } from "@/services/post.api";
-import { useToastStore } from "@/stores/useToastStore";
+
 import { GetPostListResponseType } from "@/types/post.type";
 import { ApiHeaderResponseType } from "@/types/common.type";
+
+import { useToastStore } from "@/stores/useToastStore";
 import { getCategoryListFetch, setCategoryFetch } from "@/services/category.api";
 
 /**

@@ -1,16 +1,9 @@
 "use client"
 
+import { signIn } from 'next-auth/react'
 import React, { Fragment, useState } from 'react'
 
-import { useModalStore } from '@/stores/useModalStore'
-import { tabList } from '@/constants/lists/configServiceList'
-
 import UI from '@/components/common/UIComponent'
-
-import IconComponent from '@/components/common/IconComponent'
-import ModalContent from '@/components/common/ModalComponent'
-import ButtonComponent from '@/components/common/ButtonComponent'
-import { signIn } from 'next-auth/react'
 import useNavigate from '@/hooks/common/useNavigate'
 import { useToastStore } from '@/stores/useToastStore'
 
@@ -18,24 +11,6 @@ const ListSection = () => {
     const [ modalOpen, setModalOpen ] = useState(false);
     const [ selectedDate, setSelectedDate ] = useState<Date | null>(null);
     const [ selectedMenu, setSelectedMenu ] = useState<number>(1);
-    const DATA_DUMMY_CATE = [
-        {
-            title: "키오스크 A",
-            value: 1,
-        },
-        {
-            title: "키오스크 B",
-            value: 2,
-        },
-        {
-            title: "키오스크 C",
-            value: 3,
-        },
-        {
-            title: "키오스크 D",
-            value: 4,
-        },
-    ]
 
     const SelectedTabContent = ( value: number ) => {
         switch ( value ) {

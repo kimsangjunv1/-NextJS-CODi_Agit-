@@ -1,13 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { setManager, deleteManager, getManagerList } from "@/services/settings.api";
-import { getPostLatestListFetch, getPostListFetch, patchPostFetch, setPostFetch, setPostViewIncrementFetch } from "@/services/post.api";
-
 import { useToastStore } from "@/stores/useToastStore";
+import { getPostLatestListFetch, getPostListFetch, patchPostFetch, setPostFetch, setPostViewIncrementFetch } from "@/services/post.api";
 
 import { ApiHeaderResponseType } from "@/types/common.type";
 import { GetPostDetailResponseType, GetPostLatestListResponseType, GetPostListResponseType, SetIncrementPostViewType } from "@/types/post.type";
-import { SetManagerType, DeleteManagerType, GetManagerListType } from "@/types/settings.type";
 
 /**
  * 포스트 - 글 목록 불러오기

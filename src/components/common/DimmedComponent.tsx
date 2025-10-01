@@ -30,7 +30,7 @@ const DimmedComponent = ({ isVisible }: { isVisible: boolean }) => {
             <AnimatePresence>
                 { modal.isOpen || bottomSheet.isOpen ? (
                     <motion.div
-                        className="fixed top-0 left-0 w-full h-full bg-[#0000008b] z-[999]"
+                        className="fixed top-0 left-0 w-full h-full bg-[#ededed8b] backdrop-blur-sm z-[999]"
                         exit={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         initial={{ opacity: 0 }}
@@ -43,7 +43,6 @@ const DimmedComponent = ({ isVisible }: { isVisible: boolean }) => {
                         }}
 
                         onClick={() => {
-                            console.log("asd", bottomSheet.isOpen)
                             if ( bottomSheet.isOpen ) {
                                 closeBottomSheetState();
                             }

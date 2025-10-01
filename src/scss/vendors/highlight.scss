@@ -1,0 +1,66 @@
+// pre.code-block {
+//       color: #D0E3FF;
+//     white-space: pre-wrap;
+//     background-color: #252525;
+//     border-radius: .5rem;
+//     padding: 1rem;
+//     font-family: Fira Code, monospace;
+//     font-size: 14px;
+//     line-height: 1.5;
+//     overflow-x: auto;
+// }
+
+// pre.code-block .tag {
+//   color: var(--color-brand-500); /* pink */
+//   font-weight: bold;
+// }
+
+// pre.code-block .comment,
+// pre.code-block .bracket {
+//   color: #9ca3af; /* gray */
+//   font-style: italic;
+// }
+
+// pre.code-block .key {
+//   color: #ec4899; /* white */
+//   font-weight: bold;
+// }
+
+// pre.code-block .string,
+// pre.code-block .number {
+//   color: #3b82f6; /* blue */
+// }
+
+// pre.code-block .keyword-gray {
+//   color: var(--color-brand-500); /* gray */
+//   font-weight: bold;
+// }
+
+// pre.code-block .function-name {
+//   color: #ec4899; /* pink */
+//   font-weight: bold;
+// }
+
+// pre.code-block .type-name {
+//   color: #ec4899; /* pink */
+//   font-weight: bold;
+// }
+
+pre.code-block {
+  color: #ededed;
+  white-space: pre-wrap;
+  background-color: #252525;
+  padding: 1rem;
+  font-family: Fira Code, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+
+.tag { color: var(--color-brand-500); font-weight: bold; }        /* pink */
+.comment, .bracket { color: #9ca3af; font-style: italic; } /* gray */
+.key { color: #ec4899; font-weight: bold; }         /* white */
+.string, .number { color: #3b82f6; }               /* blue */
+.keyword-gray { color: #9ca3af; font-weight: bold; }/* gray */
+.function-name { color: #8b5cf6; font-weight: bold; } /* purple */
+.type-name { color: var(--color-brand-500); font-weight: bold; }  /* red */

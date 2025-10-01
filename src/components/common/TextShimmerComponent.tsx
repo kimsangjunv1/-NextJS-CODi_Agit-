@@ -9,6 +9,10 @@ interface TextShimmerProps {
     className?: string;
     duration?: number; // seconds
     style?: any;
+    color?: {
+        start: string;
+        end: string;
+    }
 }
 
 const TextShimmer = ({
@@ -16,6 +20,7 @@ const TextShimmer = ({
     as: Component = 'span',
     className,
     style,
+    color,
     duration = 2,
 }: TextShimmerProps) => {
     
@@ -31,7 +36,10 @@ return (
         //     duration,
         //     ease: 'linear',
         // }}
-        style={ style }
+        style={{
+            ...style,
+            backgroundImage: `linear-gradient(45deg,${ color?.start } 0%,${ color?.end } 50%,${ color?.start } 100%)`  
+        }}
     >
         {children}
     </MotionComponent>

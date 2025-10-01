@@ -1,85 +1,67 @@
-import { useRef, useState, useEffect, ElementType } from "react";
+import React, { ElementType, useEffect, useState, forwardRef } from "react";
 
-import editor from "@/scss/components/_editor.module.scss";
-
-interface EditableProps {
-    as?: ElementType;
-    editable?: boolean;
+type EditableProps = {
+    editable?: boolean | "plaintext-only";
     defaultValue?: string;
-    placeholder?: string;
-    className?: string;
-    role?: string;
     style?: React.CSSProperties;
-	desc_no?: number;
-    onChange?: (value: string) => void;
-	handleBlur?: (value?: string) => void;
-}
+};
 
 const DEFAULT_STYLE: React.CSSProperties = {
-    minHeight: "1.5em",
-    border: "1px solid #ccc",
-    padding: "0.5em",
-    borderRadius: "4px",
+    minHeight: "1.5rem",
+    outline: "none",
 };
 
 const createEditable = (Tag: ElementType, displayName: string) => {
-	const Component = ({
-		editable = true,
-		defaultValue = "",
-		placeholder,
-		className = "",
-		role = "textbox",
-		style = DEFAULT_STYLE,
-		desc_no = 0,
-		onChange,
-		handleBlur,
-	}: EditableProps) => {
-		const ref = useRef<HTMLElement>(null);
+    const Component = forwardRef<HTMLDivElement, EditableProps & React.HTMLAttributes<HTMLDivElement>>(
+        ({ editable = "plaintext-only", defaultValue = "", style = DEFAULT_STYLE, ...props }, ref) => {
+            const [value, setValue] = useState(defaultValue);
+            const [isFocused, setIsFocused] = useState(false);
 
-		const handleInput = (e: React.FormEvent<HTMLElement>) => {
-			const text = (e.target as HTMLElement).innerText;
+            useEffect(() => {
+                setValue(defaultValue);
+            }, [defaultValue]);
 
-			onChange?.( text );
-		};
+            return (
+                <Tag
+                    ref={ref} // 여기서 forwardRef로 받아서 전달
+                    contentEditable={editable}
+                    suppressContentEditableWarning
+                    style={{ ...style }}
+                    onFocus={(e: React.FocusEvent<HTMLDivElement>) => {
+                        setIsFocused(true);
+                        const text = e.currentTarget.textContent ?? "";
+                        setValue(text);
+                    }}
+                    onBlur={(e: React.FocusEvent<HTMLDivElement>) => {
+                        setIsFocused(false);
+                    }}
+                    {...props}
+                >
+                    {value}
+                </Tag>
+            );
+        }
+    );
 
-		return (
-			<Tag
-				ref={ ref }
-				role={ role }
-				contentEditable={ editable }
-				className={`${ className } ${ editor.editable }`}
-				onInput={ handleInput }
-				onBlur={ handleBlur }
-				aria-placeholder={ placeholder }
-				suppressContentEditableWarning
-				style={ style }
-				data-description={ desc_no }
-			>
-				{ defaultValue }
-			</Tag>
-		);
-	};
-
-	Component.displayName = `Editable(${ displayName })`;
-
-	return Component;
+    Component.displayName = `Editable(${displayName})`;
+    return Component;
 };
 
-export const edit = {
-	div: createEditable("div", "div"),
-	span: createEditable("span", "span"),
-	p: createEditable("p", "p"),
-	h1: createEditable("h1", "h1"),
-	h2: createEditable("h2", "h2"),
-	h3: createEditable("h3", "h3"),
-	h4: createEditable("h4", "h4"),
-	h5: createEditable("h5", "h5"),
-	h6: createEditable("h6", "h6"),
-	label: createEditable("label", "label"),
-	pre: createEditable("pre", "pre"),
-	article: createEditable("article", "article"),
-	section: createEditable("section", "section"),
-	blockquote: createEditable("blockquote", "blockquote"),
+export const Edit = {
+    div: createEditable("div", "div"),
+    span: createEditable("span", "span"),
+    p: createEditable("p", "p"),
+    h1: createEditable("h1", "h1"),
+    h2: createEditable("h2", "h2"),
+    h3: createEditable("h3", "h3"),
+    h4: createEditable("h4", "h4"),
+    h5: createEditable("h5", "h5"),
+    h6: createEditable("h6", "h6"),
+    label: createEditable("label", "label"),
+    pre: createEditable("pre", "pre"),
+    article: createEditable("article", "article"),
+    section: createEditable("section", "section"),
+    blockquote: createEditable("blockquote", "blockquote"),
 };
 
-// export default Editable;
+export default createEditable;

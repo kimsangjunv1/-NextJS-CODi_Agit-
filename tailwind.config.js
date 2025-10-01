@@ -9,7 +9,11 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    // screens: {
+    //   mobile: "34.4rem",   // 모바일 추가 fold 기준
+    // },
+    extend: {
+    },
   },
   plugins: [],
 }

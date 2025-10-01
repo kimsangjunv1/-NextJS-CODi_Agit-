@@ -8,6 +8,9 @@ interface Modal {
     content?: ReactNode;
     description?: string;
     focusDescription?: string;
+    className?: {
+        container?: string;
+    }
     confirm?: {
         text?: string | null;
         onClick?: () => void;
@@ -37,6 +40,9 @@ export const useModalStore = create<ModalStoreType>((set, get) => ({
         content: null,
         description: "",
         focusDescription: "",
+        className: {
+            container: ""
+        },
         confirm: {
             text: "",
             onClick: undefined,
@@ -57,6 +63,9 @@ export const useModalStore = create<ModalStoreType>((set, get) => ({
         content: null,
         description: "",
         focusDescription: "",
+        className: {
+            container: ""
+        },
         confirm: {
             text: null,
             onClick: undefined,

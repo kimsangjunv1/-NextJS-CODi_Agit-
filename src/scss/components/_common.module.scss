@@ -168,9 +168,9 @@
     background-image:
         linear-gradient(
             45deg,
-            #DD4F1B 0%,
+            var(--color-brand-500) 0%,
             rgba(0, 0, 0, 1) 50%,
-            #DD4F1B 100%
+            var(--color-brand-500) 100%
         );
     background-size: 200% 100%;
     // background-repeat: repeat-x;
@@ -185,9 +185,9 @@
         background-image:
         linear-gradient(
             45deg,
-            #DD4F1B 0%,
+            var(--color-brand-500) 0%,
             rgba(0, 0, 0, 1) 50%,
-            #DD4F1B 100%
+            var(--color-brand-500) 100%
         );
     }
 

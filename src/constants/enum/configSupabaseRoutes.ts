@@ -1,8 +1,8 @@
 export enum SupabaseRoute {
   // invitation 관련
-  CONFIG_INVITATION_KEY = "invitation",
-  CONFIG_INVITATION_GET = "/invitation?select=*",
-  CONFIG_INVITATION_POST = "/invitation",
+  // CONFIG_INVITATION_KEY = "invitation",
+  // CONFIG_INVITATION_GET = "/invitation?select=*",
+  // CONFIG_INVITATION_POST = "/invitation",
 
   // todos 관련
   TODO_KEY = "todos",

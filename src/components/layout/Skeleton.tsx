@@ -1,90 +1,136 @@
 import { AnimatePresence, motion } from "motion/react";
-import { Fragment, ReactNode, useEffect, useState } from "react";
+import { ReactNode, ElementType, ComponentPropsWithoutRef, RefAttributes, RefObject, Fragment, useEffect } from "react";
+import UI from "../common/UIComponent";
 
-interface SkeletonLoaderComponentProps {
+interface SkeletonBaseProps {
     children?: ReactNode;
     target: boolean;
-    className?: string;
+    targetData?: any;
+    error?: boolean;
+    ref?: RefObject<HTMLElement | null>,
+    onError?: () => void;
+    className?: {
+        container?: string;
+        skeleton?: string;
+    };
+    pointerEvents?: boolean;
+    desc_no?: string;
     minWidth?: string;
     minHeight?: string;
     type: "text" | "title" | "item" | "avatar" | "thumbnail" | "containers";
     onExitComplete?: () => void;
 }
 
-interface SkeletonComponentProps {
-    type: string;
-}
+// 태그에 맞는 속성을 합쳐주는 타입
+type SkeletonProps<T extends ElementType> = SkeletonBaseProps & {
+    as?: T;
+} & Omit<ComponentPropsWithoutRef<T>, keyof SkeletonBaseProps | "as">;
 
-
-const Skeleton = ({ children, target, type, minHeight, minWidth, className, onExitComplete }: SkeletonLoaderComponentProps) => {
-    const MIN_WIDTH = minWidth ?? "min-w-[2.4rem]";
-    const MIN_HEIGHT = minHeight ?? "min-h-[2.0rem]";
-
-    const [ isLoading, setIsLoading ] = useState( false );
-    
-    useEffect(() => {
-        if (!target) {
-            setIsLoading(true);
-        } else {
-            // target이 있을 때 로딩 상태를 2초 후에 false로 변경 (exit 애니메이션 딜레이 주기)
-            const timer = setTimeout(() => {
-                setIsLoading( false );
-            }, 300); // 여기서 딜레이 주기
-    
-            return () => clearTimeout(timer);
-        }
-    }, [ target ]);
+const SkeletonBase = <T extends ElementType = "div">({
+    children,
+    target,
+    targetData,
+    error,
+    onError,
+    type,
+    ref,
+    minHeight = "min-h-[2.0rem]",
+    minWidth = "min-w-[2.4rem]",
+    className,
+    desc_no,
+    pointerEvents = true,
+    onExitComplete,
+    as,
+    ...rest
+}: SkeletonProps<T>) => {
+    const Tag = as || "div";
 
     return (
-        <Fragment>
-            <AnimatePresence onExitComplete={ onExitComplete }>
-                { !isLoading && target ? (
+        <Tag
+            key="content"
+            {...(rest as any)}
+            ref={ ref }
+            data-description={ desc_no }
+            className={`relative ${ className?.container ?? "" } ${ pointerEvents ? "" : "pointer-events-none" }`}
+        >
+            { !error ? children : "" }
+
+            <AnimatePresence onExitComplete={onExitComplete} mode="popLayout">
+                { !error && !target && (
                     <motion.div
-                        key="children"
+                        key="skeleton"
+                        className={`${className?.skeleton ?? ""} ${minWidth} flex w-full ${minHeight} absolute top-0 left-0`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{
-                            ease: [0, 0.25, 0.95, 1],
-                        }}
-                        className={`${ className }`}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        data-description={ desc_no }
                     >
-                        {children}
+                        <SkeletonItem type={ type } />
                     </motion.div>
-                ) : (
-                    <motion.article
-                        key="skeleton"
-                        className={`${ className } relative rounded-[0.4rem] overflow-hidden ${ MIN_WIDTH } w-full ${ MIN_HEIGHT }`}
-                        exit={{ opacity: 0, transition: { delay: 0.5 } }}
-                        animate={{ opacity: 1 }}
-                        // initial={{ opacity: 0 }}
-                        transition={{
-                            duration: 0.1,
-                            ease: [0, 0.9, 0.95, 1],
-                            // delay: 0.5, // 딜레이 적용
-                        }}
-                    >
-                        <SkeletonItem type={ type }/>
-                    </motion.article>
-                )};
-            </AnimatePresence>
-        </Fragment>
-    )
-}
+                )}
 
-export const SkeletonItem = ({ type }: { type: string }) => {
-    return (
-        <section className="absolute top-0 left-0 skeleton-wrapper">
-            <section className="skeleton-inner">
-                <SkeletonComponent type={ type } />
-            </section>
-        </section>
+                {/* 에러 영역 */}
+                { error && (
+                    <motion.div
+                        key="error"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className={`${className?.skeleton ?? ""} ${minWidth} h-[auto!important] flex w-full ${minHeight} absolute top-0 left-0 col-span-3`}
+                    >
+                        <UI.Error onClick={() => onError?.()} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </Tag>
     );
 };
 
-const SkeletonComponent = ({ type }: SkeletonComponentProps) => {
-    const classes = `skeleton ${type} animation glowing-dark`;
-    return <div className={classes}></div>;
-};
+const SkeletonItem = ({ type }: { type: string }) => (
+    <div className="relative w-full overflow-hidden rounded-[0.8rem] bg-[var(--color-gray-100)] skeleton-wrapper">
+        <div className="skeleton-inner">
+            <div className={`skeleton ${type} animation glowing-dark`} />
+        </div>
+    </div>
+);
 
-export default Skeleton
+// 특정 태그 버전 제공
+const Skeleton = Object.assign(SkeletonBase, {
+    Article: (props: Omit<SkeletonProps<"article">, "as">) => (
+        <SkeletonBase {...props} as="article" />
+    ),
+    Section: (props: Omit<SkeletonProps<"section">, "as">) => (
+        <SkeletonBase {...props} as="section" />
+    ),
+    Header: (props: Omit<SkeletonProps<"header">, "as">) => (
+        <SkeletonBase {...props} as="header" />
+    ),
+    Footer: (props: Omit<SkeletonProps<"footer">, "as">) => (
+        <SkeletonBase {...props} as="footer" />
+    ),
+    Main: (props: Omit<SkeletonProps<"main">, "as">) => (
+        <SkeletonBase {...props} as="main" />
+    ),
+    Aside: (props: Omit<SkeletonProps<"aside">, "as">) => (
+        <SkeletonBase {...props} as="aside" />
+    ),
+    Nav: (props: Omit<SkeletonProps<"nav">, "as">) => (
+        <SkeletonBase {...props} as="nav" />
+    ),
+    Ul: (props: Omit<SkeletonProps<"ul">, "as">) => (
+        <SkeletonBase {...props} as="ul" />
+    ),
+    Li: (props: Omit<SkeletonProps<"li">, "as">) => (
+        <SkeletonBase {...props} as="li" />
+    ),
+    Span: (props: Omit<SkeletonProps<"span">, "as">) => (
+        <SkeletonBase {...props} as="span" />
+    ),
+    Div: (props: Omit<SkeletonProps<"div">, "as">) => (
+        <SkeletonBase {...props} as="div" />
+    ),
+});
+
+export default Skeleton;

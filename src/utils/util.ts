@@ -1,6 +1,3 @@
-import cryptoJS from 'crypto-js';
-import { AccessKeyType } from "@/constants/enum/configCommonType";
-
 export const util = {
     // 문자열 반환
     string: {
@@ -36,6 +33,20 @@ export const util = {
             const hasHangul = regex.test(value);
 
             return hasHangul;
+        },
+
+        getCurrentDate: ( target?: string, sliceYear:number = 2 ) => {
+            const now = target ? new Date(target) : new Date()
+
+            // 연도, 월, 일, 시, 분을 추출
+            const year = now.getFullYear().toString().slice(-sliceYear); // 2자리 연도
+            const month = String(now.getMonth() + 1).padStart(2, '0'); // 월 (0부터 시작하므로 +1)
+            const day = String(now.getDate()).padStart(2, '0'); // 날짜
+            const hours = String(now.getHours()).padStart(2, '0'); // 시간
+            const minutes = String(now.getMinutes()).padStart(2, '0'); // 분
+
+            // 원하는 형식으로 출력
+            return `${year}.${month}.${day}`;
         },
 
         getCurrentTime: ( target?: string, sliceYear:number = 2 ) => {
@@ -137,6 +148,30 @@ export const util = {
             }
 
             return distance({ lat1, lon1, lat2, lon2 })
+        },
+        getRandomName: () => {
+            const firstParts = [
+                "푸른", "빠른", "은빛", "별빛", "붉은", "노란", "초록", "깊은",
+                "작은", "커다란", "달콤한", "불타는", "얼어붙은", "반짝이는"
+            ];
+            const secondParts = [
+                "하마", "펭귄", "토끼", "여우", "고양이", "강아지", "수달",
+                "곰", "사슴", "호랑이", "돌고래", "매", "까치", "참새",
+                "바위", "달빛", "바람", "구름", "불꽃", "나무"
+            ];
+
+            let name = "";
+            let attempts = 0;
+
+            // 조건 (4~6글자)을 만족할 때까지 반복
+            while ((name.length < 4 || name.length > 6) && attempts < 20) {
+                const first = firstParts[Math.floor(Math.random() * firstParts.length)];
+                const second = secondParts[Math.floor(Math.random() * secondParts.length)];
+                name = first + second;
+                attempts++;
+            }
+
+            return name;
         }
     },
 
@@ -186,48 +221,37 @@ export const util = {
             if (anchorElement) {
                 anchorElement.scrollTo({ top: anchorElement.scrollHeight, behavior: 'smooth' });
             }
+        },
+
+        setCopyOnClipboard: async ( text: string ) => {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(text);
+            } else {
+                // 구형 브라우저 fallback
+                const textarea = document.createElement("textarea");
+                textarea.value = text;
+                textarea.style.position = "fixed";
+                textarea.style.left = "-9999px";
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                document.execCommand("copy");
+                document.body.removeChild(textarea);
+            }
         }
     },
 
     api: {
-        checkIsEmptyArray: (data: any) => {
-            return !Object.keys( data ).length
-        },
-
-        checkResult: (data: any) => {
-            // api 호출 후 서버에서 처리한 결과 !== 통신 결과
-            // 1이 정상
-            return data.status === 200;
-        },
-
-        checkResultNew: (data: any) => {
-            // api 호출 후 서버에서 처리한 결과 !== 통신 결과
-            // 1이 정상
-            return data.header?.ResultCode === 0;
-        },
-
         checkIsSuccessful: (data: any) => {
             if ( data ) {
                 return data.header.IsSuccessful
             }
         },
 
-        checkCIisAvailable: (token: string) => {
-            //파라미터 혹은 쿠키,로컬 스토리지에 있는 CI 값 체크
-            // const IS_HAVE_CI = window.localStorage.getItem("ci");
-    
-            return !!token
-        },
-
         getBodyDataOnResponse: (data: any) => {
             if ( data ) {
                 return data.body
             }
-        },
-    
-        handleFailedMsg: (data: any) => {
-            // api 콜 이후 발생 msg
-            return data.statusText;
         },
 
         getApiReponse: ({ msg, code = 999, success = false, payload = "", data = {}, endpoint = "" }: { msg: string, code?: number, success?: boolean, payload?: any, data?: any, endpoint?: string }) => {
@@ -248,87 +272,21 @@ export const util = {
             return result;
         },
 
-        setNestedValue: (obj: any, path: string[], value: any) => {
-            let current = obj;
-            path.slice(0, -1).forEach((key) => {
-                if (!current[key] || typeof current[key] !== "object") {
-                    current[key] = {};
+        debounce<T extends (...args: any[]) => void> (
+            func: T,
+            delay: number
+        ): (...args: Parameters<T>) => void {
+            let timerId: ReturnType<typeof setTimeout> | null;
+
+            return (...args: Parameters<T>) => {
+                if (timerId) {
+                    clearTimeout(timerId);
                 }
-                current = current[key];
-            });
-            current[path[path.length - 1]] = value;
-        },
-        
-        getNestedValue: (obj: any, path: string[]) => {
-            return path.reduce((acc, key) => acc?.[key], obj);
-        },
-
-        callApi(url: string) {
-            const NODE_ENV = process.env.NEXT_PUBLIC_DEV_URL ?? 'development';
-            let baseUrl = 'http://www.test.com';
-        
-            switch (NODE_ENV) {
-            // 개발 컴퓨터 + 개발 환경
-            case 'local':
-                // baseUrl = 'http://localhost:5000';
-                break;
-            // 개발 컴퓨터 + 운영 환경
-            case 'local-production':
-                // baseUrl = 'http://localhost:5001';
-                break;
-            // 개발 환경 ( 배포 )
-            case 'development':
-                baseUrl = '';
-                break;
-            // 운영 환경 ( 배포 )
-            case 'production':
-                baseUrl = '';
-                break;
-            }
-        
-            return baseUrl.concat(url);
-        },
-
-        // hmac
-        createKey( METHOD = "POST", ACCESS_KEY_TYPE = 1, END_POINT: string ) {
-            const _url = END_POINT;
-            const _method = METHOD;
-
-            const getAccessKeyType = () => {
-                switch ( ACCESS_KEY_TYPE ) {
-                    case AccessKeyType.FIT_COLLABO:
-                        
-                        return process.env.NEXT_PUBLIC_FITCOLLABO_KEY;
-                
-                    case AccessKeyType.IMACHINE:
-                        
-                        return process.env.NEXT_PUBLIC_IMACHINE_KEY;
-
-                    case AccessKeyType.SELFYO:
-                        
-                        return process.env.NEXT_PUBLIC_SELFYO_KEY;
-                }
-            }
-
-            const accessKey = getAccessKeyType();
-            const secureKey = process.env.NEXT_PUBLIC_SECURE_KEY;
-
-            const timestamp = Date.now();
-            const message = _method + ' ' + _url + '\n' + timestamp + '\n' + accessKey;
-            
-            const secretKey = cryptoJS.enc.Utf8.parse(secureKey);
-            const bytes = cryptoJS.enc.Utf8.parse(message);
-            const hash = cryptoJS.HmacSHA256(bytes, secretKey);
-            const signature = cryptoJS.enc.Base64.stringify(hash);
-            
-            return { accessKey, signature, timestamp }
-        },
-
-        getLog(log?: any, additionalLog?: any) {
-            const now = new Date();
-            
-            return console.log(`${now.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}: ${log}`, additionalLog);
-        },
+                timerId = setTimeout(() => {
+                    func(...args);
+                }, delay);
+            };
+        }
     },
 
     analyze: {
@@ -366,24 +324,13 @@ export const util = {
                     fn( ...args );
                 }, delay );
             };
-        }
-    },
+        },
+        async convertSha256( value: string )  {
+            const msgBuffer = new TextEncoder().encode(value);
+            const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
 
-    appcard: {
-        seq: () => {
-            const lpad = (val: any, len: any, fill: any) => {
-                return String(val).padStart(len, fill);
-            }
-            const today = new Date();
-            const seq =
-              String(today.getFullYear()) +
-              lpad(today.getMonth() + 1, 2, '0') +
-              lpad(today.getDate(), 2, '0') +
-              lpad(today.getHours(), 2, '0') +
-              lpad(today.getMinutes(), 2, '0') +
-              lpad(today.getSeconds(), 2, '0');
-        
-            return seq;
-          }
-    }
+            return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+        },
+    },
 }

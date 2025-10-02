@@ -4,6 +4,11 @@
 
 @import 'tailwindcss';
 
+@theme {
+  --breakpoint-mobile: 9.375rem;  /* 344px 이상 */
+  --breakpoint-tablet: 48rem;    /* 768px 이상 */
+  --breakpoint-pc: 90rem;        /* 1440px 이상 */
+}
 
 @layer components {
     .flex-center {

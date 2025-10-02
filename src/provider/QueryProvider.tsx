@@ -13,6 +13,7 @@ export default function QueryProvider({ children }: React.PropsWithChildren) {
                     refetchOnMount: false, // 데이터가 stale 상태이면 컴포넌트가 마운트될 때 refetch
                     retry: 1, // API 요청 실패시 재시도 하는 옵션 (설정값 만큼 재시도)
                     staleTime: 1000 * 60 * 5,  // 5분
+                    throwOnError: true,
                 },
             },
         }),

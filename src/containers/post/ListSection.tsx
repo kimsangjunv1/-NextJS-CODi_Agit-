@@ -556,14 +556,14 @@ const Action = ({ id }: { id: string }) => {
                 damping: 10,
             }}
         >
-            <UI.Button
+            {/* <UI.Button
                 className="w-full h-full p-[1.6rem] bg-[var(--color-brand-500)] font-bold text-white text-[1.8rem]"
                 onClick={() => {
                     pushToUrl(`/post/create`)
                 }}
             >
                 작성하기
-            </UI.Button>
+            </UI.Button> */}
             
             <UI.Button
                 className="w-full h-full font-bold p-[1.6rem] bg-[#000000] text-white text-[1.8rem]"

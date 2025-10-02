@@ -1,13 +1,14 @@
 main {
-    min-height: 100dvh;
     // max-width: var(--size-pc);
+
+    min-height: 100dvh;
     margin: 0 auto;
     overflow-x: hidden;
     
     .main-inner {
         > article {
-            height: 100%;
-            width: 100%;
+            // height: 100%;
+            // width: 100%;
         }
     }
 

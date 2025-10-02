@@ -2,22 +2,33 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 interface ServiceStoreType {
-    persistSelectedEditorMenu: number;
+    persistAdminState: boolean;
+    persistStoreIdx: number;
+    persistStoreName: string;
 
-    setPersistSelectedEditorMenu: ( args: number ) => void;
+    setPersistStoreIdx: (args: number) => void;
+    setPersistStoreName: (args: string) => void;
+    setPersistAdminState: (args: boolean) => void;
+    reset: () => void;
 }
 
 export const useServiceStore = create<ServiceStoreType>()(
     persist(
-        ( set ) => ({
-            persistSelectedEditorMenu: 999,
+        (set) => ({
+            persistStoreIdx: 0,
+            persistStoreName: "",
+            persistAdminState: false,
 
-            setPersistSelectedEditorMenu: ( args: number ) => set(() => ({ persistSelectedEditorMenu: args })), 
+            setPersistStoreIdx: (args: number) => set(() => ({ persistStoreIdx: args })),
+            setPersistStoreName: (args: string) => set(() => ({ persistStoreName: args })),
+            setPersistAdminState: (args: boolean) => set(() => ({ persistAdminState: args })),
+
+            reset: () => set(() => ({ persistStoreIdx: 0, persistStoreName: "", persistAdminState: false })),
         }),
         {
-            name: "kqr-service-session",
+            name: "service-session",
             storage: createJSONStorage(() => sessionStorage),
-            version: 1.0
+            version: 1.0,
         }
     )
-)
+);

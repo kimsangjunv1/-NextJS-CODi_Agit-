@@ -324,6 +324,13 @@ export const util = {
                     fn( ...args );
                 }, delay );
             };
-        }
+        },
+        async convertSha256( value: string )  {
+            const msgBuffer = new TextEncoder().encode(value);
+            const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+            return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+        },
     },
 }

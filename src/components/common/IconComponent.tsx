@@ -32,6 +32,12 @@ const IconComponent = ({ isLottie = false, type, alt, className, width = 24, hei
             case "graphic-logo-horizontal":
                 return PATH_DEFAULT + PATH_GRAPHIC + "logo-horizontal" + EXTENSION;
 
+            case "graphic-logo-vertical":
+                return PATH_DEFAULT + PATH_GRAPHIC + "logo-vertical" + EXTENSION;
+
+            case "graphic-logo-github":
+                return PATH_DEFAULT + PATH_GRAPHIC + "logo-github" + EXTENSION;
+
             case "graphic-arrow-up":
                 return PATH_DEFAULT + PATH_GRAPHIC + "arrow-up" + EXTENSION;
 

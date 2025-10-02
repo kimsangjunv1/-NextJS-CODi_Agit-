@@ -1,7 +1,7 @@
 "use client"
 
 import { AnimatePresence, motion, Reorder, useDragControls } from 'motion/react';
-import React, { forwardRef, Fragment, Suspense, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
+import React, { forwardRef, Fragment, ReactNode, Suspense, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 
 import {
     ButtonProps,
@@ -2025,20 +2025,22 @@ const ColorPicker = ({ defaultValue, onChange }: { defaultValue?: string, onChan
 interface ErrorBoundaryWrapperProps {
     children: React.ReactNode;
     fallback?: React.ComponentType<{ error: Error; resetErrorBoundary: () => void }>;
+    loading?: React.ReactNode;
 }
 
 const ErrorBoundaryWrapper: React.FC<ErrorBoundaryWrapperProps> = ({
   children,
   fallback: Fallback = UI.Error,
+  loading: Loading = <UI.Loading />,
 }) => {
     return (
         <QueryErrorResetBoundary>
             {({ reset }) => (
                 <ErrorBoundary
-                    FallbackComponent={Fallback}
+                    FallbackComponent={ Fallback }
                     onReset={reset}
                 >
-                    <Suspense fallback={<p>Loading...</p>}>
+                    <Suspense fallback={ Loading }>
                         {children}
                     </Suspense>
                 </ErrorBoundary>
@@ -2062,6 +2064,14 @@ const Empty = ({
             data-description={ desc_no }
         >
             <p className='text-center text-black pointer-events-none'>{ title }</p>
+        </div>
+    )
+}
+
+const Loading = () => {
+    return (
+        <div>
+            <p>Loading...</p>
         </div>
     )
 }
@@ -2122,6 +2132,7 @@ const UI = {
     ColorPicker,
     Empty,
     Error,
+    Loading,
     ErrorBoundaryWrapper,
     Table: Object.assign(Table, {
         Header: TableHeader,

@@ -30,7 +30,7 @@ const DimmedComponent = ({ isVisible }: { isVisible: boolean }) => {
             <AnimatePresence>
                 { modal.isOpen || bottomSheet.isOpen ? (
                     <motion.div
-                        className="fixed top-0 left-0 w-full h-full bg-[#ededed8b] backdrop-blur-sm z-[999]"
+                        className="fixed top-0 left-0 w-full h-full bg-[#00000050] backdrop-blur-md z-[999]"
                         exit={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         initial={{ opacity: 0 }}

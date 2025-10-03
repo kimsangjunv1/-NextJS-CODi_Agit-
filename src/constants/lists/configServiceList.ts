@@ -1,6 +1,6 @@
 export const headerMenuList = [
     {
-        title: "BLOG",
+        title: "ARCHIVE",
         route: "/",
         type: 1,
     },

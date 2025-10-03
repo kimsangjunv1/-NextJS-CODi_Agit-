@@ -431,7 +431,7 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
             {/* 입력 */}
             <motion.section
                 ref={ inputRef }
-                className="fixed bottom-[calc(1.6rem*3)] left-[50%] transform translate-x-[-50%] z-10 body px-[1.2rem] py-[0.8rem] h-[calc(1.6rem*3)] min-w-[13.2rem] w-auto max-w-[calc(100dvw-(1.6rem*2))] bg-[#ffffffcb] backdrop-blur-sm rounded-[calc(1.6rem*2)] flex items-center shadow-[var(--shadow-normal)]"
+                className="fixed bottom-[calc(1.6rem*3)] left-[50%] transform translate-x-[-50%] z-10 body px-[1.2rem] py-[0.8rem] h-[calc(1.6rem*3)] min-w-[13.2rem] w-auto max-w-[calc(100dvw-(1.6rem*2))] bg-[#ffffffcb] backdrop-blur-sm rounded-[calc(1.6rem*2)] flex items-center shadow-[var(--shadow-normal)] opacity-50 hover:opacity-100 transition-opacity"
                 animate={{
                     width: inputMode ? "var(--size-tablet)" : currentContainerWidth + 72 + 16,
                 }}

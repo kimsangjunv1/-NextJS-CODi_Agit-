@@ -388,7 +388,7 @@ const Header = () => {
                         <section className="mobile-inner max-w-[var(--size-tablet)] px-[2.4rem] py-[2.4rem] w-full h-full flex flex-col items-start justify-between">
                             <section className="flex flex-col items-start">
                                 <div className="w-full overflow-hidden mb-[2.4rem]" >
-                                    <p className="text-[7.2rem] font-bold leading-[1.5]">Hej!</p>
+                                    <p className="text-[5.2rem] font-bold leading-[1.5]">Hej!</p>
                                     <p className="text-[2.4rem] font-semibold leading-[1.5]">아래에서 메뉴를 선택해주세요.</p>
                                 </div>
 
@@ -468,26 +468,30 @@ const Header = () => {
                                     <p className="font-semibold">@kimsangjunv1</p>
                                 </UI.Button>
 
-                                <p>어드민 이동 예정</p>
-                                <div className="flex gap-[1.6rem]">
-                                    <UI.Button
-                                        className="flex items-center gap-[0.8rem] shadow-[var(--shadow-normal)] p-[0.8rem] rounded-[1.2rem] transition-colors bg-transparent hover:bg-[var(--color-gray-200)]"
-                                        onClick={() => {
-                                            pushToUrl(`/post/create`)
-                                        }}
-                                    >
-                                        새로운 아티클 생성하기
-                                    </UI.Button>
+                                { session ? (
+                                    <Fragment>
+                                        <p>어드민 이동 예정</p>
+                                        <div className="flex gap-[1.6rem]">
+                                            <UI.Button
+                                                className="flex items-center gap-[0.8rem] shadow-[var(--shadow-normal)] p-[0.8rem] rounded-[1.2rem] transition-colors bg-transparent hover:bg-[var(--color-gray-200)]"
+                                                onClick={() => {
+                                                    pushToUrl(`/post/create`)
+                                                }}
+                                            >
+                                                새로운 아티클 생성하기
+                                            </UI.Button>
 
-                                    <UI.Button
-                                        className="flex items-center gap-[0.8rem] shadow-[var(--shadow-normal)] p-[0.8rem] rounded-[1.2rem] transition-colors bg-transparent hover:bg-[var(--color-gray-200)]"
-                                        onClick={() => {
-                                            pushToUrl(`/manager`)
-                                        }}
-                                    >
-                                        관리자 페이지 이동
-                                    </UI.Button>
-                                </div>
+                                            <UI.Button
+                                                className="flex items-center gap-[0.8rem] shadow-[var(--shadow-normal)] p-[0.8rem] rounded-[1.2rem] transition-colors bg-transparent hover:bg-[var(--color-gray-200)]"
+                                                onClick={() => {
+                                                    pushToUrl(`/manager`)
+                                                }}
+                                            >
+                                                관리자 페이지 이동
+                                            </UI.Button>
+                                        </div>
+                                    </Fragment>
+                                ) : "" }
                                 
 
                                 <IconComponent type="graphic-logo-horizontal" alt="로고" height={132} width={152} />

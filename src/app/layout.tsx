@@ -8,11 +8,13 @@ import Modal from "@/components/layout/Modal";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import Marquee from "@/components/layout/Marquee";
+import PageProgress from "@/components/common/PageProgress";
+import AuthCheckComponent from "@/components/common/AuthCheckComponent";
 import PathCheckComponent from "@/components/common/PathCheckComponent";
 
 import "@/scss/global.css";
 import "@/scss/index.scss";
-import AuthCheckComponent from "@/components/common/AuthCheckComponent";
+
 
 export const metadata: Metadata = {
     title: "agit.",
@@ -25,6 +27,7 @@ export default function RootLayout({ children, modal }: Readonly<{ children: Rea
             <body>
                 <QueryProvider>
                     <AuthCheckComponent>
+                        <PageProgress />
                         <ReactLenis
                             root
                             options={{

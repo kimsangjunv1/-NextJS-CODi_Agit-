@@ -1,0 +1,18 @@
+/* styles/nprogress.scss */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: #000000;  // 원하는 색상
+  height: 0.4rem;           // 높이
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  position: fixed;
+}
+
+#nprogress .peg {
+  box-shadow: none;
+//   box-shadow: 0 0 10px #000000, 0 0 5px #000000;
+}

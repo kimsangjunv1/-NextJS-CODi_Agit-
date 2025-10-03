@@ -1,6 +1,7 @@
-// src/lib/authOptions.ts
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+
+import { setLoginFetch } from "@/services/user.api";
 
 export const authOptions: AuthOptions = {
     providers: [
@@ -11,13 +12,49 @@ export const authOptions: AuthOptions = {
                 password: { label: "비밀번호", type: "password" },
             },
             async authorize(credentials) {
-                if (credentials?.email === "test@test.com" && credentials.password === "1234") {
-                    return { id: "1", name: "상준", email: "test@test.com" }
+                if (!credentials) return null;
+
+                try {
+                    const data = await setLoginFetch({ email: credentials.email, password: credentials.password });
+
+                    if (!data) return null;
+
+                    // JWT와 세션에 저장할 값만 뽑기
+                    const user = {
+                        id: data.body.result.id,
+                        name: data.body.result.name,
+                        email: credentials.email,
+                    };
+
+                    return user;
+                } catch (err) {
+                    console.error("로그인 에러:", err);
+
+                    return null;
                 }
-                return null
             },
         }),
     ],
     session: { strategy: "jwt" },
     pages: { signIn: "/login" },
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+                token.email = user.email;
+                token.name = user.name;
+            }
+
+            return token;
+        },
+        async session({ session, token }) {
+            if (session.user) {
+                token.id = token.id as string;
+                session.user.email = token.email as string;
+                session.user.name = token.name as string;
+            }
+
+            return session;
+        },
+    },
 };

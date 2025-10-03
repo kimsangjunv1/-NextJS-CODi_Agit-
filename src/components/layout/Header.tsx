@@ -19,6 +19,7 @@ const Header = () => {
     const params = useParams();
 
     const [ showMenu, setShowMenu ] = useState(false);
+    const { data: session, status } = useSession();
     
     const { reset } = useServiceStore();
     const { isMobile } = useLayoutStore();
@@ -37,6 +38,7 @@ const Header = () => {
     const IS_ROUTE_POST_EDIT = currentPathName.includes("post") && currentPathName.includes("modify");
     const IS_ROUTE_POST_CREATE = currentPathName.includes("post") && currentPathName.includes("create");
     const IS_ROUTE_POST_LAB = currentPathName.includes("lab")
+    const IS_ROUTE_POST_MANAGER = currentPathName.includes("manager")
 
      const logout = () => {
         signOut({ callbackUrl: "/login" });
@@ -326,6 +328,41 @@ const Header = () => {
                                     </motion.section>
                                 </section>
                             }
+
+                            { IS_ROUTE_POST_MANAGER &&
+                                <section className="flex flex-col gap-[0.8rem]">
+                                    <motion.section
+                                        key={"post_title"}
+                                        initial={{ opacity: 0, transform: "scale(0.8)" }}
+                                        animate={{ opacity: 1, transform: "scale(1)" }}
+                                        exit={{ opacity: 0, transform: "scale(0.8)" }}
+                                        transition={{
+                                            // delay: 0.05 * (i + 1),
+                                            type: "spring",
+                                            mass: 0.1,
+                                            stiffness: 100,
+                                            damping: 10,
+                                        }}
+                                        className="flex gap-[1.6rem] flex-1 justify-center"
+                                    >
+                                        <TextShimmer
+                                            as="h2"
+                                            duration={3}
+                                            style={{
+                                                color: "#000000",
+                                                fontSize: "2.4rem",
+                                            }}
+                                            color={{
+                                                start: "#000000",
+                                                end: "#9393a0"
+                                            }}
+                                            className="font-extrabold"
+                                        >
+                                            {`어드민`}
+                                        </TextShimmer>
+                                    </motion.section>
+                                </section>
+                            }
                         </AnimatePresence>
                     </section>
                 </section>
@@ -400,12 +437,21 @@ const Header = () => {
                                             damping: 10,
                                         }}
                                     >
-                                        <UI.Button
-                                            onClick={() => logout()}
-                                            className="flex justify-center text-center gap-[0.4rem] w-full items-center text-[2.4rem] font-semibold whitespace-nowrap py-[1.2rem] text-[var(--color-red-500)]"
-                                        >
-                                            로그아웃
-                                        </UI.Button>
+                                        { session ? (
+                                            <UI.Button
+                                                onClick={() => logout()}
+                                                className="flex justify-center text-center gap-[0.4rem] w-full items-center text-[2.4rem] font-semibold whitespace-nowrap py-[1.2rem] text-[var(--color-red-500)]"
+                                            >
+                                                로그아웃
+                                            </UI.Button>
+                                        ) : (
+                                            <UI.Button
+                                                onClick={() => pushToUrl("/login")}
+                                                className="flex justify-center text-center gap-[0.4rem] w-full items-center text-[2.4rem] font-semibold whitespace-nowrap py-[1.2rem] text-[var(--color-gray-1000)]"
+                                            >
+                                                로그인
+                                            </UI.Button>
+                                        )}
                                     </motion.div>
                                 </div>
                             </section>
@@ -421,15 +467,28 @@ const Header = () => {
                                     />
                                     <p className="font-semibold">@kimsangjunv1</p>
                                 </UI.Button>
+
+                                <p>어드민 이동 예정</p>
+                                <div className="flex gap-[1.6rem]">
+                                    <UI.Button
+                                        className="flex items-center gap-[0.8rem] shadow-[var(--shadow-normal)] p-[0.8rem] rounded-[1.2rem] transition-colors bg-transparent hover:bg-[var(--color-gray-200)]"
+                                        onClick={() => {
+                                            pushToUrl(`/post/create`)
+                                        }}
+                                    >
+                                        새로운 아티클 생성하기
+                                    </UI.Button>
+
+                                    <UI.Button
+                                        className="flex items-center gap-[0.8rem] shadow-[var(--shadow-normal)] p-[0.8rem] rounded-[1.2rem] transition-colors bg-transparent hover:bg-[var(--color-gray-200)]"
+                                        onClick={() => {
+                                            pushToUrl(`/manager`)
+                                        }}
+                                    >
+                                        관리자 페이지 이동
+                                    </UI.Button>
+                                </div>
                                 
-                                <UI.Button
-                                    className="flex items-center gap-[0.8rem] shadow-[var(--shadow-normal)] p-[0.8rem] rounded-[1.2rem] transition-colors bg-transparent hover:bg-[var(--color-gray-200)]"
-                                    onClick={() => {
-                                        pushToUrl(`/post/create`)
-                                    }}
-                                >
-                                    새로운 아티클 생성하기 (임시)
-                                </UI.Button>
 
                                 <IconComponent type="graphic-logo-horizontal" alt="로고" height={132} width={152} />
                                 

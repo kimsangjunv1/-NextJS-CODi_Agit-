@@ -4,7 +4,8 @@ header {
     width: 100%;
     height: var(--header-height);
     margin: 0 auto;
-    z-index: 1000000;
+    z-index: 100;
+    // z-index: 1000000;
     background: linear-gradient(180deg, #ededed, #ededed00);
     
     .header-inner {

@@ -4,7 +4,7 @@ type RequestOptions = Omit<RequestInit, "body"> & {
 };
 
 export const clientFetch = async (url: string, options: RequestOptions = {}) => {
-    const baseUrl = process.env.NEXT_PUBLIC_LOCAL_API_DEV_URL || "";
+    const baseUrl = process.env.NEXT_PUBLIC_DOMAIN_URL || "http://localhost:3000"; // 개발용
 
     const headers: HeadersInit = {
         "Content-Type": "application/json",

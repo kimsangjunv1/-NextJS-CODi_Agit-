@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import UI from "@/components/common/UIComponent";
 import { DUMMY_IMAGE_RESPONSE } from "@/constants/lists/configDummyResponse";
+import { CategoryItemManager } from "@/types/category.type";
 
 // 이미지: 관리
 
@@ -49,11 +50,136 @@ const Box = ({ onChange }: { onChange: (e: any) => void }) => {
     )
 }
 
+// 카테고리 생성 모달 내용
+const AddCategory = ({ onChange }: { onChange: (e: any) => void }) => {
+    const [ currentState, setCurrentState ] = useState({});
+
+    useEffect(() => {
+        onChange(currentState);
+    }, [ currentState ])
+
+    return (
+        <article className="flex flex-col gap-[2.4rem]">
+            <section className="flex flex-col gap-[1.2rem]">
+                <section className='flex flex-col gap-[0.8rem]'>
+                    <p className="text-[var(--color-gray-500)] font-medium">이름</p>
+                </section>
+                
+                <section className='flex flex-col gap-[0.8rem]'>
+                    <UI.Input
+                        validationPattern={/^[\p{L}\p{N}\s]+$/u}
+                        onChange={(e) => {
+                            setCurrentState(prev => ({
+                                ...prev,
+                                title: e.target.value
+                            }));
+                        }}
+                        placeholder="카테고리 이름을 입력해주세요"
+                        className={{
+                            container: "h-[4.2rem]"
+                        }}
+                    />
+                </section>
+            </section>
+
+            <section className="flex flex-col gap-[1.2rem]">
+                <section className='flex flex-col gap-[0.8rem]'>
+                    <p className="text-[var(--color-gray-500)] font-medium">설명</p>
+                </section>
+                
+                <section className='flex flex-col gap-[0.8rem]'>
+                    <UI.Input
+                        validationPattern={/^[\p{L}\p{N}\s]+$/u}
+                        onChange={(e) => {
+                            setCurrentState(prev => ({
+                                ...prev,
+                                description: e.target.value ?? ""
+                            }));
+                        }}
+                        placeholder="카테고리에 대한 설명을 입력해주세요"
+                        className={{
+                            container: "h-[4.2rem]"
+                        }}
+                    />
+                </section>
+            </section>
+        </article>
+    )
+}
+
+// 카테고리 수정 모달 내용
+const ModifyCategory = ({ info, onChange }: { info: CategoryItemManager, onChange: (e: any) => void }) => {
+    const [ currentState, setCurrentState ] = useState({
+        title: info.title,
+        description: info.description,
+        idx: info.idx,
+        is_enabled: info.is_enabled
+    });
+
+    useEffect(() => {
+        onChange(currentState);
+    }, [ currentState, info ])
+
+    return (
+        <article className="flex flex-col gap-[2.4rem]">
+            <section className="flex flex-col gap-[1.2rem]">
+                <section className='flex flex-col gap-[0.8rem]'>
+                    <p className="text-[var(--color-gray-500)] font-medium">이름</p>
+                </section>
+                
+                <section className='flex flex-col gap-[0.8rem]'>
+                    <UI.Input
+                        defaultValue={ info.title }
+                        validationPattern={/^[\p{L}\p{N}\s]+$/u}
+                        onChange={(e) => {
+                            setCurrentState(prev => ({
+                                ...prev,
+                                title: e.target.value
+                            }));
+                        }}
+                        placeholder="카테고리 이름을 입력해주세요"
+                        className={{
+                            container: "h-[4.2rem]"
+                        }}
+                    />
+                </section>
+            </section>
+
+            <section className="flex flex-col gap-[1.2rem]">
+                <section className='flex flex-col gap-[0.8rem]'>
+                    <p className="text-[var(--color-gray-500)] font-medium">설명</p>
+                </section>
+                
+                <section className='flex flex-col gap-[0.8rem]'>
+                    <UI.Input
+                        defaultValue={ info.description }
+                        validationPattern={/^[\p{L}\p{N}\s]+$/u}
+                        onChange={(e) => {
+                            setCurrentState(prev => ({
+                                ...prev,
+                                description: e.target.value ?? ""
+                            }));
+                        }}
+                        placeholder="카테고리에 대한 설명을 입력해주세요"
+                        className={{
+                            container: "h-[4.2rem]"
+                        }}
+                    />
+                </section>
+            </section>
+        </article>
+    )
+}
+
 
 const ModalContent = {
     Image: {
         Box  
     },
+    Post: {
+        AddCategory,
+        ModifyCategory,
+    }
 }
 
 export default ModalContent

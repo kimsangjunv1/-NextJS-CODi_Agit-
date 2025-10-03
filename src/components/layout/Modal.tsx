@@ -20,16 +20,18 @@ interface ModalBodyProps {
 }
 
 interface ModalFooterProps {
-    className: string;
+    className?: string;
     currentTime?: number;
     confirm?: {
         title: string;
         onClick: () => void;
         loading: null | boolean;
+        className: string;
     }
     cancel: {
         title: string;
         onClick: () => void;
+        className: string;
     }
 }
 
@@ -40,6 +42,7 @@ interface ModalGuideProps {
 
 // 모달 글로벌
 const Modal = () => {
+    const [ initGlow, setInitGlow ] = useState(false);
     const [ currentTime, setCurrentTime ] = useState(0);
     const [ isDocumentVisible, setIsDocumentVisible ] = useState(false);
     const [ intervalId, setIntervalId ] = useState<NodeJS.Timeout | null>(null);
@@ -52,6 +55,7 @@ const Modal = () => {
     const closeModalState = () => {
         setModal({ ...modal, isOpen: false });
         setCurrentTime(modal.delay ? modal.delay / 1000 : 0);
+        setInitGlow(false);
 
         if (intervalId) {
             clearInterval(intervalId);  // 타이머 정리
@@ -152,7 +156,7 @@ const Modal = () => {
                         aria-modal="true"
                     >
                         <motion.div
-                            className={`flex flex-col w-full bg-white rounded-[1.2rem] mx-[1.6rem] relative z-10 max-h-[calc(100dvh-(1.6rem*3))] overflow-y-auto shadow-custom ${ modal.className?.container !== "" ? modal.className?.container : "max-w-[var(--modal-width)]" }`}
+                            className={`relative flex flex-col w-full bg-white rounded-[3.2rem] mx-[1.6rem] z-10 max-h-[calc(100dvh-(1.6rem*3))] overflow-y-auto shadow-[var(--shadow-normal)] ${ modal.className?.container !== "" ? modal.className?.container : "max-w-[var(--modal-width)]" }`}
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
@@ -174,14 +178,38 @@ const Modal = () => {
                                 confirm={{
                                     title: modal.confirm?.text || "확인",
                                     onClick: modal.confirm?.onClick || (() => {}),
-                                    loading: modal.confirm?.loading || null
+                                    loading: modal.confirm?.loading || null,
+                                    className: modal.confirm?.className || "",
                                 }}
                                 cancel={{
                                     title: modal.cancel?.text || "닫기",
-                                    onClick: modal.cancel?.onClick || (() => closeModalState())
+                                    onClick: modal.cancel?.onClick || (() => closeModalState()),
+                                    className: modal.cancel?.className || "",
                                 }}
                             />
+                            
                             { currentTime ? <Guide currentTime={ currentTime }/> : null }
+                            
+                            { !initGlow ? (
+                                <motion.div
+                                    key={`glow-${ initGlow }-${ modal.isOpen }`}
+                                    className="absolute inset-0 pointer-events-none blur-[10px]"
+                                    initial={{ scale: 0, opacity: 0.4 }}
+                                    animate={{ scale: 10, opacity: -10 }}
+                                    transition={{
+                                        duration: 2,
+                                        ease: "easeOut",
+                                        repeat: 0,       // 무한 반복
+                                        // repeatType: "loop",
+                                    }}
+                                    style={{
+                                        background: "radial-gradient(circle, rgba(255,255,255,0) 0%, var(--color-brand-500) 20%, rgba(255,255,255,0) 70%)",
+                                        borderRadius: "50%",
+                                        transformOrigin: "center"
+                                    }}
+                                    onAnimationComplete={() => setInitGlow( true )}
+                                />
+                            ) : "" }
                         </motion.div>
                     </section>
 
@@ -210,12 +238,16 @@ const Body = ({ children, className }: ModalBodyProps) => {
     const { modal } = useModalStore();
 
     return (
-        <section className={`modal-body flex flex-col gap-[1.2rem] max-h-[calc(100vh-(1.6rem*10))] overflow-y-auto ${ className ? className : "" }`}>
-            { children }
-            { modal.description && <p className="leading-[1.5] text-left text-[1.6rem] text-[#414141] font-normal cursor-default whitespace-pre-line">{ modal.description }</p> }
-            { modal.content }
-            { modal.focusDescription && <p className="px-[1.6rem] py-[0.8rem] cursor-default text-center bg-[var(--color-gray-50)] rounded-[1.2rem] whitespace-pre-line">{ modal.focusDescription }</p> }
-        </section>
+        <Fragment>
+            { modal.description !== "" || modal.content !== null ? (
+                <section className={`modal-body flex flex-col gap-[1.2rem] max-h-[calc(100vh-(1.6rem*10))] overflow-y-auto ${ className ? className : "" }`}>
+                    { children }
+                    { modal.description && <p className="leading-[1.5] text-left text-[1.6rem] text-[#414141] font-normal cursor-default whitespace-pre-line">{ modal.description }</p> }
+                    { modal.content }
+                    { modal.focusDescription && <p className="px-[1.6rem] py-[0.8rem] cursor-default text-center bg-[var(--color-gray-50)] rounded-[1.2rem] whitespace-pre-line">{ modal.focusDescription }</p> }
+                </section>
+            ) : "" }
+        </Fragment>
     );
 };
 
@@ -234,11 +266,12 @@ const Footer = ({ className, confirm, cancel, currentTime }: ModalFooterProps) =
     }
     
     const closeModalState = () => {
+        console.log("닫음")
         setModal({ ...modal, isOpen: false })
     }
 
     return (
-        <section className={`modal-footer px-[2.0rem] pb-[2.0rem] flex flex-wrap justify-end gap-[1.0rem] ${ className }`}>
+        <section className={`modal-footer px-[2.0rem] pb-[2.0rem] flex flex-wrap justify-between gap-[1.0rem] ${ className }`}>
             { cancel && cancel?.title !== " " && (
                 // <ButtonComponent
                 //     className={`text-[1.3rem] font-medium rounded-[0.6rem] w-[6.5rem]`}
@@ -250,50 +283,32 @@ const Footer = ({ className, confirm, cancel, currentTime }: ModalFooterProps) =
                 //     test="cancel"
                 // />
                 <UI.Button
-                    className={`bg-[var(--color-gray-200)] font-medium whitespace-nowrap rounded-[0.6rem] px-[2.0rem] h-[4.2rem]`}
+                    className={`${ cancel?.className ? cancel?.className : "bg-[var(--color-gray-200)]" } flex-1 font-regular text-[1.4rem] whitespace-nowrap rounded-[1.2rem] px-[2.0rem] h-[4.2rem]`}
                     onClick={ cancel.onClick }
+                    rippleColor='#65778a'
                 >
                     { cancel.title }
                 </UI.Button>
             )}
 
-            { !isPrevent ? (
-                <Fragment>
-                    { confirm && confirm?.title !== " " && (
-                        <UI.Button
-                            className={`text-white bg-[var(--color-blue-1000)] font-medium whitespace-nowrap rounded-[0.6rem] px-[2.0rem] w-[12.8rem] h-[4.2rem]`}
-                            onClick={() => {
-                                confirm.onClick();
-                                setPreventAfterClick();
-                                
-                                if ( !modal.isNeedNext ) {
-                                    closeModalState();
-                                }
-                            }}
-                        >
-                            { confirm.title }
-                        </UI.Button>
-                    )}
-                </Fragment>
-            ) : (
-                <Fragment>
-                    { confirm && confirm?.title !== " " && (
-                        <UI.Button
-                            className={`text-white bg-[var(--color-blue-1000)] font-medium whitespace-nowrap rounded-[0.6rem] w-[12.8rem] h-[4.2rem]`}
-                            onClick={() => {
-                                confirm.onClick();
-                                setPreventAfterClick();
-                                
-                                if ( !modal.isNeedNext ) {
-                                    closeModalState();
-                                }
-                            }}
-                        >
-                            { confirm.title }
-                        </UI.Button>
-                    )}
-                </Fragment>
-            ) }
+            { confirm && confirm?.title !== " " && (
+                <UI.Button
+                    className={`${ confirm?.className ? confirm.className : "bg-[var(--color-brand-500)]" } flex-1 font-regular text-[1.4rem] whitespace-nowrap rounded-[1.2rem] px-[2.0rem] h-[4.2rem]`}
+                    disabled={isPrevent} // 클릭 방지 시에는 비활성화
+                    onClick={async () => {
+                        const result = await confirm.onClick();
+                        const IS_PASSED = result === undefined || result;
+
+                        setPreventAfterClick();
+
+                        if ( !modal.isNeedNext && IS_PASSED ) {
+                            closeModalState();
+                        }
+                    }}
+                >
+                    { confirm.title }
+                </UI.Button>
+            )}
             { currentTime }
         </section>
     );

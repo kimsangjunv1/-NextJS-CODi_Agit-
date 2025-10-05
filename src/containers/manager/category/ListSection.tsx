@@ -164,7 +164,7 @@ const LoginForm = () => {
         <Fragment>
             <article
                 id="list"
-                className="px-[2.0rem] flex-1 flex flex-col gap-[2.4rem] bg-[linear-gradient(0deg,var(--color-gray-200)_80%,#00000000)] w-full items-center justify-center overflow-hidden"
+                className="px-[2.0rem] flex-1 flex flex-col gap-[2.4rem] w-full items-center justify-start overflow-hidden max-w-[var(--size-tablet)] mx-auto"
             >
                 <section className='w-full'>
                     <h2>카테고리 관리</h2>

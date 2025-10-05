@@ -6,7 +6,7 @@ import { util } from "@/utils/util";
 import { AnimatePresence, motion } from "framer-motion";
 import { Fragment, useMemo } from "react";
 
-const Marquee = ({ title }: { title: string }) => {
+const Marquee = () => {
     const { currentPathName } = useNavigate();
     const { data: getCommentLatestListData, refetch: getCommentLatestListFetch } = useGetCommentLatestListQuery();
 

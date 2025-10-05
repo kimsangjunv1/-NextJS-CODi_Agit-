@@ -1,56 +1,38 @@
-// import { AccessKeyType } from "@/constants/enum/configCommonType";
-// import { util } from "@/utils/util";
+// src/services/client.ts
+type RequestOptions = Omit<RequestInit, "body"> & {
+    body?: any;
+};
 
-// type Method = "GET" | "POST" | "PUT" | "DELETE";
+export const serverFetch = async (url: string, options: RequestOptions = {}) => {
+    const baseUrl = process.env.NEXTAUTH_URL
 
-// interface RequestOptions {
-//     body?: any;
-//     headers?: Record<string, string>;
-// }
+    const headers: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+    };
 
-// const REQUEST_URL = process.env.NEXT_PUBLIC_API_IMACHINE_URL;
+    // 예: 토큰이 필요하면 붙이기
+    // const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+    // if (token) {
+    //     headers["Authorization"] = `Bearer ${token}`;
+    // }
+    console.log("baseUrl + url", baseUrl + url)
+    const response = await fetch(
+        baseUrl + url,
+        {
+            ...options,
+            headers,
+            credentials: "include",
+            body: options.body ? JSON.stringify(options.body) : undefined,
+        }
+    );
+    console.log("response", response)
 
-// async function request<T>(
-//     endpoint: string,
-//     method: Method,
-//     options: RequestOptions = {}
-// ): Promise<T> {
-//     const ACCESS_KEY_TYPE = AccessKeyType.IMACHINE;
-//     const { accessKey, signature, timestamp } = util.api.createKey( method, ACCESS_KEY_TYPE, endpoint );
-    
-//     const res = await fetch(`${REQUEST_URL}${endpoint}`, {
-//         method,
-//         headers: {
-//             "Content-Type": "application/json; charset=UTF-8",
-//             "Charset": "UTF-8",
-//             "x-ejapi-access-key": accessKey,
-//             "x-ejapi-signature": signature,
-//             "x-ejapi-timestamp": timestamp,
-//             // ...(options.headers || {}),
-//         },
-//         body: options.body ? JSON.stringify(options.body) : undefined,
-//     });
-    
-//     console.log(`${ method } 호출 결과: `, `${ res }`)
-//     if (!res.ok) {
-//         const text = await res.text();
-//         throw {
-//             message: `외부 API 실패: ${res.status}`,
-//             data: text,
-//             statusCode: res.status,
-//         };
-//     }
+    if (!response.ok) {
+        // 공통 에러 처리
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "API 요청 실패");
+    }
 
-//     return (await res.json()) as T;
-// }
-
-// export const serverClient = {
-//     get: <T>(endpoint: string, headers?: Record<string, string>) =>
-//         request<T>(endpoint, "GET", { headers }),
-//     post: <T>(endpoint: string, body: any, headers?: Record<string, string>) =>
-//         request<T>(endpoint, "POST", { body, headers }),
-//     put: <T>(endpoint: string, body: any, headers?: Record<string, string>) =>
-//         request<T>(endpoint, "PUT", { body, headers }),
-//     delete: <T>(endpoint: string, headers?: Record<string, string>) =>
-//         request<T>(endpoint, "DELETE", { headers }),
-// };
+    return response.json();
+};

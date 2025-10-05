@@ -1,7 +1,8 @@
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcrypt";
 
-import { setLoginFetch } from "@/services/user.api";
+import { supabaseServer } from "@/utils/supabase/supabaseServer";
 
 export const authOptions: AuthOptions = {
     providers: [
@@ -12,31 +13,36 @@ export const authOptions: AuthOptions = {
                 password: { label: "비밀번호", type: "password" },
             },
             async authorize(credentials) {
-                if (!credentials) return null;
+                const supabase = await supabaseServer();
 
-                try {
-                    const data = await setLoginFetch({ email: credentials.email, password: credentials.password });
+                const { data: user, error } = await supabase
+                    .from("users")
+                    .select("*")
+                    .eq("email", credentials?.email)
+                    .single();
 
-                    if (!data) return null;
-
-                    // JWT와 세션에 저장할 값만 뽑기
-                    const user = {
-                        id: data.body.result.id,
-                        name: data.body.result.name,
-                        email: credentials.email,
-                    };
-
-                    return user;
-                } catch (err) {
-                    console.error("로그인 에러:", err);
-
-                    return null;
+                if (error || !user) {
+                    throw new Error("등록되지 않은 이메일입니다.");
                 }
+
+                const isValid = await bcrypt.compare(credentials!.password, user.password);
+
+                if (!isValid) {
+                    throw new Error("비밀번호가 일치하지 않습니다.");
+                }
+
+                // 로그인 성공
+                return {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                };
             },
         }),
     ],
     session: { strategy: "jwt" },
     pages: { signIn: "/login" },
+    secret: process.env.NEXTAUTH_SECRET,
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
@@ -49,7 +55,7 @@ export const authOptions: AuthOptions = {
         },
         async session({ session, token }) {
             if (session.user) {
-                token.id = token.id as string;
+                session.user.id = token.id as string;
                 session.user.email = token.email as string;
                 session.user.name = token.name as string;
             }

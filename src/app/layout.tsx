@@ -14,6 +14,8 @@ import PathCheckComponent from "@/components/common/PathCheckComponent";
 
 import "@/scss/global.css";
 import "@/scss/index.scss";
+import ClientPageProgress from "@/components/common/ClinentComponent";
+import TransitionOverlay from "@/components/common/TransitionOverlay";
 
 
 export const metadata: Metadata = {
@@ -37,15 +39,16 @@ export default function RootLayout({ children, modal }: Readonly<{ children: Rea
                         />
                         <Header />
                         <PathCheckComponent>
-                            { children }
-                            {/* { modal } */}
+                            <TransitionOverlay>
+                                { children }
+                            </TransitionOverlay>
                         </PathCheckComponent>
                         {/* <Notice /> */}
                         <Footer />
 
                         <Modal />
                         <Toast />
-                        <Marquee title={"THIS PAGE MADE BY REACT | GSAP | SCSS, TAKE A LOOK AROUND"} />
+                        <Marquee />
                         {/* <Cursor /> */}
                     </AuthCheckComponent>
                 </QueryProvider>

@@ -2,17 +2,17 @@
 
 import { useEffect } from "react";
 import NProgress from "nprogress";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import "nprogress/nprogress.css";
 
 const PageProgress = () => {
 	const pathname = usePathname();
-	const searchParams = useSearchParams();
+	// const searchParams = useSearchParams();
 
 	useEffect(() => {
 		NProgress.done();
-	}, [ pathname, searchParams ]);
+	}, [ pathname ]);
 
 	return null;
 }

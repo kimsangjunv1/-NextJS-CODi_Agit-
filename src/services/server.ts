@@ -16,10 +16,9 @@ export const serverFetch = async (url: string, options: RequestOptions = {}) => 
     // if (token) {
     //     headers["Authorization"] = `Bearer ${token}`;
     // }
-    console.log("baseUrl + url", url)
+    console.log("baseUrl + url", baseUrl + url)
     const response = await fetch(
-        // baseUrl + url,
-        url,
+        baseUrl + url,
         {
             ...options,
             headers,

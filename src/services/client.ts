@@ -4,15 +4,10 @@ type RequestOptions = Omit<RequestInit, "body"> & {
 };
 
 export const clientFetch = async (url: string, options: RequestOptions = {}) => {
-    // const baseUrl =
-    //     typeof window !== "undefined"
-    //         ? window.location.origin                                         // 클라이언트
-    //         : process.env.NEXT_PUBLIC_DOMAIN_URL || "http://localhost:3000"; // 서버
-
-    const baseUrl =
-        typeof window === "undefined"
-            ? "" // SSR에서는 상대 경로
-            : process.env.NEXT_PUBLIC_DOMAIN_URL; // 클라이언트에서는 절대 경로
+      const baseUrl =
+            typeof window === "undefined"
+            ? process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL
+            : window.location.origin;
 
         console.log("[clientFetch] 요청 URL:", baseUrl);
 

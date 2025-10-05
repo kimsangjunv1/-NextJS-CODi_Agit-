@@ -4,12 +4,7 @@ type RequestOptions = Omit<RequestInit, "body"> & {
 };
 
 export const clientFetch = async (url: string, options: RequestOptions = {}) => {
-      const baseUrl =
-            typeof window === "undefined"
-            ? process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL
-            : window.location.origin;
-
-        console.log("[clientFetch] 요청 URL:", baseUrl);
+    const baseUrl = process.env.NEXT_PUBLIC_DOMAIN_URL || "http://localhost:3000"; // 개발용
 
     const headers: HeadersInit = {
         "Content-Type": "application/json",
@@ -22,8 +17,6 @@ export const clientFetch = async (url: string, options: RequestOptions = {}) => 
     //     headers["Authorization"] = `Bearer ${token}`;
     // }
 
-    console.log("baseUrl + url", baseUrl + url)
-
     const response = await fetch(
         baseUrl + url,
         {
@@ -32,8 +25,6 @@ export const clientFetch = async (url: string, options: RequestOptions = {}) => 
             body: options.body ? JSON.stringify(options.body) : undefined,
         }
     );
-
-    console.log("response", response)
 
     if (!response.ok) {
         // 공통 에러 처리

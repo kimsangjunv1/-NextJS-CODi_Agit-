@@ -1,4 +1,5 @@
 import { clientFetch } from "@/services/client";
+import { serverFetch } from "@/services/server";
 import { setLoginPayloadType, setUserPayloadType } from "@/types/user.type";
 
 // /**
@@ -27,7 +28,7 @@ export const setUserFetch = (data: setUserPayloadType) =>
  * 포스트 - 생성
  */
 export const setLoginFetch = (data: setLoginPayloadType) =>
-    clientFetch("/api/v1/set/login", { method: "POST", body: data });
+    serverFetch("/api/v1/set/login", { method: "POST", body: data });
 
 // /**
 //  * 포스트 - 수정

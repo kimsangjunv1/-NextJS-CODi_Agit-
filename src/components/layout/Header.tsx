@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation"
 import { Fragment, useEffect, useState } from "react"
+import { signOut, useSession } from "next-auth/react"
 import { AnimatePresence, motion } from "motion/react"
 
 import UI from '@/components/common/UIComponent'
@@ -9,11 +10,13 @@ import IconComponent from "@/components/common/IconComponent"
 import TextShimmer from "@/components/common/TextShimmerComponent"
 
 import useNavigate from "@/hooks/common/useNavigate"
-import { useLayoutStore } from "@/stores/useLayoutStore"
 import { useGetPostDetailQuery } from "@/hooks/api/post.query"
-import { signOut, useSession } from "next-auth/react"
-import { headerMenuList } from "@/constants/lists/configServiceList"
+
+import { useLayoutStore } from "@/stores/useLayoutStore"
 import { useServiceStore } from "@/stores/useServiceStore"
+
+import { headerMenuList } from "@/constants/lists/configServiceList"
+import { useGetCategoryListOnManagerQuery } from "@/hooks/api/category.query"
 
 const Header = () => {
     const params = useParams();
@@ -22,16 +25,11 @@ const Header = () => {
     const { data: session, status } = useSession();
     
     const { reset } = useServiceStore();
-    const { isMobile } = useLayoutStore();
     const { currentPathName, pushToUrl } = useNavigate();
     const { mainViewMode, setMainViewMode, categoryFilter, setCategoryFilter  } = useLayoutStore();
-    const { data: getPostListData, refetch: getPostListFetch } = useGetPostDetailQuery(parseInt( (params?.id) as string ));
 
-    useEffect(() => {
-        if ( showMenu ) {
-            setShowMenu( false )
-        }
-    }, [ currentPathName ])
+    const { data: getCategoryListData, refetch: getCategoryListFetch } = useGetCategoryListOnManagerQuery();
+    const { data: getPostListData, refetch: getPostListFetch } = useGetPostDetailQuery(parseInt( (params?.id) as string ));
 
     const IS_ROUTE_HOME = currentPathName === "/";
     const IS_ROUTE_POST = currentPathName.includes("post") && !currentPathName.includes("modify") && !currentPathName.includes("create");
@@ -44,6 +42,12 @@ const Header = () => {
         signOut({ callbackUrl: "/login" });
         reset();
     }
+
+    useEffect(() => {
+        if ( showMenu ) {
+            setShowMenu( false )
+        }
+    }, [ currentPathName ])
 
     return (
         <header>
@@ -66,11 +70,7 @@ const Header = () => {
                             { IS_ROUTE_HOME &&
                                 <UI.Button
                                     onClick={() => {
-                                        window.scrollTo({
-                                            top: 0,
-                                            left: 0,
-                                            // behavior: "smooth"
-                                        });
+                                        window.scrollTo({ top: 0, left: 0 });
                                         setMainViewMode( 1 )
                                     }}
                                     className="text-black text-[1.8rem] font-bold"
@@ -165,7 +165,7 @@ const Header = () => {
                                     }}
                                     className="flex gap-[2.0em] flex-1 justify-center"
                                 >
-                                    {[ "전체", "개발", "디자인", "3D" ].map((e, i) =>
+                                    { getCategoryListData?.result?.map((e, i) =>
                                         <motion.section
                                             key={`${e}-${i}`}
                                             initial={{ opacity: 0, transform: "scale(0.8)" }}
@@ -186,7 +186,7 @@ const Header = () => {
                                                 key={i}
                                                 className={"font-extrabold text-[2.4rem]"}
                                             >
-                                                { e }
+                                                { e.title }
                                             </UI.Button>
                                         </motion.section>
                                     )}

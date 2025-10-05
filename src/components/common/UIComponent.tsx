@@ -478,6 +478,10 @@ const Select = ({ list = [], trackingData, defaultValue, className, desc_no, onC
         setCurrentValue( defaultValue );
     }, [ trackingData, defaultValue ])
 
+    useEffect(() => {
+        onChange(defaultValue);
+    }, [ defaultValue ])
+
     return (
         <section
             ref={ containerRef }

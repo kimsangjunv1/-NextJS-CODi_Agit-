@@ -9,9 +9,9 @@ export default function Loading() {
         NProgress.start();
 
         return () => {
-        NProgress.done();
+            NProgress.done();
         };
     }, []);
 
-    return <div style={{ padding: "2rem" }}>로딩중...</div>;
+    return <div>로딩중...</div>;
 }

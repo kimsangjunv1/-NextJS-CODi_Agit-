@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation"
 import { Fragment, useEffect, useState } from "react"
+import { signOut, useSession } from "next-auth/react"
 import { AnimatePresence, motion } from "motion/react"
 
 import UI from '@/components/common/UIComponent'
@@ -9,39 +10,44 @@ import IconComponent from "@/components/common/IconComponent"
 import TextShimmer from "@/components/common/TextShimmerComponent"
 
 import useNavigate from "@/hooks/common/useNavigate"
-import { useLayoutStore } from "@/stores/useLayoutStore"
 import { useGetPostDetailQuery } from "@/hooks/api/post.query"
-import { signOut, useSession } from "next-auth/react"
-import { headerMenuList } from "@/constants/lists/configServiceList"
+
+import { useLayoutStore } from "@/stores/useLayoutStore"
 import { useServiceStore } from "@/stores/useServiceStore"
+
+import { headerMenuList } from "@/constants/lists/configServiceList"
+import { useGetCategoryListOnManagerQuery } from "@/hooks/api/category.query"
 
 const Header = () => {
     const params = useParams();
 
     const [ showMenu, setShowMenu ] = useState(false);
+    const { data: session, status } = useSession();
     
     const { reset } = useServiceStore();
-    const { isMobile } = useLayoutStore();
     const { currentPathName, pushToUrl } = useNavigate();
     const { mainViewMode, setMainViewMode, categoryFilter, setCategoryFilter  } = useLayoutStore();
-    const { data: getPostListData, refetch: getPostListFetch } = useGetPostDetailQuery(parseInt( (params?.id) as string ));
 
-    useEffect(() => {
-        if ( showMenu ) {
-            setShowMenu( false )
-        }
-    }, [ currentPathName ])
+    const { data: getCategoryListData, refetch: getCategoryListFetch } = useGetCategoryListOnManagerQuery();
+    const { data: getPostListData, refetch: getPostListFetch } = useGetPostDetailQuery(parseInt( (params?.id) as string ));
 
     const IS_ROUTE_HOME = currentPathName === "/";
     const IS_ROUTE_POST = currentPathName.includes("post") && !currentPathName.includes("modify") && !currentPathName.includes("create");
     const IS_ROUTE_POST_EDIT = currentPathName.includes("post") && currentPathName.includes("modify");
     const IS_ROUTE_POST_CREATE = currentPathName.includes("post") && currentPathName.includes("create");
     const IS_ROUTE_POST_LAB = currentPathName.includes("lab")
+    const IS_ROUTE_POST_MANAGER = currentPathName.includes("manager")
 
      const logout = () => {
         signOut({ callbackUrl: "/login" });
         reset();
     }
+
+    useEffect(() => {
+        if ( showMenu ) {
+            setShowMenu( false )
+        }
+    }, [ currentPathName ])
 
     return (
         <header>
@@ -64,11 +70,7 @@ const Header = () => {
                             { IS_ROUTE_HOME &&
                                 <UI.Button
                                     onClick={() => {
-                                        window.scrollTo({
-                                            top: 0,
-                                            left: 0,
-                                            // behavior: "smooth"
-                                        });
+                                        window.scrollTo({ top: 0, left: 0 });
                                         setMainViewMode( 1 )
                                     }}
                                     className="text-black text-[1.8rem] font-bold"
@@ -163,7 +165,7 @@ const Header = () => {
                                     }}
                                     className="flex gap-[2.0em] flex-1 justify-center"
                                 >
-                                    {[ "전체", "개발", "디자인", "3D" ].map((e, i) =>
+                                    { getCategoryListData?.result?.map((e, i) =>
                                         <motion.section
                                             key={`${e}-${i}`}
                                             initial={{ opacity: 0, transform: "scale(0.8)" }}
@@ -184,7 +186,7 @@ const Header = () => {
                                                 key={i}
                                                 className={"font-extrabold text-[2.4rem]"}
                                             >
-                                                { e }
+                                                { e.title }
                                             </UI.Button>
                                         </motion.section>
                                     )}
@@ -326,6 +328,41 @@ const Header = () => {
                                     </motion.section>
                                 </section>
                             }
+
+                            { IS_ROUTE_POST_MANAGER &&
+                                <section className="flex flex-col gap-[0.8rem]">
+                                    <motion.section
+                                        key={"post_title"}
+                                        initial={{ opacity: 0, transform: "scale(0.8)" }}
+                                        animate={{ opacity: 1, transform: "scale(1)" }}
+                                        exit={{ opacity: 0, transform: "scale(0.8)" }}
+                                        transition={{
+                                            // delay: 0.05 * (i + 1),
+                                            type: "spring",
+                                            mass: 0.1,
+                                            stiffness: 100,
+                                            damping: 10,
+                                        }}
+                                        className="flex gap-[1.6rem] flex-1 justify-center"
+                                    >
+                                        <TextShimmer
+                                            as="h2"
+                                            duration={3}
+                                            style={{
+                                                color: "#000000",
+                                                fontSize: "2.4rem",
+                                            }}
+                                            color={{
+                                                start: "#000000",
+                                                end: "#9393a0"
+                                            }}
+                                            className="font-extrabold"
+                                        >
+                                            {`어드민`}
+                                        </TextShimmer>
+                                    </motion.section>
+                                </section>
+                            }
                         </AnimatePresence>
                     </section>
                 </section>
@@ -351,7 +388,7 @@ const Header = () => {
                         <section className="mobile-inner max-w-[var(--size-tablet)] px-[2.4rem] py-[2.4rem] w-full h-full flex flex-col items-start justify-between">
                             <section className="flex flex-col items-start">
                                 <div className="w-full overflow-hidden mb-[2.4rem]" >
-                                    <p className="text-[7.2rem] font-bold leading-[1.5]">Hej!</p>
+                                    <p className="text-[5.2rem] font-bold leading-[1.5]">Hej!</p>
                                     <p className="text-[2.4rem] font-semibold leading-[1.5]">아래에서 메뉴를 선택해주세요.</p>
                                 </div>
 
@@ -400,12 +437,21 @@ const Header = () => {
                                             damping: 10,
                                         }}
                                     >
-                                        <UI.Button
-                                            onClick={() => logout()}
-                                            className="flex justify-center text-center gap-[0.4rem] w-full items-center text-[2.4rem] font-semibold whitespace-nowrap py-[1.2rem] text-[var(--color-red-500)]"
-                                        >
-                                            로그아웃
-                                        </UI.Button>
+                                        { session ? (
+                                            <UI.Button
+                                                onClick={() => logout()}
+                                                className="flex justify-center text-center gap-[0.4rem] w-full items-center text-[2.4rem] font-semibold whitespace-nowrap py-[1.2rem] text-[var(--color-red-500)]"
+                                            >
+                                                로그아웃
+                                            </UI.Button>
+                                        ) : (
+                                            <UI.Button
+                                                onClick={() => pushToUrl("/login")}
+                                                className="flex justify-center text-center gap-[0.4rem] w-full items-center text-[2.4rem] font-semibold whitespace-nowrap py-[1.2rem] text-[var(--color-gray-1000)]"
+                                            >
+                                                로그인
+                                            </UI.Button>
+                                        )}
                                     </motion.div>
                                 </div>
                             </section>
@@ -421,15 +467,32 @@ const Header = () => {
                                     />
                                     <p className="font-semibold">@kimsangjunv1</p>
                                 </UI.Button>
+
+                                { session ? (
+                                    <Fragment>
+                                        <p>어드민 이동 예정</p>
+                                        <div className="flex gap-[1.6rem]">
+                                            <UI.Button
+                                                className="flex items-center gap-[0.8rem] shadow-[var(--shadow-normal)] p-[0.8rem] rounded-[1.2rem] transition-colors bg-transparent hover:bg-[var(--color-gray-200)]"
+                                                onClick={() => {
+                                                    pushToUrl(`/post/create`)
+                                                }}
+                                            >
+                                                새로운 아티클 생성하기
+                                            </UI.Button>
+
+                                            <UI.Button
+                                                className="flex items-center gap-[0.8rem] shadow-[var(--shadow-normal)] p-[0.8rem] rounded-[1.2rem] transition-colors bg-transparent hover:bg-[var(--color-gray-200)]"
+                                                onClick={() => {
+                                                    pushToUrl(`/manager`)
+                                                }}
+                                            >
+                                                관리자 페이지 이동
+                                            </UI.Button>
+                                        </div>
+                                    </Fragment>
+                                ) : "" }
                                 
-                                <UI.Button
-                                    className="flex items-center gap-[0.8rem] shadow-[var(--shadow-normal)] p-[0.8rem] rounded-[1.2rem] transition-colors bg-transparent hover:bg-[var(--color-gray-200)]"
-                                    onClick={() => {
-                                        pushToUrl(`/post/create`)
-                                    }}
-                                >
-                                    새로운 아티클 생성하기 (임시)
-                                </UI.Button>
 
                                 <IconComponent type="graphic-logo-horizontal" alt="로고" height={132} width={152} />
                                 

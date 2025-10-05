@@ -51,10 +51,10 @@ const CheckBox = ({ defaultState = false, className, checked, guide, desc_no, pr
                 }}
             >
                 <div
-                    className={`w-[1.8rem] h-[1.8rem] rounded-[0.4rem] m-[0.4rem] relative transition-colors ${ currentState ? "bg-[var(--color-blue-1000)]" : "bg-transparent border border-[var(--color-gray-200)] hover:bg-[var(--color-gray-200)]" }`}
+                    className={`w-[2.0rem] h-[2.0rem] rounded-[0.6rem] m-[0.4rem] relative transition-colors ${ currentState ? "bg-[var(--color-brand-500)] shadow-[var(--shadow-normal)]" : "bg-[var(--color-gray-200)] border-[0.15rem] border-[var(--color-gray-300)] hover:bg-[var(--color-gray-200)]" }`}
                     data-description={ desc_no }
                 >
-                    <p className={`absolute top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%] font-bold text-[1.2rem] pointer-events-none ${ currentState ? "text-white" : "hidden" }`}>✓</p>
+                    <p className={`absolute top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%] font-bold text-[1.4rem] pointer-events-none ${ currentState ? "text-white" : "hidden" }`}>✓</p>
                 </div>
                 { guide ? <p>{ guide }</p> : "" }
             </UI.Button>
@@ -126,7 +126,7 @@ const Switch = ({ states, onChange, desc_no }: SwitchProps) => {
     );
 };
 
-const Input = forwardRef<{ reset: () => void }, InputProps & { phoneNumber?: boolean }>(({
+const Input = forwardRef<{ reset: () => void }, InputProps & { phoneNumber?: boolean; validationPattern?: RegExp }>(({
     disabled = false,
     name = "input",
     desc_no,
@@ -134,6 +134,7 @@ const Input = forwardRef<{ reset: () => void }, InputProps & { phoneNumber?: boo
     icon = false,
     type = "text",
     placeholder = "placeholder 지정이 필요해요",
+    validationPattern,
     guide,
     className,
     autoComplete = "on",
@@ -161,11 +162,19 @@ const Input = forwardRef<{ reset: () => void }, InputProps & { phoneNumber?: boo
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let val = e.target.value;
+        
         if (phoneNumber) {
             // 숫자만 허용
             val = val.replace(/\D/g, "");
         }
+
+        if (validationPattern) {
+            // val에서 패턴에 맞지 않는 문자 제거
+            val = val.split("").filter(char => validationPattern.test(char)).join("");
+        }
+
         setValue(val);
+
         if (onChange) {
             onChange({ ...e, target: { ...e.target, value: val } });
         }
@@ -173,7 +182,7 @@ const Input = forwardRef<{ reset: () => void }, InputProps & { phoneNumber?: boo
 
     return (
         <section
-            className={`flex items-center gap-[0.8rem] max-h-[var(--input-height)] h-full transition-colors bg-[#ffffff28] relative ${className?.container ? className?.container : " border border-[var(--color-gray-200)] hover:border-[var(--color-gray-500)] focus:border-[var(--color-gray-500)] px-[1.6rem]"}`}
+            className={`flex items-center gap-[0.8rem] max-h-[var(--input-height)] h-full transition-colors bg-[#ffffff28] border border-[var(--color-gray-200)] px-[1.2rem] rounded-[1.2rem] hover:border-[var(--color-brand-500)] relative ${className?.container ? className?.container : " border border-[var(--color-gray-200)] hover:border-[var(--color-gray-500)] focus:border-[var(--color-gray-500)] px-[1.6rem]"}`}
             data-description={desc_no}
         >
             {guide && <p className="absolute top-[50%] right-[1.6rem] transform -translate-y-1/2">{guide}</p>}
@@ -468,6 +477,10 @@ const Select = ({ list = [], trackingData, defaultValue, className, desc_no, onC
     useEffect(() => {
         setCurrentValue( defaultValue );
     }, [ trackingData, defaultValue ])
+
+    useEffect(() => {
+        onChange(defaultValue);
+    }, [ defaultValue ])
 
     return (
         <section

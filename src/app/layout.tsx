@@ -8,10 +8,15 @@ import Modal from "@/components/layout/Modal";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import Marquee from "@/components/layout/Marquee";
+import PageProgress from "@/components/common/PageProgress";
+import AuthCheckComponent from "@/components/common/AuthCheckComponent";
 import PathCheckComponent from "@/components/common/PathCheckComponent";
 
 import "@/scss/global.css";
 import "@/scss/index.scss";
+import ClientPageProgress from "@/components/common/ClinentComponent";
+import TransitionOverlay from "@/components/common/TransitionOverlay";
+
 
 export const metadata: Metadata = {
     title: "agit.",
@@ -23,25 +28,29 @@ export default function RootLayout({ children, modal }: Readonly<{ children: Rea
         <html lang="ko">
             <body>
                 <QueryProvider>
-                    <ReactLenis
-                        root
-                        options={{
-                            // duration: 0.2,
-                            lerp: 0.2,
-                        }}
-                    />
-                    <Header />
-                    <PathCheckComponent>
-                        { children }
-                        {/* { modal } */}
-                    </PathCheckComponent>
-                    {/* <Notice /> */}
-                    <Footer />
+                    <AuthCheckComponent>
+                        <PageProgress />
+                        <ReactLenis
+                            root
+                            options={{
+                                // duration: 0.2,
+                                lerp: 0.2,
+                            }}
+                        />
+                        <Header />
+                        <PathCheckComponent>
+                            <TransitionOverlay>
+                                { children }
+                            </TransitionOverlay>
+                        </PathCheckComponent>
+                        {/* <Notice /> */}
+                        <Footer />
 
-                    <Modal />
-                    <Toast />
-                    <Marquee title={"THIS PAGE MADE BY REACT | GSAP | SCSS, TAKE A LOOK AROUND"} />
-                    {/* <Cursor /> */}
+                        <Modal />
+                        <Toast />
+                        <Marquee />
+                        {/* <Cursor /> */}
+                    </AuthCheckComponent>
                 </QueryProvider>
             </body>
         </html>

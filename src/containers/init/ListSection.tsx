@@ -20,45 +20,45 @@ const ListSection = () => {
 
     return (
         <AnimatePresence mode='popLayout'>
-  {mainViewMode === 1 && (
-    <motion.section
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{
-        type: "spring",
-        mass: 0.1,
-        stiffness: 100,
-        damping: 10,
-      }}
-      className="flex-1 w-full h-full overflow-hidden"
-    >
-      <UI.ErrorBoundaryWrapper>
-        <Slider />
-      </UI.ErrorBoundaryWrapper>
-    </motion.section>
-  )}
+            { mainViewMode === 1 && (
+                <motion.section
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{
+                        type: "spring",
+                        mass: 0.1,
+                        stiffness: 100,
+                        damping: 10,
+                    }}
+                    className="flex-1 w-full h-full overflow-hidden"
+                >
+                    <UI.ErrorBoundaryWrapper>
+                        <Slider />
+                    </UI.ErrorBoundaryWrapper>
+                </motion.section>
+            )}
 
-  {mainViewMode === 2 && (
-    <motion.section
-      key="list"
-      initial={{ opacity: 0, transform: "scale(0.9)" }}
-      animate={{ opacity: 1, transform: "scale(1)" }}
-      exit={{ opacity: 0, transform: "scale(0.9)" }}
-      transition={{
-        type: "spring",
-        mass: 0.1,
-        stiffness: 100,
-        damping: 10,
-      }}
-      className="w-full h-full pt-[var(--header-height)] pb-[calc(1.6rem*4)]"
-    >
-      <UI.ErrorBoundaryWrapper>
-        <List />
-      </UI.ErrorBoundaryWrapper>
-    </motion.section>
-  )}
-</AnimatePresence>
+            { mainViewMode === 2 && (
+                <motion.section
+                    key="list"
+                    initial={{ opacity: 0, transform: "scale(0.9)" }}
+                    animate={{ opacity: 1, transform: "scale(1)" }}
+                    exit={{ opacity: 0, transform: "scale(0.9)" }}
+                    transition={{
+                        type: "spring",
+                        mass: 0.1,
+                        stiffness: 100,
+                        damping: 10,
+                    }}
+                    className="w-full h-full pt-[var(--header-height)] pb-[calc(1.6rem*4)]"
+                >
+                    <UI.ErrorBoundaryWrapper>
+                        <List />
+                    </UI.ErrorBoundaryWrapper>
+                </motion.section>
+            )}
+        </AnimatePresence>
     )
 }
 

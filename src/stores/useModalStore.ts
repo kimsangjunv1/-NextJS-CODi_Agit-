@@ -15,10 +15,12 @@ interface Modal {
         text?: string | null;
         onClick?: () => void;
         loading?: boolean | null;
+        className?: string;
     };
     cancel?: {
         text?: string | null;
         onClick?: () => void;
+        className?: string;
     };
     isOpen: boolean;
     isNeedNext?: boolean;
@@ -46,11 +48,13 @@ export const useModalStore = create<ModalStoreType>((set, get) => ({
         confirm: {
             text: "",
             onClick: undefined,
-            loading: null
+            loading: null,
+            className: "",
         },
         cancel: {
             text: "",
-            onClick: undefined
+            onClick: undefined,
+            className: "",
         },
         isOpen: false,
         isNeedNext: false,
@@ -69,11 +73,13 @@ export const useModalStore = create<ModalStoreType>((set, get) => ({
         confirm: {
             text: null,
             onClick: undefined,
-            loading: null
+            loading: null,
+            className: "",
         },
         cancel: {
             text: null,
-            onClick: undefined
+            onClick: undefined,
+            className: "",
         },
         isOpen: false,
         isNeedNext: false,

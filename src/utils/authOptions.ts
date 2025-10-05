@@ -16,6 +16,7 @@ export const authOptions: AuthOptions = {
 
                 try {
                     const data = await setLoginFetch({ email: credentials.email, password: credentials.password });
+                    console.log("data", data)
 
                     if (!data) return null;
 

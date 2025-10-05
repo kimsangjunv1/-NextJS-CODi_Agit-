@@ -9,6 +9,8 @@ export const clientFetch = async (url: string, options: RequestOptions = {}) => 
             ? window.location.origin                                         // 클라이언트
             : process.env.NEXT_PUBLIC_DOMAIN_URL || "http://localhost:3000"; // 서버
 
+        console.log("[clientFetch] 요청 URL:", baseUrl);
+
     const headers: HeadersInit = {
         "Content-Type": "application/json",
         ...(options.headers || {}),

@@ -22,6 +22,7 @@ export const serverFetch = async (url: string, options: RequestOptions = {}) => 
         {
             ...options,
             headers,
+            credentials: "include",
             body: options.body ? JSON.stringify(options.body) : undefined,
         }
     );

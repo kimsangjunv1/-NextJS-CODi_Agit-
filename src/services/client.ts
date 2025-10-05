@@ -22,6 +22,8 @@ export const clientFetch = async (url: string, options: RequestOptions = {}) => 
     //     headers["Authorization"] = `Bearer ${token}`;
     // }
 
+    console.log("baseUrl + url", baseUrl + url)
+
     const response = await fetch(
         baseUrl + url,
         {
@@ -30,6 +32,8 @@ export const clientFetch = async (url: string, options: RequestOptions = {}) => 
             body: options.body ? JSON.stringify(options.body) : undefined,
         }
     );
+
+    console.log("response", response)
 
     if (!response.ok) {
         // 공통 에러 처리

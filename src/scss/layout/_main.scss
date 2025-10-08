@@ -1,30 +1,21 @@
 main {
-    // max-width: var(--size-pc);
-
     min-height: 100dvh;
     margin: 0 auto;
     overflow-x: hidden;
-    
-    .main-inner {
-        > article {
-            // height: 100%;
-            // width: 100%;
-        }
-    }
 
-    &::after {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        z-index: 1;
-        content: '';
-        width: 100%;
-        height: var(--header-height);
+    // &::after {
+    //     position: fixed;
+    //     bottom: 0;
+    //     left: 0;
+    //     z-index: 1;
+    //     content: '';
+    //     width: 100%;
+    //     height: calc(var(--header-height) / 2);
 
-        margin: 0 auto;
-        backdrop-filter: blur(20px);
-        mask-image: linear-gradient(rgb(0, 0, 0, 0) 0%, rgba(0, 0, 0) 90%);
-    }
+    //     margin: 0 auto;
+    //     backdrop-filter: blur(20px);
+    //     mask-image: linear-gradient(rgb(0, 0, 0, 0) 0%, rgba(0, 0, 0) 90%);
+    // }
 }
 
 // .comment-list {

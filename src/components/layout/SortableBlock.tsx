@@ -334,7 +334,7 @@ const Block = ({ block, rowIndex, blockIndex, last, blockCount }: { block: Secti
                                 }
                                 className={{
                                     container: "w-full border-b border-b-[var(--color-gray-200)]",
-                                    input: "h-[calc(1.6rem+0.8rem)] text-[2.0rem] font-bold text-[var(--color-gray-1000)]"
+                                    input: "h-[calc(1.6rem+0.8rem)] text-[2.4rem] font-bold text-[var(--color-gray-1000)]"
                                 }}
                             />
                         </section>
@@ -399,7 +399,7 @@ const Block = ({ block, rowIndex, blockIndex, last, blockCount }: { block: Secti
                                     }
                                     className={{
                                         container: "w-full border-b border-b-[var(--color-gray-200)]",
-                                        input: "h-[calc(1.6rem+0.8rem)] text-[2.0rem] font-bold text-[var(--color-gray-1000)]"
+                                        input: "h-[calc(1.6rem+0.8rem)] text-[2.4rem] font-bold text-[var(--color-gray-1000)]"
                                     }}
                                 />
                             </section>

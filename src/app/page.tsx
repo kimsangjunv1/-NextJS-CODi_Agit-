@@ -11,6 +11,7 @@ const Page = async () => {
     let result;
 
     try {
+        console.log("process.env.NEXT_PUBLIC_DOMAIN_URL????", process.env.NEXT_PUBLIC_DOMAIN_URL);
         const res = await fetch(`${process.env.NEXT_PUBLIC_DOMAIN_URL}/api/v1/get/post/latest`, {
             method: "GET",
             // SSG를 위해 revalidate 옵션 적용

@@ -82,8 +82,6 @@ const Slider = ({ initialData }: { initialData: { header: ApiHeaderResponseType,
         offset: ["start start", "end end"],
     });
 
-    console.log("엥?", data)
-
     // ------------------ 트랙/뷰포트 크기 계산 ------------------
     const calculateMaxTranslate = useCallback(() => {
         const track = sliderRef.current;

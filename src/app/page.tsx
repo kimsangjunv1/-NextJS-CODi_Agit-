@@ -11,7 +11,7 @@ const Page = async () => {
     let result;
 
     try {
-        const res = await fetch(`${process.env.NEXTAUTH_URL}/api/v1/get/post/latest`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_DOMAIN_URL}/api/v1/get/post/latest`, {
             method: "GET",
             // SSG를 위해 revalidate 옵션 적용
             next: { revalidate },

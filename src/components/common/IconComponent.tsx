@@ -61,6 +61,9 @@ const IconComponent = ({ isLottie = false, type, alt, className, width = 24, hei
 
             case "outlined-chart":
                 return PATH_DEFAULT + PATH_OUTLINED + "chart" + EXTENSION;
+
+            case "outlined-calendar":
+                return PATH_DEFAULT + PATH_OUTLINED + "calendar" + EXTENSION;
         
             default:
                 return PATH_DEFAULT + PATH_OUTLINED + "normal" + EXTENSION;

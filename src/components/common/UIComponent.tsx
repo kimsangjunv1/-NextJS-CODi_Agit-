@@ -1153,6 +1153,7 @@ const DropDown = ({ children, className, list, height = "var(--input-height)", d
 
 const Calendar = ({
     className = "bg-[var(--color-gray-100)] text-[var(--color-gray-1000)] rounded-[0.8rem] px-[1.2rem] h-[4.2rem]",
+    containerClassName,
     icon = false,
     desc_no,
     defaultValue = new Date(),
@@ -1164,7 +1165,7 @@ const Calendar = ({
     center = false,
     onRuleAdjust, // 상대 Calendar를 보정하기 위한 callback
 }: CalendarModalProps & { ruleDate?: string; onRuleAdjust?: (newDate: string) => void }) => {
-    const [modalOpen, setModalOpen] = useState(false);
+        const [modalOpen, setModalOpen] = useState(false);
     const [currentDate, setCurrentDate] = useState(defaultValue);
     const [positionStyle, setPositionStyle] = useState<{ left?: number; right?: number }>({ left: 0 });
 
@@ -1182,26 +1183,26 @@ const Calendar = ({
     const daysInMonth = getDaysInMonth(year, month);
     const firstDay = getFirstDayOfMonth(year, month);
 
-    const parseRuleDate = () => ruleDate ? new Date(ruleDate) : null;
+    const parseRuleDate = () => (ruleDate ? new Date(ruleDate) : null);
 
-    const convertDateToStr = ( date: Date ) => {
-        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-    }
+    const convertDateToStr = (date: Date, isEnd?: boolean) => {
+        const base = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+            date.getDate()
+        ).padStart(2, "0")}`;
+        return isEnd ? `${base}T23:59:59` : `${base}T00:00:00`;
+    };
 
-    // 달력에서 날짜 이동 시 범위 보정
     const adjustDateToLimit = (date: Date) => {
         if (!ruleDate || !limitMonths) return date;
 
         const rule = parseRuleDate()!;
-        
-        // min/max 날짜 생성
-        const min = new Date(rule.getFullYear(), rule.getMonth(), 1, 12); // 정오 기준
+        const min = new Date(rule.getFullYear(), rule.getMonth(), 1, 12);
         min.setMonth(min.getMonth() - limitMonths);
-        min.setDate(1); // ← setMonth로 밀린 날짜 보정
+        min.setDate(1);
 
         const max = new Date(rule.getFullYear(), rule.getMonth(), 1, 12);
         max.setMonth(max.getMonth() + limitMonths);
-        max.setDate(getDaysInMonth(max.getFullYear(), max.getMonth())); // 마지막 날로 보정
+        max.setDate(getDaysInMonth(max.getFullYear(), max.getMonth()));
 
         if (date.getTime() < min.getTime()) return min;
         if (date.getTime() > max.getTime()) return max;
@@ -1210,45 +1211,44 @@ const Calendar = ({
     };
 
     const handleDateClick = (day: number) => {
-        // 로컬 기준으로 날짜 생성
-        const SELECTED_DATE = new Date(currentDate.getFullYear(), currentDate.getMonth(), day, 12); 
+        const isEnd = String(desc_no).includes("종료일");
+
+        // 종료일이면 23:59:59, 아니면 정오
+        const SELECTED_DATE = isEnd
+            // ? new Date(year, month, day, 23, 59, 59, 999)
+            ? new Date(year, month, day, 23, 59, 59)
+            : new Date(year, month, day, 12);
 
         setCurrentDate(SELECTED_DATE);
         setModalOpen(false);
 
-        const dateStr = `${SELECTED_DATE.getFullYear()}-${String(SELECTED_DATE.getMonth() + 1).padStart(2, "0")}-${String(SELECTED_DATE.getDate()).padStart(2, "0")}`;
-        if (onDateSelect) onDateSelect(dateStr);
+        if (onDateSelect) onDateSelect(convertDateToStr(SELECTED_DATE, isEnd));
     };
 
     const prevMonth = () => {
         const PREV_DATE = new Date(year, month - 1, 1, 12);
+        setCurrentDate(PREV_DATE);
 
-        const dateStr = `${PREV_DATE.getFullYear()}-${String(PREV_DATE.getMonth() + 1).padStart(2, "0")}-${String(PREV_DATE.getDate()).padStart(2, "0")}`;
-        if (onDateSelect) onDateSelect(dateStr);
-
-        setCurrentDate(PREV_DATE)
+        if (onDateSelect) onDateSelect(convertDateToStr(PREV_DATE, String(desc_no).includes("종료일")));
     };
-    
+
     const nextMonth = () => {
         const NEXT_DATE = new Date(year, month + 1, 1, 12);
+        setCurrentDate(NEXT_DATE);
 
-        const dateStr = `${NEXT_DATE.getFullYear()}-${String(NEXT_DATE.getMonth() + 1).padStart(2, "0")}-${String(NEXT_DATE.getDate()).padStart(2, "0")}`;
-        if (onDateSelect) onDateSelect(dateStr);
-        
-        setCurrentDate(NEXT_DATE)
+        if (onDateSelect) onDateSelect(convertDateToStr(NEXT_DATE, String(desc_no).includes("종료일")));
     };
 
     const detectOutsideClick = (e: MouseEvent) => {
         if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-            // handleDateClick(1);
-            setModalOpen(false)
-        };
+            setModalOpen(false);
+        }
     };
 
     useEffect(() => {
         if (modalOpen) {
             document.addEventListener("click", detectOutsideClick);
-            
+
             if (calendarRef.current) {
                 const rect = calendarRef.current.getBoundingClientRect();
                 const calendarWidth = 320;
@@ -1262,50 +1262,47 @@ const Calendar = ({
 
     useEffect(() => {
         if (!ruleDate) return;
-        
-        const descriptionKey = `${ desc_no }`
+
+        const descriptionKey = `${desc_no}`;
         const rule = new Date(ruleDate);
 
-        // 종료일 달력일 때
         if (descriptionKey.includes("종료일") && rule > currentDate) {
-            setCurrentDate(rule);
-
-            if (onDateSelect) onDateSelect(convertDateToStr(rule));
+            const endDate = new Date(rule.getFullYear(), rule.getMonth(), rule.getDate(), 23, 59, 59, 999);
+            console.log("endDate", endDate)
+            setCurrentDate(endDate);
+            if (onDateSelect) onDateSelect(convertDateToStr(endDate, true));
             return;
         }
 
-        // 시작일 달력일 때
         if (descriptionKey.includes("시작일") && rule < currentDate) {
-            setCurrentDate(rule);
-
-            if (onDateSelect) onDateSelect(convertDateToStr(rule));
+            const startDate = new Date(rule.getFullYear(), rule.getMonth(), rule.getDate(), 12);
+            setCurrentDate(startDate);
+            if (onDateSelect) onDateSelect(convertDateToStr(startDate, false));
             return;
         }
 
-        // 범위 제한 (limitMonths 처리)
         const SELECTED_DATE = adjustDateToLimit(currentDate);
-        
         setCurrentDate(SELECTED_DATE);
-
-        if (onDateSelect) onDateSelect(convertDateToStr(SELECTED_DATE));
+        if (onDateSelect) onDateSelect(convertDateToStr(SELECTED_DATE, descriptionKey.includes("종료일")));
     }, [ruleDate]);
 
-    // useEffect(() => {
-    //     console.log("currentDate", currentDate)
-    // }, [ currentDate ])
+    useEffect(() => {
+        console.log("currentDate", currentDate)
+    }, [currentDate])
 
     return (
-        <section ref={containerRef} className="relative calendar">
-            <motion.button
+        <section ref={containerRef} className={`relative calendar ${ containerClassName ? containerClassName : "" }`}>
+            <UI.Button
                 ref={calendarRef}
                 onClick={() => setModalOpen(!modalOpen)}
                 className={`${className} ${icon ? "flex gap-[2.8rem] items-center justify-between" : ""} hover:bg-[var(--color-gray-200)] transition-colors`}
-                whileTap={{ scale: 0.95 }}
-                data-description={desc_no}
+                // whileTap={{ scale: 0.95 }}
+                desc_no={ desc_no }
+                rippleColor='#65778a'
             >
-                {(currentDate).toISOString().split("T")[0]}
-                {icon && <IconComponent type="colored-calendar" alt="캘린더" />}
-            </motion.button>
+                {currentDate.toLocaleDateString("sv-SE")} 
+                {icon && <IconComponent type="outlined-calendar" alt="캘린더" />}
+            </UI.Button>
 
             <AnimatePresence>
                 {modalOpen && (
@@ -1319,9 +1316,13 @@ const Calendar = ({
                     >
                         <div className="p-[2.4rem] w-[calc(1.6rem*20)] flex flex-col gap-[2.4rem]" onClick={(e) => e.stopPropagation()}>
                             <section className="flex items-center justify-between mb-4">
-                                <button onClick={prevMonth} className="px-2 py-1 rounded hover:bg-gray-200" type="button">&lt;</button>
+                                <button onClick={prevMonth} className="px-2 py-1 rounded hover:bg-gray-200" type="button">
+                                    <IconComponent type='outlined-arrow-below' alt='이전' className='rotate-90' />
+                                </button>
                                 <h6 className="font-semibold text-[2.0rem]">{month + 1}월 {year}</h6>
-                                <button onClick={nextMonth} className="px-2 py-1 rounded hover:bg-gray-200" type="button">&gt;</button>
+                                <button onClick={nextMonth} className="px-2 py-1 rounded hover:bg-gray-200" type="button">
+                                    <IconComponent type='outlined-arrow-below' alt='다음' className='rotate-270' />
+                                </button>
                             </section>
 
                             <section>

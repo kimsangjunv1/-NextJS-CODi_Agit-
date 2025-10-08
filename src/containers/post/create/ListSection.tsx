@@ -69,10 +69,10 @@ const Title = ({ setCreatePostState }: { setCreatePostState: React.Dispatch<Reac
         <article className='flex flex-col items-center justify-between gap-[1.6rem]'>
             <section className='flex flex-col items-center justify-center gap-[1.6rem]'>
                 <UI.Select
-                    trackingData={`${ getCategoryListData?.result?.find((e, idx) => idx === 0)?.title }`}
-                    defaultValue={ getCategoryListData?.result?.find((e, idx) => idx === 0)?.idx }
+                    trackingData={`${ getCategoryListData?.result?.filter((e) => e.is_enabled).find((e, idx) => idx === 0)?.title }`}
+                    defaultValue={ getCategoryListData?.result?.filter((e) => e.is_enabled).find((e, idx) => idx === 0)?.idx }
 
-                    list={ getCategoryListData?.result?.map((e) => {
+                    list={ getCategoryListData?.result?.filter((e) => e.is_enabled).map((e) => {
                         return {
                             title: e.title,
                             value: e.idx

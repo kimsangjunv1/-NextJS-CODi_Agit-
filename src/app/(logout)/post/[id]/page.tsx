@@ -17,7 +17,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
     // **
 
     return (
-        <Main id={"home"} className={{ inner: "flex flex-col gap-[2.4rem] pt-[var(--header-height)] ", container:"" }}>
+        <Main id={"home"} className={{ inner: "flex flex-col gap-[2.4rem]", container:"" }}>
             <ListSection id={ id } />
         </Main>
     )

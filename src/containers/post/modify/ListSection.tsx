@@ -88,10 +88,10 @@ const Title = ({
         <article className='flex flex-col items-center justify-between gap-[1.6rem]'>
             <section className='flex flex-col items-center justify-center gap-[1.6rem]'>
                 <UI.Select
-                    trackingData={`${ getCategoryListData?.result?.find((e) => e.idx === category_idx)?.title }`}
-                    defaultValue={ getCategoryListData?.result?.find((e) => e.idx === category_idx)?.idx }
+                    trackingData={`${ getCategoryListData?.result?.filter((e) => e.is_enabled).find((e) => e.idx === category_idx)?.title }`}
+                    defaultValue={ getCategoryListData?.result?.filter((e) => e.is_enabled).find((e) => e.idx === category_idx)?.idx }
 
-                    list={ getCategoryListData?.result?.map((e) => {
+                    list={ getCategoryListData?.result?.filter((e) => e.is_enabled).map((e) => {
                         return {
                             title: e.title,
                             value: e.idx

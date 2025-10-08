@@ -171,6 +171,72 @@ const ModifyCategory = ({ info, onChange }: { info: CategoryItemManager, onChang
     )
 }
 
+// 초대코드 추가 모달
+const AddInvitationCode = ({ onChange }: { onChange: (e: any) => void }) => {
+    const [ currentState, setCurrentState ] = useState({ is_active: true, expire_at: "" });
+
+    useEffect(() => {
+        onChange(currentState);
+    }, [ currentState ])
+
+    return (
+        <article className="flex flex-col gap-[2.4rem]">
+            <section className="flex flex-col gap-[1.2rem]">
+                <section className='flex flex-col gap-[0.8rem]'>
+                    <p className="text-[var(--color-gray-500)] font-medium">활성화 여부</p>
+                </section>
+                
+                <section className='flex flex-col gap-[0.8rem]'>
+                    {/* <UI.Input
+                        validationPattern={/^[\p{L}\p{N}\s]+$/u}
+                        onChange={(e) => {
+                            setCurrentState(prev => ({
+                                ...prev,
+                                is_active: e.target.value
+                            }));
+                        }}
+                        placeholder="카테고리 이름을 입력해주세요"
+                        className={{
+                            container: "h-[4.2rem]"
+                        }}
+                    /> */}
+                    <UI.Switch
+                        states={ true }
+                        onChange={(event) => {
+                            setCurrentState(prev => ({
+                                ...prev,
+                                is_active: event
+                            }));
+                        }}
+                    />
+                </section>
+            </section>
+
+            <section className="flex flex-col gap-[1.2rem]">
+                <section className='flex flex-col gap-[0.8rem]'>
+                    <p className="text-[var(--color-gray-500)] font-medium">유효기간</p>
+                </section>
+                
+                <section className='flex flex-col gap-[0.8rem]'>
+                    <UI.Calendar
+                        defaultValue={new Date()}
+                        icon={true}
+                        // ruleDate={searchPayload.StartDate}
+                        onDateSelect={(date) => {
+                            setCurrentState(prev => ({
+                                ...prev,
+                                expire_at: date
+                            }))
+                        }}
+                        containerClassName='flex-1'
+                        className='bg-[var(--color-gray-100)] text-[var(--color-gray-1000)] rounded-[0.8rem] px-[1.2rem] h-[4.2rem] w-full'
+                    />
+                </section>
+            </section>
+        </article>
+    )
+}
+
 
 const ModalContent = {
     Image: {
@@ -179,6 +245,9 @@ const ModalContent = {
     Post: {
         AddCategory,
         ModifyCategory,
+    },
+    Invitation: {
+        AddInvitationCode,
     }
 }
 

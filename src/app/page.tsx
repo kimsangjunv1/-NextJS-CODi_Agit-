@@ -1,35 +1,64 @@
 // app/(pages)/page.tsx
-import { cookies } from "next/headers";
 import Main from "@/components/layout/Main";
 import ListSection from "@/containers/init/ListSection";
-import { GetPostLatestListResponseType } from "@/types/post.type";
+import { supabaseServer } from "@/utils/supabase/supabaseServer";
+import { GetPostLatestListResponseType, ApiHeaderResponseType } from "@/types/post.type";
 
-// revalidate 초 단위 (예: 60초마다 재생성)
-export const revalidate = 60;
+export const revalidate = 60; // ISR: 60초마다 페이지 재생성
 
 const Page = async () => {
-    let result;
+    let initialData: { body: GetPostLatestListResponseType; header: ApiHeaderResponseType } = {
+        body: {
+            result: [],
+            pagination: { totalCount: 0, pageSize: 10, pageNum: 1 },
+        },
+        header: {
+            resultMsg: "FAILED",
+            resultCode: 500,
+            isSuccessful: false,
+            timestamp: new Date().toISOString(),
+        },
+    };
 
     try {
-        console.log("process.env.NEXT_PUBLIC_DOMAIN_URL????", process.env.NEXT_PUBLIC_DOMAIN_URL);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_DOMAIN_URL}/api/v1/get/post/latest`, {
-            method: "GET",
-            // SSG를 위해 revalidate 옵션 적용
-            next: { revalidate },
-        });
+        const supabase = await supabaseServer();
 
-        const json = await res.json();
-        
-        if (json) {
-            result = json
+        const { data: currentData, error } = await supabase
+            .from("posts")
+            .select("idx, title, thumbnail, summary, created_at, views, category!left(title)")
+            .order("created_at", { ascending: false })
+            .limit(10);
+
+        if (error) throw error;
+
+        const formattedData = currentData?.map(item => ({
+            ...item,
+            category: item.category?.[0] ?? { title: "" }  // 배열 -> 단일 객체
+        }));
+
+        initialData = {
+            body: {
+                result: formattedData ?? [],
+                pagination: {
+                    totalCount: currentData?.length ?? 0,
+                    pageSize: 10,
+                    pageNum: 1,
+                },
+            },
+            header: {
+                resultMsg: "SUCCESS",
+                resultCode: 200,
+                isSuccessful: true,
+                timestamp: new Date().toISOString(),
+            },
         };
-    } catch (err) {
-        console.error("SSG fetch error:", err);
+    } catch (err: any) {
+        console.error("SSR fetch error:", err);
     }
 
     return (
         <Main id="home" className={{ inner: "min-h-[100dvh]", container: "" }}>
-            <ListSection initialData={result} />
+            <ListSection initialData={initialData} />
         </Main>
     );
 };

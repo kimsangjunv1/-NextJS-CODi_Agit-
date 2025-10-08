@@ -142,7 +142,7 @@ const Title = ({
                                 delay: 0.1,
                                 duration: 2.5,
                                 ease: "easeOut",
-                                repeat: 10,       // 무한 반복
+                                repeat: 0,       // 무한 반복
                                 repeatType: "loop",
                             }}
                             style={{

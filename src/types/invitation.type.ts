@@ -27,7 +27,7 @@ export interface InvitationCodeListItem {
 }
 
 export interface GetInvitationCodeListOnManagerResponseType {
-    result: null;
+    result: any;
     pagination: ApiPaginationResponseType;
 }
 

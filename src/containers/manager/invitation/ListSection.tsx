@@ -158,7 +158,7 @@ const LoginForm = () => {
                 </section>
 
                 <section id='list' className='flex flex-col w-full gap-[1.6rem]'>
-                    { getInvitationCodeListData ? getInvitationCodeListData.result.map((e, i) =>
+                    { getInvitationCodeListData ? getInvitationCodeListData?.result?.map((e: any, i: number) =>
                         <section key={i} className='flex gap-[0.8rem] bg-white rounded-[0.8rem] shadow-[var(--shadow-normal)] p-[1.2rem] flex-1'>
                             <section className='d'>
                                 <UI.CheckBox
@@ -174,8 +174,8 @@ const LoginForm = () => {
                                             id: e.id,
                                             expire_at: e.expire_at
                                         }
+
                                         patchInvitationCodeFetch( PAYLOAD );
-                                        // setData(prev => prev.map((item) => item.id === e.id ? {...item, state: e.state} : item))
                                     }}
                                 />
                             </section>

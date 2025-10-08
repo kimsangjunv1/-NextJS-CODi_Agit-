@@ -32,7 +32,7 @@ export async function DELETE(req: Request) {
                     }
                 },
                 header: {
-                    resultMsg: "SUCCESS",
+                    resultMsg: "선택하신 카테고리를 삭제했어요.",
                     resultCode: 200,
                     isSuccessful: true,
                     timestamp: new Date().toISOString(),

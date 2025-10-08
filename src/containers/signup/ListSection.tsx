@@ -9,6 +9,7 @@ import useNavigate from '@/hooks/common/useNavigate'
 import { useToastStore } from '@/stores/useToastStore'
 import IconComponent from '@/components/common/IconComponent'
 import { useSetUserQuery } from '@/hooks/api/user.query'
+import { useGetInvitationCodeCheckQuery } from '@/hooks/api/invitation.query'
 
 const ListSection = () => {
     const [ selectedMenu, setSelectedMenu ] = useState<number>(1);
@@ -34,6 +35,8 @@ const LoginForm = () => {
     const { setToast } = useToastStore();
     const { replaceToUrl, backToUrl } = useNavigate();
     const { data: setUserData, mutate: setUserFetch } = useSetUserQuery();
+    const [ currentCode, setCurrentCode ] = useState("");
+    const { data: getInvitationCodeCheckData, refetch: getInvitationCodeCheckFetch, isLoading } = useGetInvitationCodeCheckQuery(currentCode);
     
     const [ initGlow, setInitGlow ] = useState(false);
 
@@ -127,6 +130,10 @@ const LoginForm = () => {
         }
     }, [ setUserData ])
 
+    useEffect(() => {
+        console.log("isLoading", isLoading)
+    }, [ isLoading ])
+
     return (
         <Fragment>
             <article
@@ -153,58 +160,92 @@ const LoginForm = () => {
                     {/* 헤더 END */}
                     
                     {/* 바디 */}
-                    <section className='w-full flex flex-col gap-[2.4rem]'>
-                        <Item
-                            type="text"
-                            title="닉네임"
-                            description={`최소 ${RULE_NICK_NAME_LENGTH}자리 이상`}
-                            placeholder="닉네임"
-                            onChange={(e) => {
-                                signUpValueRef.current = {
-                                    ...signUpValueRef.current,
-                                    name: e.target.value
-                                }
-                            }}
-                        />
+                    <section className='w-full flex flex-col items-center justify-center gap-[2.4rem]'>
+                        { !getInvitationCodeCheckData?.result ? (
+                            <Fragment>
+                                <Item
+                                    type="text"
+                                    title="초대코드"
+                                    description={`최소 ${RULE_NICK_NAME_LENGTH}자리 이상`}
+                                    placeholder="닉네임"
+                                    onChange={(e) => {
+                                        setCurrentCode(e.target.value);
+                                    }}
+                                />
+                                <p className='text-[1.2rem] text-[var(--color-gray-500)] text-center'>
+                                    { getInvitationCodeCheckData?.statusCode === 0 ? "코드입력이 필요합니다." : "" }
+                                    { getInvitationCodeCheckData?.statusCode === 1 ? "코드 유효성 검증 완료." : "" }
+                                    { getInvitationCodeCheckData?.statusCode === 2 ? "코드가 만료되었습니다." : "" }
+                                    { getInvitationCodeCheckData?.statusCode === 3 ? "비활성화된 코드입니다." : "" }
+                                    { getInvitationCodeCheckData?.statusCode === 4 ? "이미 사용된 코드입니다." : "" }
+                                    { getInvitationCodeCheckData?.statusCode === 5 ? "발급되지 않은 코드입니다." : "" }
+                                </p>
+                                <UI.Button
+                                    className='bg-[var(--color-gray-200)] text-[var(--color-gray-700)] px-[0.8rem] py-[0.4rem] rounded-[0.4rem]'
+                                    onClick={() => {
+                                        getInvitationCodeCheckFetch();
+                                    }}
+                                >
+                                    초대코드 체크(임시)
+                                </UI.Button>
+                            </Fragment>
+                        ) : "" }
 
-                        <Item
-                            type="text"
-                            title="아이디"
-                            description={`최소 ${RULE_ID_LENGTH}자리 이상`}
-                            placeholder="아이디"
-                            onChange={(e) => {
-                                signUpValueRef.current = {
-                                    ...signUpValueRef.current,
-                                    email: e.target.value
-                                }
-                            }}
-                        />
-
-                        <Item
-                            type="password"
-                            title="비밀번호"
-                            description={`최소 ${RULE_PW_LENGTH}자리 이상`}
-                            placeholder="비밀번호를 입력해주세요"
-                            onChange={(e) => {
-                                signUpValueRef.current = {
-                                    ...signUpValueRef.current,
-                                    password: e.target.value
-                                }
-                            }}
-                        />
-
-                        <Item
-                            type="password"
-                            title="비밀번호 확인"
-                            description=""
-                            placeholder="비밀번호를 다시 입력해주세요"
-                            onChange={(e) => {
-                                signUpValueRef.current = {
-                                    ...signUpValueRef.current,
-                                    reCheckPassword: e.target.value
-                                }
-                            }}
-                        />
+                        { getInvitationCodeCheckData?.result ? (
+                            <Fragment>
+                                <Item
+                                    type="text"
+                                    title="닉네임"
+                                    description={`최소 ${RULE_NICK_NAME_LENGTH}자리 이상`}
+                                    placeholder="닉네임"
+                                    onChange={(e) => {
+                                        signUpValueRef.current = {
+                                            ...signUpValueRef.current,
+                                            name: e.target.value
+                                        }
+                                    }}
+                                />
+    
+                                <Item
+                                    type="text"
+                                    title="아이디"
+                                    description={`최소 ${RULE_ID_LENGTH}자리 이상`}
+                                    placeholder="아이디"
+                                    onChange={(e) => {
+                                        signUpValueRef.current = {
+                                            ...signUpValueRef.current,
+                                            email: e.target.value
+                                        }
+                                    }}
+                                />
+    
+                                <Item
+                                    type="password"
+                                    title="비밀번호"
+                                    description={`최소 ${RULE_PW_LENGTH}자리 이상`}
+                                    placeholder="비밀번호를 입력해주세요"
+                                    onChange={(e) => {
+                                        signUpValueRef.current = {
+                                            ...signUpValueRef.current,
+                                            password: e.target.value
+                                        }
+                                    }}
+                                />
+    
+                                <Item
+                                    type="password"
+                                    title="비밀번호 확인"
+                                    description=""
+                                    placeholder="비밀번호를 다시 입력해주세요"
+                                    onChange={(e) => {
+                                        signUpValueRef.current = {
+                                            ...signUpValueRef.current,
+                                            reCheckPassword: e.target.value
+                                        }
+                                    }}
+                                />
+                            </Fragment>
+                        ) : "" }
                     </section>
                     {/* 바디 END */}
 
@@ -212,7 +253,7 @@ const LoginForm = () => {
                     <section className='flex flex-col gap-[0.8rem] justify-center w-full'>
                         <UI.Button
                             type='submit'
-                            className='bg-[var(--color-gray-1000)] text-white py-[1.6rem] rounded-[1.6rem] shadow-[var(--shadow-normal)] flex-1'
+                            className={`bg-[var(--color-gray-1000)] text-white py-[1.6rem] rounded-[1.6rem] shadow-[var(--shadow-normal)] flex-1 ${ getInvitationCodeCheckData?.result ? "" : "pointer-events-none opacity-50" }`}
                         >
                             등록하기
                         </UI.Button>
@@ -249,7 +290,7 @@ const LoginForm = () => {
 
 const Item = ({ type, title, description, placeholder, onChange }: { type: string, title: string, description?: string, placeholder: string, onChange: (e: any) => void }) => {
     return (
-        <section className='flex flex-col gap-[0.8rem]'>
+        <section className='flex flex-col gap-[0.8rem] w-full'>
             <div className='flex items-center gap-[0.8rem]'>
                 <p>{ title }</p>
                 { description && (

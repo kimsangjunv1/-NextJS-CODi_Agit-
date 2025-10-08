@@ -15,21 +15,19 @@ import { useGetPostDetailQuery } from "@/hooks/api/post.query"
 import { useLayoutStore } from "@/stores/useLayoutStore"
 import { useServiceStore } from "@/stores/useServiceStore"
 
-import { headerMenuList } from "@/constants/lists/configServiceList"
-import { useGetCategoryListOnManagerQuery } from "@/hooks/api/category.query"
+import { useGetCategoryListQuery } from "@/hooks/api/category.query"
 
 const Header = () => {
     const params = useParams();
 
     const [ showMenu, setShowMenu ] = useState(false);
-    const { data: session, status } = useSession();
     
-    const { reset } = useServiceStore();
+    const { isMobileMenuOpen, setIsMobileMenuOpen } = useLayoutStore();
     const { currentPathName, pushToUrl } = useNavigate();
     const { mainViewMode, setMainViewMode, categoryFilter, setCategoryFilter  } = useLayoutStore();
 
-    const { data: getCategoryListData, refetch: getCategoryListFetch } = useGetCategoryListOnManagerQuery();
-    const { data: getPostListData, refetch: getPostListFetch } = useGetPostDetailQuery(parseInt( (params?.id) as string ));
+    const { data: getCategoryListData } = useGetCategoryListQuery();
+    const { data: getPostListData } = useGetPostDetailQuery(parseInt( (params?.id) as string ));
 
     const IS_ROUTE_HOME = currentPathName === "/";
     const IS_ROUTE_POST = currentPathName.includes("post") && !currentPathName.includes("modify") && !currentPathName.includes("create");
@@ -38,16 +36,13 @@ const Header = () => {
     const IS_ROUTE_POST_LAB = currentPathName.includes("lab")
     const IS_ROUTE_POST_MANAGER = currentPathName.includes("manager")
 
-     const logout = () => {
-        signOut({ callbackUrl: "/login" });
-        reset();
-    }
+    // useEffect(() => {
+    //     if ( showMenu ) {
+    //         setShowMenu( false )
+    //     }
+    // }, [ currentPathName ])
 
-    useEffect(() => {
-        if ( showMenu ) {
-            setShowMenu( false )
-        }
-    }, [ currentPathName ])
+    if ( IS_ROUTE_POST ) return null;
 
     return (
         <header>
@@ -165,7 +160,7 @@ const Header = () => {
                                     }}
                                     className="flex gap-[2.0em] flex-1 justify-center"
                                 >
-                                    { getCategoryListData?.result?.map((e, i) =>
+                                    { getCategoryListData?.result?.filter((e) => e.is_enabled).map((e, i) =>
                                         <motion.section
                                             key={`${e}-${i}`}
                                             initial={{ opacity: 0, transform: "scale(0.8)" }}
@@ -213,12 +208,18 @@ const Header = () => {
                                             as="h2"
                                             duration={3}
                                             style={{
-                                                color: "var(--color-brand-500)",
+                                                // color: "var(--color-brand-500)",
+                                                // color: "#ededed",
                                                 fontSize: "2.4rem",
+                                            }}
+                                            color={{
+                                                start: "#ededed",
+                                                end: "#000000"
                                             }}
                                             className="font-extrabold"
                                         >
-                                            {`${ getPostListData?.result?.title }`}
+                                            {/* {`${ getPostListData?.result?.title }`} */}
+                                            읽는중
                                         </TextShimmer>
                                     </motion.section>
                                 </section>
@@ -367,185 +368,11 @@ const Header = () => {
                     </section>
                 </section>
             </div>
-
-            {/* 모바일 메뉴 */}
-            <AnimatePresence mode="wait">
-                { showMenu ? (
-                    <motion.article
-                        className="mobile flex flex-col justify-center items-center gap-[1.6rem] fixed top-0 left-0 w-full h-full bg-[#ffffff] z-10000"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{
-                            delay: 0,
-                            type: "spring",
-                            mass: 0.1,
-                            stiffness: 100,
-                            damping: 10,
-                        }}
-                    >
-                        {/* 목록 */}
-                        <section className="mobile-inner max-w-[var(--size-tablet)] px-[2.4rem] py-[2.4rem] w-full h-full flex flex-col items-start justify-between">
-                            <section className="flex flex-col items-start">
-                                <div className="w-full overflow-hidden mb-[2.4rem]" >
-                                    <p className="text-[5.2rem] font-bold leading-[1.5]">Hej!</p>
-                                    <p className="text-[2.4rem] font-semibold leading-[1.5]">아래에서 메뉴를 선택해주세요.</p>
-                                </div>
-
-                                { headerMenuList.map((e, i) => 
-                                    <div key={`${e}-${i}-${ showMenu }`} className="h-[4.8rem] overflow-hidden" >
-                                        <motion.div
-                                            initial={{ y: "4.8rem" }}
-                                            animate={{ y: "0rem" }}
-                                            transition={{
-                                                delay: 0.1 * (i + 1),
-                                                type: "spring",
-                                                mass: 0.1,
-                                                stiffness: 100,
-                                                damping: 10,
-                                            }}
-                                        >
-                                            <Item href={ e.route } title={ e.title } />
-                                        </motion.div>
-                                    </div>
-                                )}
-
-                                <div key={`static-1-${ showMenu }`} className="w-full h-auto overflow-hidden" >
-                                    <motion.div
-                                        className="w-full bg-[var(--color-gray-200)] my-[1.6rem] h-[0.1rem]"
-                                        initial={{ y: "4.8rem" }}
-                                        animate={{ y: "0rem" }}
-                                        transition={{
-                                            delay: 0.1 * (headerMenuList.length + 1),
-                                            type: "spring",
-                                            mass: 0.1,
-                                            stiffness: 100,
-                                            damping: 10,
-                                        }}
-                                    />
-                                </div>
-
-                                <div key={`static-2-${ showMenu }`} className="h-[4.8rem] overflow-hidden" >
-                                    <motion.div
-                                        initial={{ y: "4.8rem" }}
-                                        animate={{ y: "0rem" }}
-                                        transition={{
-                                            delay: 0.1 * (headerMenuList.length + 2),
-                                            type: "spring",
-                                            mass: 0.1,
-                                            stiffness: 100,
-                                            damping: 10,
-                                        }}
-                                    >
-                                        { session ? (
-                                            <UI.Button
-                                                onClick={() => logout()}
-                                                className="flex justify-center text-center gap-[0.4rem] w-full items-center text-[2.4rem] font-semibold whitespace-nowrap py-[1.2rem] text-[var(--color-red-500)]"
-                                            >
-                                                로그아웃
-                                            </UI.Button>
-                                        ) : (
-                                            <UI.Button
-                                                onClick={() => pushToUrl("/login")}
-                                                className="flex justify-center text-center gap-[0.4rem] w-full items-center text-[2.4rem] font-semibold whitespace-nowrap py-[1.2rem] text-[var(--color-gray-1000)]"
-                                            >
-                                                로그인
-                                            </UI.Button>
-                                        )}
-                                    </motion.div>
-                                </div>
-                            </section>
-
-                            <section className="flex flex-col gap-[1.6rem] items-start">
-                                <UI.Button
-                                    className="flex items-center gap-[0.8rem] shadow-[var(--shadow-normal)] p-[0.8rem] rounded-[1.2rem] transition-colors bg-transparent hover:bg-[var(--color-gray-200)]"
-                                    onClick={() => pushToUrl("https://github.com/kimsangjunv1")}
-                                >
-                                    <IconComponent
-                                        type="graphic-logo-github"
-                                        alt="깃허브"
-                                    />
-                                    <p className="font-semibold">@kimsangjunv1</p>
-                                </UI.Button>
-
-                                { session ? (
-                                    <Fragment>
-                                        <p>어드민 이동 예정</p>
-                                        <div className="flex gap-[1.6rem]">
-                                            <UI.Button
-                                                className="flex items-center gap-[0.8rem] shadow-[var(--shadow-normal)] p-[0.8rem] rounded-[1.2rem] transition-colors bg-transparent hover:bg-[var(--color-gray-200)]"
-                                                onClick={() => {
-                                                    pushToUrl(`/post/create`)
-                                                }}
-                                            >
-                                                새로운 아티클 생성하기
-                                            </UI.Button>
-
-                                            <UI.Button
-                                                className="flex items-center gap-[0.8rem] shadow-[var(--shadow-normal)] p-[0.8rem] rounded-[1.2rem] transition-colors bg-transparent hover:bg-[var(--color-gray-200)]"
-                                                onClick={() => {
-                                                    pushToUrl(`/manager`)
-                                                }}
-                                            >
-                                                관리자 페이지 이동
-                                            </UI.Button>
-                                        </div>
-                                    </Fragment>
-                                ) : "" }
-                                
-
-                                <IconComponent type="graphic-logo-horizontal" alt="로고" height={132} width={152} />
-                                
-                                <TextShimmer
-                                    as="p"
-                                    duration={3}
-                                    style={{
-                                        color: "#000000",
-                                        fontSize: "1.4rem",
-                                    }}
-                                    color={{
-                                        start: "#000000",
-                                        end: "#ededed"
-                                    }}
-                                    className="h-[2.1rem] leading-[1.7]"
-                                >
-                                    © kimsangjunv1. All rights reserved.
-                                </TextShimmer>
-                            </section>
-                        </section>
-                        {/* 목록 END */}
-
-
-                        {/* 글로우 */}
-                        <motion.div
-                            key={`glow-${ showMenu }`}
-                            className="absolute inset-0 z-10 pointer-events-none blur-[10px]"
-                            initial={{ scale: 0, opacity: 0.4 }}
-                            animate={{ scale: 10, opacity: -10 }}
-                            transition={{
-                                duration: 2,
-                                ease: "easeOut",
-                                repeat: 0,       // 무한 반복
-                                // repeatType: "loop",
-                            }}
-                            style={{
-                                background: "radial-gradient(circle, rgba(255,255,255,0) 0%, var(--color-blue-500) 20%, rgba(255,255,255,0) 70%)",
-                                // background: "radial-gradient(circle, rgba(173,216,230,0) 0%, rgba(255,182,193,0.9) 25%, var(--color-brand-300) 50%, rgba(255,255,255,0.9) 75%, rgba(173,216,230,0) 100%)",
-                                borderRadius: "50%",
-                                transformOrigin: "center"
-                            }}
-                            // onAnimationComplete={() => setInitGlow( true )}
-                        />
-                        {/* 글로우 END */}
-                    </motion.article>
-                ) : "" }
-            </AnimatePresence>
-            {/* 모바일 메뉴 END */}
             
             {/* 모바일 버튼 */}
             <button
                 className="hamburger w-[1.6rem] h-[1.6rem] px-[4.0rem] py-[2.0rem] absolute top-[50%] right-0 transform translate-x-[0] translate-y-[-50%] text-[2.4rem] z-[10000]"
-                onClick={() => setShowMenu(!showMenu)}
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
                 <div
                     className={`w-[2.4rem] h-[0.3rem] bg-[var(--color-gray-1000)] absolute left-[50%] transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${
@@ -560,19 +387,6 @@ const Header = () => {
             </button>
             {/* 모바일 버튼 END */}
         </header>
-    )
-}
-
-const Item = ({ title, href }: { title: string, href: string }) => {
-    const { pushToUrl } = useNavigate();
-    return (
-        <UI.Button
-            type="button"
-            className="flex justify-center text-center gap-[0.4rem] w-full items-center text-[2.4rem] font-semibold whitespace-nowrap py-[1.2rem]"
-            onClick={() => pushToUrl(href)}
-        >
-            { title }
-        </UI.Button>
     )
 }
 

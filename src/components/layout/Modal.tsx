@@ -156,7 +156,7 @@ const Modal = () => {
                         aria-modal="true"
                     >
                         <motion.div
-                            className={`relative flex flex-col w-full bg-white rounded-[3.2rem] mx-[1.6rem] z-10 max-h-[calc(100dvh-(1.6rem*3))] overflow-y-auto shadow-[var(--shadow-normal)] ${ modal.className?.container !== "" ? modal.className?.container : "max-w-[var(--modal-width)]" }`}
+                            className={`relative flex flex-col w-full bg-white rounded-[3.2rem] mx-[1.6rem] z-10 max-h-[calc(100dvh-(1.6rem*3))] shadow-[var(--shadow-normal)] ${ modal.className?.container !== "" ? modal.className?.container : "max-w-[var(--modal-width)]" }`}
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
@@ -240,7 +240,7 @@ const Body = ({ children, className }: ModalBodyProps) => {
     return (
         <Fragment>
             { modal.description !== "" || modal.content !== null ? (
-                <section className={`modal-body flex flex-col gap-[1.2rem] max-h-[calc(100vh-(1.6rem*10))] overflow-y-auto ${ className ? className : "" }`}>
+                <section className={`modal-body flex flex-col gap-[1.2rem] max-h-[calc(100vh-(1.6rem*10))] ${ className ? className : "" }`}>
                     { children }
                     { modal.description && <p className="leading-[1.5] text-left text-[1.6rem] text-[#414141] font-normal cursor-default whitespace-pre-line">{ modal.description }</p> }
                     { modal.content }

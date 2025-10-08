@@ -68,17 +68,17 @@
     --color-red-900: #a51926;
 
     /* 블루 계열 색상 */
-    --color-blue-1000: #286BFB;
-    --color-blue-900: #00199F;  /* 정보용으로 덮어쓰기된 값 */
-    --color-blue-800: #23386a;
-    --color-blue-700: #25478c;
-    --color-blue-600: #265ab3;
-    --color-blue-500: #286BFB;  /* 정보용으로 덮어쓰기된 값 */
-    --color-blue-400: #3485fa;
-    --color-blue-300: #449bff;
-    --color-blue-200: #61b0ff;
+    --color-blue-50:  #F4F7FF;  /* 가장 밝음 */
     --color-blue-100: #EAF1FF;
-    --color-blue-50:  #F4F7FF;  /* 정보용으로 덮어쓰기된 값 */
+    --color-blue-200: #C6E0FF;
+    --color-blue-300: #91C5FF;
+    --color-blue-400: #5CA9FF;
+    --color-blue-500: #3485FA;  /* 기준 색상 */
+    --color-blue-600: #2C78E6;
+    --color-blue-700: #2469C2;
+    --color-blue-800: #1D58A0;
+    --color-blue-900: #173E7A;
+    --color-blue-1000:#0F2A55;  /* 가장 진함 */
 
     /* 경고 색상 (오렌지) */
     --color-orange-900: #A33100;

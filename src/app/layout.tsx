@@ -16,6 +16,8 @@ import "@/scss/global.css";
 import "@/scss/index.scss";
 import ClientPageProgress from "@/components/common/ClinentComponent";
 import TransitionOverlay from "@/components/common/TransitionOverlay";
+import Navigation from "@/components/layout/Navigation";
+import MobileMenu from "@/components/layout/MobileMenu";
 
 
 export const metadata: Metadata = {
@@ -38,6 +40,8 @@ export default function RootLayout({ children, modal }: Readonly<{ children: Rea
                             }}
                         />
                         <Header />
+                        <Navigation />
+                        <MobileMenu />
                         <PathCheckComponent>
                             <TransitionOverlay>
                                 { children }

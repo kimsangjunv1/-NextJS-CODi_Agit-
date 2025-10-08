@@ -13,16 +13,8 @@ export const DUMMY_IMAGE_RESPONSE = [
         { "idx": 108, "create_at": "2025-09-04T18:25:00Z", "url": "/images/picture/img-dummy-thumbnail-012.png" },
         { "idx": 108, "create_at": "2025-09-04T18:25:00Z", "url": "/images/picture/img-dummy-thumbnail-013.png" },
         { "idx": 108, "create_at": "2025-09-04T18:25:00Z", "url": "/images/picture/img-dummy-thumbnail-014.png" },
-        // { "idx": 111, "create_at": "2025-09-06T11:20:00Z", "url": "https://picsum.photos/id/111/600/400" },
-        // { "idx": 112, "create_at": "2025-09-06T16:45:00Z", "url": "https://picsum.photos/id/112/600/400" },
-        // { "idx": 113, "create_at": "2025-09-07T09:35:00Z", "url": "https://picsum.photos/id/113/600/400" },
-        // { "idx": 114, "create_at": "2025-09-07T14:55:00Z", "url": "https://picsum.photos/id/114/600/400" },
-        // { "idx": 115, "create_at": "2025-09-08T08:45:00Z", "url": "https://picsum.photos/id/115/600/400" },
-        // { "idx": 116, "create_at": "2025-09-08T19:10:00Z", "url": "https://picsum.photos/id/116/600/400" },
-        // { "idx": 117, "create_at": "2025-09-09T07:25:00Z", "url": "https://picsum.photos/id/117/600/400" },
-        // { "idx": 118, "create_at": "2025-09-09T10:30:00Z", "url": "https://picsum.photos/id/118/600/400" },
-        // { "idx": 119, "create_at": "2025-09-09T13:50:00Z", "url": "https://picsum.photos/id/119/600/400" },
-        // { "idx": 120, "create_at": "2025-09-09T18:15:00Z", "url": "https://picsum.photos/id/120/600/400" }
+        { "idx": 108, "create_at": "2025-09-04T18:25:00Z", "url": "/images/picture/img-dummy-thumbnail-015.png" },
+        { "idx": 108, "create_at": "2025-09-04T18:25:00Z", "url": "/images/picture/img-dummy-thumbnail-016.png" },
 ]
 
 export const DUMMY_POST_LIST_RESPONSE = [

@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/utils/supabase/supabaseServer";
 
-const TABLE_NAME = "category";
+const TABLE_NAME = "invite_codes";
 
 export async function DELETE(req: Request) {
     const payload = await req.json();
@@ -14,7 +14,7 @@ export async function DELETE(req: Request) {
         const query = supabase
             .from( TABLE_NAME )
             .delete()
-            .eq("idx", payload.idx)
+            .eq("id", payload.id)
             .select();
 
         const { data, count, error } = await query;
@@ -32,7 +32,7 @@ export async function DELETE(req: Request) {
                     }
                 },
                 header: {
-                    resultMsg: "선택하신 카테고리를 삭제했어요.",
+                    resultMsg: "선택하신 초대 코드를 삭제했어요.",
                     resultCode: 200,
                     isSuccessful: true,
                     timestamp: new Date().toISOString(),

@@ -4,12 +4,14 @@ export interface CalendarModalProps {
     className?: string;
     icon?: boolean;
     defaultValue?: Date;
-    desc_no?: string | number;
+    desc_no?: string;
+    // desc_no?: string | number;
     onClose?: (value: string) => void;
     onDateSelect?: (value: string) => void;
     limitMonths?: number;          // 추가
     limitMessage?: string;         // 추가
     center?: boolean;
+    containerClassName?: string;
 }
 
 export interface MultiSelectProps {

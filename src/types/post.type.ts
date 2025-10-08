@@ -53,6 +53,12 @@ export interface PostResponse {
     create_at: string;
 }
 
+export interface PostPrevNextInfo {
+    idx: number;
+    title: string;
+    summary: string;
+}
+
 export interface PostItem {
     id: string;
     idx: number;
@@ -69,6 +75,8 @@ export interface PostItem {
         description: string;
         is_enabled: boolean;
     }
+    prev?: PostPrevNextInfo
+    next?: PostPrevNextInfo
 }
 
 export interface PostLatestItem {

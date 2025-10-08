@@ -27,13 +27,14 @@ export const useGetPostListQuery = () => {
 /**
  * 포스트 - 글 목록 불러오기
  */
-export const useGetPostLatestListQuery = () => {
+export const useGetPostLatestListQuery = (initialData?: { header: ApiHeaderResponseType, body: GetPostLatestListResponseType }) => {
     const MUTATION_KEY = "comment";
 
     const { data, isLoading, isError, isFetching, refetch } = useQuery({
         queryKey: [MUTATION_KEY, "useGetPostLatestListQuery"],
         queryFn: () => getPostLatestListFetch(),
         staleTime: 0,
+        initialData
     });
     
     const header: ApiHeaderResponseType = data?.header;

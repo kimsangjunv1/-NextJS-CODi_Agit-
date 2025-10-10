@@ -2,10 +2,11 @@
 import Main from "@/components/layout/Main";
 import ListSection from "@/containers/init/ListSection";
 import { supabaseServer } from "@/utils/supabase/supabaseServer";
-import { GetPostLatestListResponseType } from "@/types/post.type";
-import { ApiHeaderResponseType } from "@/types/common.type";
 
-export const revalidate = 60; // ISR: 60초마다 페이지 재생성
+import { ApiHeaderResponseType } from "@/types/common.type";
+import { GetPostLatestListResponseType } from "@/types/post.type";
+
+export const revalidate = 300; // ISR: 60초마다 페이지 재생성
 
 const Page = async () => {
     let initialData: { body: GetPostLatestListResponseType; header: ApiHeaderResponseType } = {

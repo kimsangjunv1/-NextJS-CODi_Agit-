@@ -50,7 +50,7 @@ const initialRow: Row[] = [
                         value: "",
                         style: {
                             lineHeight: 1.7,
-                            fontSize: 1.4,
+                            fontSize: 1.6,
                             fontWeight: 500,
                             color: "#000000",
                             textAlign: "left",
@@ -98,7 +98,7 @@ export const useBlockStore = create<BlockStore>((set, get) => ({
                             value: "",
                             style: {
                                 lineHeight: 1.7,
-                                fontSize: 1.4,
+                                fontSize: 1.6,
                                 fontWeight: 500,
                                 color: "#000000",
                                 textAlign: "left",

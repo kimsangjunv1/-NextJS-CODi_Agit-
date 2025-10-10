@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import UI from "@/components/common/UIComponent";
 import { DUMMY_IMAGE_RESPONSE } from "@/constants/lists/configDummyResponse";
 import { CategoryItemManager } from "@/types/category.type";
+import Image from "next/image";
 
 // 이미지: 관리
 
@@ -20,24 +21,49 @@ import { CategoryItemManager } from "@/types/category.type";
 // idx, create_at,  url
 const Box = ({ onChange }: { onChange: (e: any) => void }) => {
     const [ selectedImage, setSelectedImage ] = useState<number>();
+    const [ selectedImageUrl, setSelectedImageUrl ] = useState<string>("/");
 
     return (
-        <article className="flex flex-col gap-[1.6rem]">
-            <section data-lenis-prevent="true" className="grid grid-cols-[1fr_1fr_1fr_1fr] pb-[3.2rem] h-[calc(1.6rem*10)] overflow-y-auto">
-                { DUMMY_IMAGE_RESPONSE.map((e, i) =>
-                    <UI.Button
-                        key={i}
-                        className={`h-[calc(1.6rem*2)] ${ e.idx === selectedImage ? "border border-[var(--color-brand-500)]" : "" }`}
-                        onClick={() => {
-                            onChange( e.url );
-                            setSelectedImage( e.idx );
-                        }}
-                    >
-                        <img src={ e.url } alt={ "사진" } />
-                    </UI.Button>
-                )}
+        <article className="flex flex-col gap-[2.4rem]">
+            <section className="flex flex-col gap-[1.2rem] items-center">
+                <p className="text-[var(--color-gray-500)]">현재 선택된 이미지</p>
+                <img src={ selectedImageUrl ?? "/" } alt="" className="w-[12.8rem] h-[12.8rem] object-cover shadow-[var(--shadow-normal)] rounded-[2.4rem]" />
             </section>
-            <section className="">
+
+            <section className="flex flex-col gap-[0.4rem]">
+                <p className="text-[var(--color-gray-500)]">업로드된 이미지</p>
+                
+                <section data-lenis-prevent="true" className="grid grid-cols-[1fr_1fr_1fr_1fr] grid-rows-[7.2rem_7.2rem_7.2rem_7.2rem] pb-[3.2rem] gap-[0.8rem] h-[calc(1.6rem*10)] overflow-y-auto bg-[var(--color-gray-300)] p-[0.4rem] rounded-[1.6rem]">
+                    { DUMMY_IMAGE_RESPONSE.map((e, i) =>
+                        <UI.Button
+                            key={i}
+                            className={` ${ e.idx === selectedImage ? "border border-[var(--color-brand-500)]" : "" }`}
+                            onClick={() => {
+                                onChange( e.url );
+                                setSelectedImage( e.idx );
+                                setSelectedImageUrl( e.url )
+                            }}
+                        >
+                            <img src={ e.url } alt={ "사진" } className="object-cover w-full h-full rounded-[1.2rem] shadow-[var(--shadow-normal)]" />
+                        </UI.Button>
+                    )}
+                </section>
+            </section>
+
+            <section className="flex flex-col gap-[0.4rem]">
+                <p className="text-[var(--color-gray-500)]">URL 직접입력</p>
+
+                <section>
+                    <UI.Input
+                        onChange={(e) => {
+                            onChange( e.target.value );
+                            setSelectedImageUrl( e.target.value )
+                        }}
+                    />
+                </section>
+            </section>
+
+            <section className="hidden">
                 <UI.FileUpload
                     onChange={(e) => {
                         // updateBlock(rowIndex, blockIndex, { content: html })

@@ -41,7 +41,7 @@ const BlockEditableComponent = ({ initData, rowIndex, blockIndex, mouseOverState
                         value: "",
                         style: {
                             lineHeight: 1.5,
-                            fontSize: 1.4,
+                            fontSize: 1.6,
                             fontWeight: 500,
                             color: "#000000",
                             textAlign: "left",
@@ -50,8 +50,8 @@ const BlockEditableComponent = ({ initData, rowIndex, blockIndex, mouseOverState
                     },
                 ],
                 style: {
-                    lineHeight: 1.4,
-                    fontSize: 1.4,
+                    lineHeight: 1.5,
+                    fontSize: 1.6,
                     fontWeight: 500,
                     color: "#2d2d2d",
                     textAlign: "left",
@@ -217,7 +217,7 @@ const BlockEditableComponent = ({ initData, rowIndex, blockIndex, mouseOverState
     }, [list]);
 
     return (
-        <section className="flex flex-col h-full">
+        <section className="flex flex-col gap-[1.6rem] h-full">
             { list.length ? (
                 <Fragment>
                     { list.map(( block, idx ) => 

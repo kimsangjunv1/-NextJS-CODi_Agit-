@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Block, PostPrevNextInfo, SectionContent } from '@/types/post.type';
+import { Block, GetPostDetailResponseType, PostPrevNextInfo, SectionContent } from '@/types/post.type';
 import { GetCommentDetailDataType } from "@/types/comment.type";
 
 import { util } from '@/utils/util';
@@ -21,7 +21,9 @@ import TextShimmer from "@/components/common/TextShimmerComponent";
 import { useToastStore } from "@/stores/useToastStore";
 import useScrollProgress from "@/hooks/dom/useScrollProgress";
 import TextScreening from "@/components/common/TextComponent";
+import { ApiHeaderResponseType } from "@/types/common.type";
 
+// const ListSection = ({ id, initialData }: { id: string, initialData: { body: GetPostDetailResponseType; header: ApiHeaderResponseType } }) => {
 const ListSection = ({ id }: { id: string }) => {
     return (
         <section className='flex flex-col w-full post pb-[7.2rem]'>
@@ -79,44 +81,26 @@ const Title = ({
                 damping: 8,      // 감쇠 낮춰서 튕기게 ↓
             }}
         >
-            <section className="flex flex-col items-start justify-end gap-[2.4rem] h-full w-full max-w-[var(--size-tablet)] px-[1.6rem] py-[7.2rem] z-[100] absolute left-[50%] top-[50%] transform translate-x-[-50%] translate-y-[-50%]">
+            <section className="flex flex-col items-start justify-end gap-[2.4rem] h-full w-full max-w-[var(--size-tablet)] px-[1.2rem] py-[7.2rem] z-[100] absolute left-[50%] top-[50%] transform translate-x-[-50%] translate-y-[-50%]">
                 <section className="flex flex-col gap-[1.2rem] pointer-events-none">
-                    {/* <TextShimmer
-                        as="h2"
-                        duration={3}
-                        style={{
-                            color: "#ffffff",
-                            fontSize: "2.0rem",
-                        }}
-                        color={{
-                            start: "#ffffff",
-                            end: "#9393a0"
-                        }}
-                        className="font-bold"
-                    >
-                        { title }
-                    </TextShimmer> */}
-
                     <TextShimmer
                         as="h2"
                         duration={2}
                         style={{
-                            // color: "#ffffff",
-                            fontSize: "2.0rem",
+                            // fontSize: "2.0rem",
                         }}
-                        // repeat={1}
                         color={{
                             start: "#ffffff90",
                             end: "var(--color-gray-1000)"
                         }}
-                        className="font-bold"
+                        className="font-bold tablet:text-[2.0rem] mobile:text-[1.4rem]"
                     >
                         { title }
                     </TextShimmer>
-                    <h2 className='font-extrabold text-left text-[3.2rem] text-white leading-[1.5] whitespace-break-spaces'>&quot;{ summary }&quot;</h2>
+                    <h2 className='font-extrabold text-left tablet:text-[3.2rem] mobile:text-[2.0rem] text-white leading-[1.5] whitespace-break-spaces'>&quot;{ summary }&quot;</h2>
                 </section>
 
-                <section className='flex items-end gap-[1.6rem] pointer-events-none'>
+                <section className='flex items-end flex-wrap gap-[1.6rem] pointer-events-none'>
                     <div className="relative rounded-[2.4rem] w-[9.2rem] h-[9.2rem] shadow-[var(--shadow-normal)]">
                         <motion.img
                             src="https://cdn.class101.net/images/dc898138-d426-45b7-9f2d-0763b921daef"
@@ -197,7 +181,6 @@ const Title = ({
                         borderRadius: "50%",
                         transformOrigin: "center"
                     }}
-                    // onAnimationEnd={() => setInitGlow( true )}
                 />
             ) : "" }
             <motion.img
@@ -216,37 +199,26 @@ const Title = ({
                     damping: 8,      // 감쇠 낮춰서 튕기게 ↓
                 }}
             />
-
-            {/* <section className='w-[0.2rem] h-[7.2rem] bg-[linear-gradient(180deg,_transparent_10%,_#000000)]' /> */}
-
         </motion.article>
     )
 }
 
 const Contents = ({ contents, prev, next }: { contents: SectionContent[][], prev?: PostPrevNextInfo, next?: PostPrevNextInfo }) => {
-    const { setToast } = useToastStore();
     const codeRef = useRef<HTMLDivElement>(null);
+    
     const { pushToUrl } = useNavigate();
+    const { setToast } = useToastStore();
 
     return (
         <article className='flex gap-[0.4rem] w-full max-w-[var(--size-tablet)] px-[1.2rem]'>
-            {/* <section className='shortcut'>
-                <h5>QUICK_MOVE</h5>
-                <div>
-                    <UI.Button>
-                        LOGO
-                    </UI.Button>
-                </div>
-            </section> */}
-
-            <section className='flex flex-col gap-[2.4rem] flex-1'>
+            <section className='flex flex-col gap-[7.2rem] flex-1'>
                 { contents?.map((row, rowIdx) =>
-                    <section key={ rowIdx } className={`grid grid-cols-[1fr_1fr] gap-[1.6rem] ${ row.length === 1 && (row?.[0].type === 1 || row?.[0].type === 2) ? "" : "" }`}>
+                    <section key={ rowIdx } className={`flex flex-wrap gap-[1.6rem] ${ row.length === 1 && (row?.[0].type === 1 || row?.[0].type === 2) ? "" : "" }`}>
 
                         { row.map((col, colIdx) =>
                             <motion.section
                                 key={ col.id } 
-                                className={`w-full min-w-0 ${ row.length !== 0 ? "flex gap-[0.8rem]" : "" } ${ row.length === 1 ? "col-span-2" : "min-h-[36.0rem]" } ${ col.type === 0 ? "flex-col" : "" } ${ col.type === 1 || col.type === 2 ? "rounded-[2.4rem] overflow-hidden" : "" } ${ col.type === 2 ? "flex-col" : "" }`}
+                                className={`flex-1 min-w-[calc((var(--size-tablet)-(1.6rem*10))/2)] ${ row.length !== 0 ? "flex gap-[2.4rem]" : "" } ${ row.length === 1 ? "col-span-2" : "min-h-[36.0rem]" } ${ col.type === 0 ? "flex-col" : "" } ${ col.type === 1 || col.type === 2 ? "rounded-[2.4rem] overflow-hidden" : "" } ${ col.type === 2 ? "flex-col" : "" }`}
                                 layout
                                 initial={{ opacity: 0, transform: "scale(0.9)" }}
                                 animate={{ opacity: 1, transform: "scale(1)" }}
@@ -268,7 +240,7 @@ const Contents = ({ contents, prev, next }: { contents: SectionContent[][], prev
                                             </section>
                                         ) : "" }
 
-                                        <section className='flex flex-col items-start overflow-x-auto'>
+                                        <section className='flex flex-col items-start gap-[1.6rem] overflow-x-auto'>
                                             { (col.content as Block[]).map((e, rowIdx) =>
                                                 e.children.map((itemInfo, itemIdx) =>
                                                     <p
@@ -282,7 +254,7 @@ const Contents = ({ contents, prev, next }: { contents: SectionContent[][], prev
                                                             background: `${ itemInfo.style?.backgroundColor }`
                                                             // backgroundColor: `${ itemInfo.style?.backgroundColor }`
                                                         }}
-                                                        className='transition-colors border border-transparent cursor-pointer hover:border-[var(--color-gray-400)] rounded-[0.8rem]'
+                                                        className='whitespace-break-spaces transition-colors border border-transparent cursor-pointer hover:border-[var(--color-gray-400)] rounded-[0.8rem]'
                                                         onClick={async() => {
                                                             const text = itemInfo.value;
 
@@ -303,7 +275,7 @@ const Contents = ({ contents, prev, next }: { contents: SectionContent[][], prev
                                         <img
                                             src={ col.imageUrl }
                                             alt="/"
-                                            className={`h-full w-full object-cover max-h-[36.0rem] ${ row.length === 2 ? "" : "" }`}
+                                            className={`w-full ${ row.length === 2 ? "" : "" }`}
                                         />
                                     </Fragment>
                                 ) : "" }
@@ -337,9 +309,9 @@ const Contents = ({ contents, prev, next }: { contents: SectionContent[][], prev
                     </section>                
                 )}
 
-                <section className="flex gap-[1.6rem]">
+                <section className="flex gap-[1.6rem] flex-wrap">
                     <UI.Button
-                        className={`flex items-center justify-start gap-[0.8rem] border border-[var(--color-gray-200)] flex-1 p-[1.6rem] rounded-[1.6rem] hover:border-[var(--color-blue-500)] ${ prev ? "" : "pointer-events-none" }`}
+                        className={`flex items-center justify-start gap-[0.8rem] border border-[var(--color-gray-200)] min-w-[calc(var(--size-tablet)/2-(1.6rem*10))] flex-1 p-[1.6rem] rounded-[1.6rem] hover:border-[var(--color-blue-500)] ${ prev ? "" : "pointer-events-none" }`}
                         onClick={() => {
                             if ( prev ) {
                                 pushToUrl(`/post/${ prev?.idx }`)
@@ -361,7 +333,7 @@ const Contents = ({ contents, prev, next }: { contents: SectionContent[][], prev
                     </UI.Button>
 
                     <UI.Button
-                        className={`flex items-center justify-end gap-[0.8rem] border border-[var(--color-gray-200)] flex-1 p-[1.6rem] rounded-[1.6rem] hover:border-[var(--color-blue-500)] ${ next ? "" : "pointer-events-none" }`}
+                        className={`flex items-center justify-end gap-[0.8rem] border border-[var(--color-gray-200)] min-w-[calc(var(--size-tablet)/2-(1.6rem*10))] flex-1 p-[1.6rem] rounded-[1.6rem] hover:border-[var(--color-blue-500)] ${ next ? "" : "pointer-events-none" }`}
                         onClick={() => {
                             if ( next ) {
                                 pushToUrl(`/post/${ next?.idx }`)
@@ -461,7 +433,7 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
                 { inputMode ? (
                     <motion.section
                         key={"list"}
-                        className="fixed top-0 left-0 h-full comment-list w-full pb-[calc(1.6rem*2)] pt-[calc(1.6rem*2)] overflow-y-auto bg-[linear-gradient(0deg,_#ffffff,_#ffffff90)] backdrop-blur-lg flex items-end"
+                        className="fixed top-0 left-0 z-[10000] h-full w-full comment-list pb-[calc(1.6rem*2)] pt-[calc(1.6rem*2)] overflow-y-auto bg-[linear-gradient(0deg,_#ffffff,_#ffffff90)] backdrop-blur-lg flex items-end"
                         initial={{ opacity: 0, filter: "blur(20px)" }}
                         animate={{ opacity: 1, filter: "blur(0px)" }}
                         exit={{ opacity: 0, filter: "blur(20px)" }}
@@ -475,7 +447,7 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
                         <div
                             ref={ commentContainerRef }
                             data-lenis-prevent
-                            className="w-full max-w-[var(--size-tablet)] mx-auto pt-[6.0rem] pb-[calc(6.0rem*2)] px-[1.2rem] overflow-y-auto max-h-[calc(100dvh-var(--header-height)-(1.6rem*2))] mask-[linear-gradient(0deg,#0000,#000_5%_95%,#0000)]"
+                            className="w-full max-w-[var(--size-tablet)] mx-auto pt-[6.0rem] pb-[calc(1.6rem*6)] px-[1.2rem] overflow-y-auto max-h-[calc(100dvh-var(--header-height)-(1.6rem*2))] mask-[linear-gradient(0deg,#0000,#000_5%_95%,#0000)]"
                         >
                             { contents?.length ? contents?.map((e, i) =>
                                 <motion.section
@@ -522,23 +494,9 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
                             )}
                         </div>
 
-                        <motion.section
+                        <section
                             ref={ inputRef }
-                            className="fixed bottom-[calc(1.6rem*3)] left-[50%] transform translate-x-[-50%] z-10 body px-[1.2rem] py-[0.8rem] h-[calc(1.6rem*3)] min-w-[13.2rem] w-auto max-w-[calc(100dvw-(1.6rem*2))] bg-[#ffffffcb] backdrop-blur-sm rounded-[calc(1.6rem*2)] flex items-center shadow-[var(--shadow-normal)] transition-opacity"
-                            animate={{
-                                // width: inputMode ? "var(--size-tablet)" : currentContainerWidth + 72 + 16,
-                            }}
-                            transition={{
-                                type: "spring",
-                                mass: 0.1,
-                                stiffness: 50,
-                                damping: 8,
-                            }}
-                            // onClick={() => {
-                            //     if ( !inputMode ) {
-                            //         setInputMode( true )
-                            //     }
-                            // }}
+                            className="fixed bottom-[calc(1.6rem*3)] left-[50%] transform w-full max-w-[var(--size-tablet)] translate-x-[-50%] z-10 body px-[1.2rem] py-[0.8rem] h-[calc(1.6rem*3)] min-w-[13.2rem] bg-[#ffffffcb] backdrop-blur-sm rounded-[calc(1.6rem*2)] flex items-center shadow-[var(--shadow-normal)] transition-opacity"
                         >
                             { !inputMode ? (
                                 <TextShimmer
@@ -570,7 +528,7 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
                             ) }
                             
                             <UI.Button
-                                className={`absolute right-[0.4rem] top-[50%] transform translate-y-[-50%] flex justify-center items-center px-[1.2rem] h-[4.2rem] rounded-full overflow-hidden shadow-[var(--shadow-normal)] ${ inputMode ? "bg-[var(--color-brand-500)]" : "pointer-events-none bg-black" }`}
+                                className={`absolute right-[0.4rem] top-[50%] transform translate-y-[-50%] flex justify-center items-center px-[1.2rem] h-[4.2rem] rounded-full overflow-hidden shadow-[var(--shadow-normal)] ${ inputMode ? "bg-[var(--color-gray-1000)]" : "pointer-events-none bg-black" }`}
                                 onClick={() => {
                                     if ( inputMode ) {
                                         const PAYLOAD = {
@@ -612,7 +570,7 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
                                     onAnimationEnd={() => setInitGlow( true )}
                                 />
                             ) : ""}
-                        </motion.section>
+                        </section>
                     </motion.section>
                 ) : "" }
             </AnimatePresence>
@@ -620,7 +578,7 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
 
 
             {/* 입력 */}
-            <section className="fixed bottom-[1.6rem] left-[50%] transform translate-x-[-50%] z-[100] flex gap-[1.2rem]">
+            <section className="fixed bottom-[1.6rem] left-[50%] w-full justify-center transform translate-x-[-50%] z-[100] flex gap-[1.2rem]">
                 <AnimatePresence>
                     { scrollValue >= 10 ? (
                         <Fragment key={"one"}>

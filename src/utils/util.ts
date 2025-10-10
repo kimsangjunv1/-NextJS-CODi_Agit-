@@ -178,31 +178,30 @@ export const util = {
     // DOM 조작
     dom: {
         setScrollDefence: (target: boolean) => {
-            let scrollTop = 0;
-            
-            // 현재 스크롤된 화면을 기준으로 FIXED
-            const preventScroll = () => {
-                // 스크롤 위치를 CSS 변수에 저장
-                document.documentElement.style.setProperty('--scroll-top', window.pageYOffset + 'px');
+            const WRAPPER_ID = "__scroll-defence-wrapper__";
+            const existingWrapper = document.getElementById(WRAPPER_ID);
 
-                scrollTop = window.pageYOffset;
-                document.body.style.position = 'fixed';
-                document.body.style.top = `-${scrollTop}px`;
-            }
-            
-            // 이전에 스크롤 된 값으로 복원
-            const restoreScroll = () => {
-                const VALUE = document.documentElement.style.getPropertyValue("--scroll-top");
+            if (target) {
+                if (existingWrapper) return; // 이미 적용됨
 
-                document.body.style.position = '';
-                document.body.style.top = '';
-                window.scrollTo({ top: parseInt(VALUE.split('px')[0]) });
-            }
-    
-            if ( target ) {
-                preventScroll();
+                const wrapper = document.createElement("div");
+                wrapper.id = WRAPPER_ID;
+                wrapper.style.position = "fixed";
+                wrapper.style.top = "0";
+                wrapper.style.left = "0";
+                wrapper.style.width = "100%";
+                wrapper.style.height = "100%";
+                wrapper.style.overflow = "hidden";
+                wrapper.style.zIndex = "9999"; // 모달 위로
+                wrapper.style.pointerEvents = "none"; // 기존 UI 조작 방지 X
+                document.body.appendChild(wrapper);
+                document.body.style.overflow = 'hidden';
+
             } else {
-                restoreScroll();
+                if (existingWrapper) {
+                    existingWrapper.remove();
+                    document.body.style.overflow = '';
+                }
             }
         },
 

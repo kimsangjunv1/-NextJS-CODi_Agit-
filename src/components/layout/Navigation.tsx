@@ -39,7 +39,7 @@ const Navigation = () => {
     if ( !IS_ROUTE_POST ) return null;
 
     return (
-        <nav className="fixed top-[calc(1.6rem*3)] left-[50%] px-[calc(1.6rem*2)] transform translate-x-[-50%] z-[1000] w-[calc(100dvw-(1.6rem*2))]">
+        <nav className="fixed tablet:top-[calc(1.6rem*3)] mobile:top-[calc(1.6rem*2)] left-[50%] tablet:px-[calc(1.6rem*2)] mobile:px-0 transform translate-x-[-50%] z-[1000] w-[calc(100dvw-(1.6rem*2))]">
             <div className="nav-inner">
                 <section className="menu flex gap-[4.8rem]">
                     <UI.Button
@@ -54,7 +54,7 @@ const Navigation = () => {
                             height={32}
                             className="rotate-90 invert-100"
                         />
-                        <p className="text-white mr-[1.6rem] text-[1.6rem] font-semibold">이전으로</p>
+                        <p className="text-white mr-[1.6rem] text-[1.6rem] font-semibold tablet:block mobile:hidden">이전으로</p>
                     </UI.Button>
 
                     <section className="absolute top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%] flex flex-col items-center justify-center gap-[1.6rem]">
@@ -75,7 +75,7 @@ const Navigation = () => {
                                         }}
                                         className="flex gap-[1.6rem] flex-1 justify-center"
                                     >
-                                        <h2 className="text-[2.4rem] font-bold text-white">{ getPostListData?.result?.title }</h2>
+                                        <h2 className="tablet:text-[2.4rem] mobile:text-[2.0rem] font-bold text-white">{ getPostListData?.result?.title }</h2>
                                     </motion.section>
                                 </section>
                             }

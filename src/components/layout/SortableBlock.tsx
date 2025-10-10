@@ -121,11 +121,11 @@ const SortableBlock = ({ contents }: { contents?: Row[] }) => {
                         </div> */}
                     </section>
 
-                    <section className="flex flex-1 w-full h-full gap-[2.4rem]">
+                    <section className="flex flex-1 w-full h-full gap-[2.4rem] flex-wrap">
                         { row.map(( block, blockIndex ) => (
                             <section
                                 key={ block.id }
-                                className="flex-1"
+                                className="flex-1 min-w-[calc((var(--size-tablet)-(1.6rem*10))/2)]"
                             >
                                 <Block block={ block } rowIndex={ rowIndex } blockIndex={ blockIndex } last={ row.length !== 1 } blockCount={ row.length } />
                             </section>
@@ -184,7 +184,7 @@ const Block = ({ block, rowIndex, blockIndex, last, blockCount }: { block: Secti
             />
         ),
         className: {
-            container: "max-w-[calc(var(--size-pc)-(2.0rem*2))] w-full"
+            container: ""
         },
         cancel: { text: " ", },
         confirm: {
@@ -359,7 +359,7 @@ const Block = ({ block, rowIndex, blockIndex, last, blockCount }: { block: Secti
                         <img
                             src={ block.imageUrl !== "" ? block.imageUrl : "https://dummyimage.com/200x200/ededed/000000&text=placeholder" }
                             alt="/"
-                            className={`object-cover rounded-[2.0rem] ${ blockCount === 1 ? "max-h-[36.0rem]" : "h-full" }`}
+                            className={`object-cover rounded-[2.0rem] ${ blockCount === 1 ? "" : "h-full" }`}
                             // className={`object-cover ${ blockCount === 1 ? "h-[calc(1.6rem*16)]" : "h-full" }`}
                             // className="shadow-[var(--shadow-normal)]"
                         />

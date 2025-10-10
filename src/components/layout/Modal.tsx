@@ -156,7 +156,7 @@ const Modal = () => {
                         aria-modal="true"
                     >
                         <motion.div
-                            className={`relative flex flex-col w-full bg-white rounded-[3.2rem] mx-[1.6rem] z-10 max-h-[calc(100dvh-(1.6rem*3))] shadow-[var(--shadow-normal)] ${ modal.className?.container !== "" ? modal.className?.container : "max-w-[var(--modal-width)]" }`}
+                            className={`relative flex flex-col w-full bg-[#ffffff90] p-[0.4rem] gap-[1.6rem] rounded-[3.2rem] mx-[1.6rem] z-10 max-h-[calc(100dvh-(1.6rem*3))] shadow-[var(--shadow-normal)] ${ modal.className?.container !== "" ? modal.className?.container : "max-w-[var(--modal-width)]" }`}
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
@@ -168,8 +168,10 @@ const Modal = () => {
                                 damping: 10,
                             }}
                         >
-                            <section className="flex flex-col gap-[2.4rem] p-[2.4rem] max-h-[calc(100dvh-(1.6rem*7))]">
-                                <Header title={ modal.title } />
+                            <Header title={ modal.title } />
+                            <div className="bg-[linear-gradient(180deg,_#fff_20%,_transparent)] absolute top-[0.4rem] left-[50%] transform translate-x-[-50%] w-[calc(100%-(0.4rem*2))] rounded-[2.8rem] z-[1000] h-[7.2rem] pointer-events-none" />
+
+                            <section data-lenis-prevent="true" className="relative flex flex-col gap-[2.4rem] max-h-[calc(100dvh-(1.6rem*7))] bg-white rounded-[2.8rem] px-[1.6rem] py-[calc(1.2rem+4.0rem+0.8rem)] overflow-y-auto">
                                 <Body />
                             </section>
                             
@@ -223,12 +225,9 @@ const Modal = () => {
 
 // 헤더
 const Header = ({ title }: { title: string }) => {
-    const { modal } = useModalStore();
-    
     return (
-        <section className="modal-header">
-            {/* { modal.icon && <IconComponent type="lottie" situation="check" />} */}
-            <h2 className="text-left font-bold text-[1.8rem] text-[var(--color-gray-800)] select-none pointer-events-none">{ title }</h2>
+        <section className="modal-header px-[1.6rem] py-[1.2rem] absolute top-[1.2rem] left-[1.2rem] bg-white shadow-[var(--shadow-normal)] rounded-full z-[100000]">
+            <h2 className="text-left font-bold text-[1.6rem] text-[var(--color-gray-1000)] select-none pointer-events-none">{ title }</h2>
         </section>
     );
 };
@@ -265,25 +264,13 @@ const Footer = ({ className, confirm, cancel, currentTime }: ModalFooterProps) =
         }, 2000)
     }
     
-    const closeModalState = () => {
-        console.log("닫음")
-        setModal({ ...modal, isOpen: false })
-    }
+    const closeModalState = () => setModal({ ...modal, isOpen: false })
 
     return (
-        <section className={`modal-footer px-[2.0rem] pb-[2.0rem] flex flex-wrap justify-between gap-[1.0rem] ${ className }`}>
+        <section className={`modal-footer w-[calc(100%-1.2rem*2)))] flex flex-wrap justify-between gap-[1.0rem] absolute bottom-[1.2rem] left-[1.2rem] z-[100000] ${ className }`}>
             { cancel && cancel?.title !== " " && (
-                // <ButtonComponent
-                //     className={`text-[1.3rem] font-medium rounded-[0.6rem] w-[6.5rem]`}
-                //     content={ cancel.title }
-                //     size="md"
-                //     colorBackground='bg-[var(--color-gray-200)]'
-                //     colorText='text-[var(--color-gray-700)]'
-                //     onClick={ cancel.onClick }
-                //     test="cancel"
-                // />
                 <UI.Button
-                    className={`${ cancel?.className ? cancel?.className : "bg-[var(--color-gray-200)]" } flex-1 font-regular text-[1.4rem] whitespace-nowrap rounded-[1.2rem] px-[2.0rem] h-[4.2rem]`}
+                    className={`${ cancel?.className ? cancel?.className : "bg-white" } flex-1 font-regular text-[1.4rem] whitespace-nowrap rounded-full shadow-[var(--shadow-normal)] px-[2.0rem] h-[4.2rem]`}
                     onClick={ cancel.onClick }
                     rippleColor='#65778a'
                 >
@@ -293,7 +280,7 @@ const Footer = ({ className, confirm, cancel, currentTime }: ModalFooterProps) =
 
             { confirm && confirm?.title !== " " && (
                 <UI.Button
-                    className={`${ confirm?.className ? confirm.className : "bg-[var(--color-brand-500)]" } flex-1 font-regular text-[1.4rem] whitespace-nowrap rounded-[1.2rem] px-[2.0rem] h-[4.2rem]`}
+                    className={`${ confirm?.className ? confirm.className : "bg-[var(--color-gray-1000)] text-white" } flex-1 font-regular text-[1.4rem] whitespace-nowrap rounded-full shadow-[var(--shadow-normal)] px-[2.0rem] h-[4.2rem]`}
                     disabled={isPrevent} // 클릭 방지 시에는 비활성화
                     onClick={async () => {
                         const result = await confirm.onClick();

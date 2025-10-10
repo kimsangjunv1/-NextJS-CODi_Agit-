@@ -50,7 +50,7 @@ const BottomSheet = ({ title, isOpen, onClose, children, function: actions = [] 
                     <motion.section
                         ref={ containerRef }
                         role="dialog"
-                        className="fixed bottom-0 left-0 right-0 z-50 px-4 pt-[3.2rem] pb-[calc(1.6rem*2)] bg-white shadow-lg rounded-t-2xl flex flex-col gap-[2.0rem]"
+                        className="fixed bottom-0 left-0 right-0 z-50 px-[1.6rem] pt-[3.2rem] pb-[calc(1.6rem*2)] bg-white shadow-lg rounded-t-2xl flex flex-col gap-[2.0rem]"
                         drag="y"
                         dragElastic={ 0.3 }
                         dragMomentum={ false }

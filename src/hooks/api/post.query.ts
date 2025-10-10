@@ -4,7 +4,8 @@ import { useToastStore } from "@/stores/useToastStore";
 import { getPostLatestListFetch, getPostListFetch, patchPostFetch, setPostFetch, setPostViewIncrementFetch } from "@/services/post.api";
 
 import { ApiHeaderResponseType } from "@/types/common.type";
-import { GetPostDetailResponseType, GetPostLatestListResponseType, GetPostListResponseType, SetIncrementPostViewType } from "@/types/post.type";
+import { GetPostDetailResponseType, GetPostLatestListResponseType, GetPostListResponseType, PatchPostResponseType, SetIncrementPostViewType, SetPostResponseType } from "@/types/post.type";
+import useNavigate from "../common/useNavigate";
 
 /**
  * 포스트 - 글 목록 불러오기
@@ -67,6 +68,7 @@ export const useGetPostDetailQuery = ( postIdx?: number ) => {
  * 포스트 - 글 생성
  */
 export const useSetPostQuery = () => {
+    const { replaceToUrl } = useNavigate();
     const { setToast } = useToastStore();
 
     const MUTATION_KEY = "post";
@@ -87,16 +89,24 @@ export const useSetPostQuery = () => {
         mutationKey: [MUTATION_KEY, "useSetProdGroupSimpleQuery"],
         mutationFn: (payload: any) => setPostFetch(payload),
         onSuccess: (data) => {
-            setToast({ msg: "게시물을 생성했어요", time: 2 })
+            const RESULT = data.body.result.statusCode;
+            
+            if ( RESULT ) {
+                setToast({ msg: "게시물을 생성했어요", time: 2 })
+                replaceToUrl(`/post/${ data.body.result.postIdx }`);
+            } else {
+                setToast({ msg: "글 등록에 문제가 발생했습니다.", time: 2 });
+            }
+
             queryClient.invalidateQueries({ queryKey: [ MUTATION_KEY ] });
         },
         onError: (err: any) => {
-            setToast({ msg: err.message ?? "에러 발생", time: 2 });
+            setToast({ msg: err.message ?? "서버 통신 중 오류가 발생했습니다.", time: 2 });
         },
     });
 
     const header = data?.header;
-    const body = data?.body;
+    const body: SetPostResponseType = data?.body;
     
     return { mutate, mutateAsync, isError, isIdle, isSuccess, isPending, isPaused, data: body, error, reset }
 };
@@ -105,6 +115,7 @@ export const useSetPostQuery = () => {
  * 포스트 - 글 수정
  */
 export const usePatchPostQuery = () => {
+    const { replaceToUrl } = useNavigate();
     const { setToast } = useToastStore();
 
     const MUTATION_KEY = "post";
@@ -125,7 +136,15 @@ export const usePatchPostQuery = () => {
         mutationKey: [MUTATION_KEY, "usePatchPostQuery"],
         mutationFn: (payload: { data: any, idx: number }) => patchPostFetch(payload),
         onSuccess: (data) => {
-            setToast({ msg: "게시물을 수정했어요", time: 2 })
+            console.log("data", data)
+            const RESULT = data.body.result.statusCode;
+            
+            if ( RESULT ) {
+                setToast({ msg: "게시물을 수정했어요.", time: 2 })
+                replaceToUrl(`/post/${ data.body.result.postIdx }`);
+            } else {
+                setToast({ msg: "글 등록에 문제가 발생했습니다.", time: 2 });
+            }
             queryClient.invalidateQueries({ queryKey: [ MUTATION_KEY ] });
         },
         onError: (err: any) => {
@@ -134,7 +153,7 @@ export const usePatchPostQuery = () => {
     });
 
     const header = data?.header;
-    const body = data?.body;
+    const body: PatchPostResponseType = data?.body;
     
     return { mutate, mutateAsync, isError, isIdle, isSuccess, isPending, isPaused, data: body, error, reset }
 };
@@ -160,7 +179,7 @@ export const useSetIncrementViewQuery = () => {
         mutationKey: [MUTATION_KEY, "useSetIncrementViewQuery"],
         mutationFn: (payload: { postId: number; userId?: string }) => setPostViewIncrementFetch(payload),
         onSuccess: (data) => {
-            setToast({ msg: "조회수 수정했어요", time: 2 })
+            setToast({ msg: "조회수를 수정했어요.", time: 2 })
             queryClient.invalidateQueries({ queryKey: [ MUTATION_KEY ] });
         },
         onError: (err: any) => {

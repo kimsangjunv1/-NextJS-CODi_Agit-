@@ -116,3 +116,19 @@ export interface GetPostDetailResponseType {
     result: PostItem;
     pagination: ApiPaginationResponseType;
 }
+
+export interface PatchPostResponseType {
+    result: {
+        statusCode: number
+        postIdx: number,
+    };
+    pagination: ApiPaginationResponseType;
+}
+
+export interface SetPostResponseType {
+    result: {
+        statusCode: number
+        postIdx: number,
+    };
+    pagination: ApiPaginationResponseType;
+}

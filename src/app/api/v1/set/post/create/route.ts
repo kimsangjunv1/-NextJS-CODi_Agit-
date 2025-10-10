@@ -12,7 +12,7 @@ export async function POST(req: Request) {
         const supabase = await supabaseServer();
 
         // 기본 쿼리
-        const query = supabase.from( TABLE_NAME ).insert( payload );
+        const query = supabase.from( TABLE_NAME ).insert( payload ).select("idx").single();
 
         const { data, count, error } = await query;
 
@@ -21,12 +21,11 @@ export async function POST(req: Request) {
         return NextResponse.json(
             { 
                 body: {
-                    result: data,
-                    pagination: {
-                        totalCount: count ?? 0,
-                        pageSize: 1,
-                        pageNum: 1,
-                    }
+                    result: {
+                        statusCode: 1,
+                        postIdx: data.idx,
+                    },
+                    pagination: null
                 },
                 header: {
                     resultMsg: "SUCCESS",
@@ -40,12 +39,10 @@ export async function POST(req: Request) {
         return NextResponse.json(
             {
                 body: {
-                    result: null,
-                    pagination: {
-                        totalCount: 0,
-                        pageSize: 1,
-                        pageNum: 1,
-                    }
+                    result: {
+                        statusCode: 0,
+                    },
+                    pagination: null
                 },
                 header: {
                     resultMsg: error.message || "문제가 생겼습니다",

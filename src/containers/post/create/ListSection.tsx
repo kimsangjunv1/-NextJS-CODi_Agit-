@@ -16,6 +16,7 @@ import { Row, useBlockStore } from '@/stores/useEditorBlockStore';
 
 import { SectionContent } from '@/types/post.type';
 import { DUMMY_POST_RESPONSE_NEW } from '@/constants/lists/configDummyResponse';
+import useNavigate from '@/hooks/common/useNavigate';
 
 const ListSection = () => {
     const { reset } = useBlockStore();
@@ -24,7 +25,7 @@ const ListSection = () => {
         reset();
     }, [])
     return (
-        <section className='flex flex-col w-full post bg-[linear-gradient(0deg,var(--color-gray-200)_80%,#00000000)]'>
+        <section className='flex flex-col w-full post'>
             <section className='mx-auto post-inner w-full max-w-[var(--size-tablet)] flex flex-col items-center gap-[1.6rem]'>
                 <RenderContents />
             </section>
@@ -107,7 +108,7 @@ const Title = ({ setCreatePostState }: { setCreatePostState: React.Dispatch<Reac
                 
                 <Edit.p
                     defaultValue={"내용을 입력해주세요"}
-                    className='h-auto p-0 font-medium text-[1.2rem] text-center leading-[1.5]'
+                    className='h-auto p-0 font-medium text-[1.4rem] text-center leading-[1.5]'
                     onKeyUp={(e) => {
                         const value = e.currentTarget.innerText;
                         console.log("value", value)
@@ -145,7 +146,7 @@ const Thumbnail = ({ setCreatePostState }: { setCreatePostState: React.Dispatch<
             />
         ),
         className: {
-            container: "max-w-[calc(var(--size-pc)-(2.0rem*2))] w-full"
+            container: ""
         },
         cancel: { text: " ", },
         confirm: {
@@ -211,24 +212,12 @@ const Contents = () => {
 }
 
 const Action = ({ createPostState }: { createPostState: CreatePostState }) => {
-    const {
-        rows,
-        copiedBlock,
-        selectedPosition,
-        addBlock,
-        updateBlock,
-        deleteBlock,
-        deleteRow,
-        copyBlock,
-        pasteBlock,
-        selectBlock,
-    } = useBlockStore();
+    const { rows } = useBlockStore();
     const { setToast } = useToastStore();
     
-    const { data, mutate: setPostFetch } = useSetPostQuery();
+    const { mutate: setPostFetch } = useSetPostQuery();
     
     return (
-        // <article className='h-[5.2rem] fixed bottom-0 left-0 flex items-center justify-between w-full bg-black'>
         <article className='sticky bottom-0 h-[5.2rem] flex items-center justify-between w-full bg-black z-10 rounded-[2.4rem]'>
             <UI.Button
                 className="font-bold text-white text-[1.8rem] hover:bg-[var(--color-brand-500)] h-full px-[2.4rem]"

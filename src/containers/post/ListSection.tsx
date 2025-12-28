@@ -22,9 +22,16 @@ import { useToastStore } from "@/stores/useToastStore";
 import useScrollProgress from "@/hooks/dom/useScrollProgress";
 import TextScreening from "@/components/common/TextComponent";
 import { ApiHeaderResponseType } from "@/types/common.type";
+import { useCreatePostStore } from "@/stores/useCreatePostStore";
 
 // const ListSection = ({ id, initialData }: { id: string, initialData: { body: GetPostDetailResponseType; header: ApiHeaderResponseType } }) => {
 const ListSection = ({ id }: { id: string }) => {
+    const { setPostIdx } = useCreatePostStore();
+    
+    useEffect(() => {
+        setPostIdx(parseInt(id))
+    }, [])
+
     return (
         <section className='flex flex-col w-full post pb-[7.2rem]'>
             <section className='mx-auto post-inner flex flex-col gap-[5.2rem] w-full items-center'>
@@ -411,8 +418,7 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
     useEffect(() => {
         if ( inputMode ) {
             commentContainerRef.current?.scrollTo({
-                top: commentContainerRef.current.scrollHeight,
-                // behavior: "smooth",
+                top: commentContainerRef.current.scrollHeight
             });
         }
         util.dom.setScrollDefence(inputMode ? true : false);
@@ -433,10 +439,10 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
                 { inputMode ? (
                     <motion.section
                         key={"list"}
-                        className="fixed top-0 left-0 z-[10000] h-full w-full comment-list pb-[calc(1.6rem*2)] pt-[calc(1.6rem*2)] overflow-y-auto bg-[linear-gradient(0deg,_#ffffff,_#ffffff90)] backdrop-blur-lg flex items-end"
-                        initial={{ opacity: 0, filter: "blur(20px)" }}
-                        animate={{ opacity: 1, filter: "blur(0px)" }}
-                        exit={{ opacity: 0, filter: "blur(20px)" }}
+                        className="fixed bottom-[0.8rem] shadow-[var(--shadow-normal)] z-[10000] h-full w-full tablet:max-w-[calc(var(--size-tablet)-(0.8rem*8))] mobile:max-w-[calc(100dvw-1.6rem)] left-[50%] overflow-hidden rounded-[3.2rem] transform translate-x-[-50%] tablet:max-h-[calc(100dvh-(1.6rem*8))] mobile:max-h-[calc(100dvh-(0.8rem*2))] comment-list p-[0.8rem] bg-[linear-gradient(0deg,_#ffffff,_#ffffff90)] backdrop-blur-lg flex flex-col items-end"
+                        initial={{ y: 100, opacity: 0, filter: "blur(20px)" }}
+                        animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                        exit={{ y: 100, opacity: 0, filter: "blur(20px)" }}
                         transition={{
                             type: "spring",
                             mass: 0.1,
@@ -444,59 +450,63 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
                             damping: 10
                         }}
                     >
-                        <div
-                            ref={ commentContainerRef }
-                            data-lenis-prevent
-                            className="w-full max-w-[var(--size-tablet)] mx-auto pt-[6.0rem] pb-[calc(1.6rem*6)] px-[1.2rem] overflow-y-auto max-h-[calc(100dvh-var(--header-height)-(1.6rem*2))] mask-[linear-gradient(0deg,#0000,#000_5%_95%,#0000)]"
-                        >
-                            { contents?.length ? contents?.map((e, i) =>
-                                <motion.section
-                                    key={i}
-                                    ref={(el) => {
-                                        itemRefs.current[i] = el;
-                                    }}
-                                    className="item flex items-center gap-[1.6rem] mb-[1.6rem] last:mb-0"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{
-                                        delay: 0.03 * ((contents.length - i) + 1),
-                                        type: "spring",
-                                        mass: 0.1,
-                                        stiffness: 60,
-                                        damping: 10
-                                    }}
-                                >
-                                    <section className="flex items-center gap-[1.2rem] pointer-events-none">
-                                        <img src={"/images/picture/img-dummy-profile-1.png"} alt="/" className="w-[4.2rem] h-[4.2rem] shadow-[var(--shadow-hard)] rounded-full" />
+                        <section className="flex items-end w-full h-full">
+                            <div
+                                ref={ commentContainerRef }
+                                data-lenis-prevent
+                                // className="w-full max-w-[var(--size-tablet)] flex-1 mx-auto pt-[6.0rem] pb-[calc(1.6rem*6)] px-[1.2rem] overflow-y-auto tablet:max-h-[calc(100dvh-var(--header-height)-(1.6rem*2))] mobile:max-h-[100%] mask-[linear-gradient(0deg,#0000,#000_5%_95%,#0000)]"
+                                className="w-full max-w-[var(--size-tablet)] flex-1 mx-auto p-[1.6rem] overflow-y-auto tablet:max-h-[calc(100dvh-var(--header-height)-(1.6rem*6))] mobile:max-h-[calc(100dvh-var(--header-height)-(1.6rem*0))] mask-[linear-gradient(0deg,#0000,#000_5%_95%,#0000)]"
+                            >
+                                { contents?.length ? contents?.map((e, i) =>
+                                    <motion.section
+                                        key={i}
+                                        ref={(el) => {
+                                            itemRefs.current[i] = el;
+                                        }}
+                                        className="item flex items-center gap-[1.6rem] mb-[1.6rem] last:mb-0"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{
+                                            delay: 0.03 * ((contents.length - i) + 1),
+                                            type: "spring",
+                                            mass: 0.1,
+                                            stiffness: 60,
+                                            damping: 10
+                                        }}
+                                    >
+                                        <section className="flex items-start gap-[1.2rem] pointer-events-none">
+                                            <img src={"/images/picture/img-dummy-profile-1.png"} alt="/" className="w-[4.2rem] h-[4.2rem] shadow-[var(--shadow-hard)] rounded-full" />
 
-                                        <div className="flex flex-col gap-[1.6rem] px-[1.2rem] pt-[0.8rem] pb-[0.4rem] bg-white rounded-[1.6rem] shadow-[var(--shadow-normal)]">
-                                            <section className="flex flex-col gap-[0.8rem]">
-                                                <section className="flex items-center gap-[0.4rem]">
-                                                    <p className="font-bold">{ e.author }</p>
-                                                    { e.is_admin ? <p className="border border-black text-[1.2rem] px-[0.2rem] py-[0.1rem] rounded-[0.4rem] font-bold">관리자</p> : "" }
-                                                </section>
+                                            <div className="flex flex-col gap-[1.6rem] px-[1.2rem] pt-[0.8rem] pb-[0.4rem] bg-white rounded-[1.6rem] shadow-[var(--shadow-normal)]">
+                                                <section className="flex flex-col gap-[0.8rem]">
+                                                    <section className="flex items-center gap-[0.4rem]">
+                                                        <p className="font-bold">{ e.author }</p>
+                                                        { e.is_admin ? <p className="border border-black text-[1.2rem] px-[0.2rem] py-[0.1rem] rounded-[0.4rem] font-bold">관리자</p> : "" }
+                                                    </section>
 
-                                                <section>
-                                                    <p className="whitespace-break-spaces leading-[1.5]">{ e.msg }</p>
+                                                    <section>
+                                                        <p className="whitespace-break-spaces leading-[1.5]">{ e.msg }</p>
+                                                        {/* <p className="break-words leading-[1.5]">{ e.msg }</p> */}
+                                                    </section>
                                                 </section>
-                                            </section>
-                                        </div>
-                                    </section>
-                                    
-                                    <p className="bg-[var(--color-gray-400)] text-white px-[0.8rem] py-[0.2rem] rounded-full">1일전</p>
-                                </motion.section>
-                            ) : (
-                                <UI.Empty
-                                    title={"지금 댓글의 주인공이 되어보세요!"}
-                                    className="h-full"
-                                />
-                            )}
-                        </div>
+                                        <p className="bg-[var(--color-gray-400)] text-white px-[0.8rem] py-[0.2rem] rounded-full">1일전</p>
+                                            </div>
+                                        </section>
+                                        
+                                    </motion.section>
+                                ) : (
+                                    <UI.Empty
+                                        title={"지금 댓글의 주인공이 되어보세요!"}
+                                        className="h-full"
+                                    />
+                                )}
+                            </div>
+                        </section>
 
                         <section
                             ref={ inputRef }
-                            className="fixed bottom-[calc(1.6rem*3)] left-[50%] transform w-full max-w-[var(--size-tablet)] translate-x-[-50%] z-10 body px-[1.2rem] py-[0.8rem] h-[calc(1.6rem*3)] min-w-[13.2rem] bg-[#ffffffcb] backdrop-blur-sm rounded-[calc(1.6rem*2)] flex items-center shadow-[var(--shadow-normal)] transition-opacity"
+                            className="w-full max-w-[var(--size-tablet)] body px-[1.6rem] py-[1.6rem] min-h-[calc(5.2rem)] h-[fit-content] min-w-[13.2rem] bg-[#ffffffcb] backdrop-blur-sm rounded-[calc(1.6rem*2)] flex items-center shadow-[var(--shadow-normal)] transition-opacity"
                         >
                             { !inputMode ? (
                                 <TextShimmer
@@ -516,7 +526,7 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
                                 </TextShimmer>
                             ) : (
                                 <Edit.div
-                                    className="text-left leading-[1.5] w-full h-full whitespace-break-spaces"
+                                    className="text-left leading-[1.5] w-full whitespace-break-spaces h-[fit-content]"
                                     onKeyUp={(e) => {
                                         const value = e.currentTarget.innerText
                                         setConfirmedPayload( prev => ({
@@ -528,7 +538,7 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
                             ) }
                             
                             <UI.Button
-                                className={`absolute right-[0.4rem] top-[50%] transform translate-y-[-50%] flex justify-center items-center px-[1.2rem] h-[4.2rem] rounded-full overflow-hidden shadow-[var(--shadow-normal)] ${ inputMode ? "bg-[var(--color-gray-1000)]" : "pointer-events-none bg-black" }`}
+                                className={`absolute right-[0.4rem] bottom-[0.4rem] flex justify-center items-center w-[4.2rem] h-[4.2rem] rounded-full overflow-hidden shadow-[var(--shadow-normal)] ${ inputMode ? "bg-[var(--color-gray-1000)]" : "pointer-events-none bg-black" }`}
                                 onClick={() => {
                                     if ( inputMode ) {
                                         const PAYLOAD = {
@@ -581,145 +591,39 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
             <section className="fixed bottom-[1.6rem] left-[50%] w-full justify-center transform translate-x-[-50%] z-[100] flex gap-[1.2rem]">
                 <AnimatePresence>
                     { scrollValue >= 10 ? (
-                        <Fragment key={"one"}>
-                            <motion.section
-                                // key={e.id + i}
-                                key={"button"}
-                                className="flex items-center justify-center bg-[#00000090] backdrop-blur-sm p-[1.2rem] rounded-full"
-                                whileTap={{ scale: 0.95 }}
-                                initial={{ opacity: 0, y: "5.2rem", scale: 0.9, filter: "blur(10px)" }}
-                                animate={{
-                                    opacity: 1,
-                                    scale: 1,
-                                    y: 0,
-                                    filter: "blur(0px)",
-                                }}
-                                exit={{ opacity: 0, y: "5.2rem", scale: 0.9, filter: "blur(10px)" }}
-                                transition={{
-                                    delay: 0.01 * 0,
-                                    type: "spring",
-                                    mass: 0.3,       // 약간 무게감 ↑
-                                    stiffness: 50,  // 스프링 강하게 ↑
-                                    damping: 8,      // 감쇠 낮춰서 튕기게 ↓
-                                }}
-                            >
-                                <UI.Button
-                                    className="text-white flex items-center justify-center px-[0.8rem] gap-[0.8rem]"
-                                    onClick={() => {
-                                        if ( !inputMode ) {
-                                            setInputMode( true )
-                                        }
-                                    }}
-                                >
-                                    <p>댓글쓰기</p>
-                                    <IconComponent type="outlined-arrow-swap" alt="테스트" className="invert-100" />
-                                </UI.Button>
-                            </motion.section>
-
-                            <motion.section
-                                // key={e.id + i}
-                                key={"button2"}
-                                className="flex items-center justify-center bg-[#00000090] backdrop-blur-sm p-[1.2rem] rounded-full"
-                                whileTap={{ scale: 0.95 }}
-                                initial={{ opacity: 0, y: "5.2rem", scale: 0.9, filter: "blur(10px)" }}
-                                animate={{
-                                    opacity: 1,
-                                    scale: 1,
-                                    y: 0,
-                                    filter: "blur(0px)",
-                                }}
-                                exit={{ opacity: 0, y: "5.2rem", scale: 0.9, filter: "blur(10px)" }}
-                                transition={{
-                                    delay: 0.01 * 3,
-                                    type: "spring",
-                                    mass: 0.3,       // 약간 무게감 ↑
-                                    stiffness: 50,  // 스프링 강하게 ↑
-                                    damping: 8,      // 감쇠 낮춰서 튕기게 ↓
+                        <motion.section
+                            // key={e.id + i}
+                            key={"button"}
+                            className="flex items-center justify-center bg-[#00000090] backdrop-blur-sm p-[1.2rem] rounded-full"
+                            whileTap={{ scale: 0.95 }}
+                            initial={{ opacity: 0, y: "5.2rem", scale: 0.9, filter: "blur(10px)" }}
+                            animate={{
+                                opacity: 1,
+                                scale: 1,
+                                y: 0,
+                                filter: "blur(0px)",
+                            }}
+                            exit={{ opacity: 0, y: "5.2rem", scale: 0.9, filter: "blur(10px)" }}
+                            transition={{
+                                delay: 0.01 * 0,
+                                type: "spring",
+                                mass: 0.3,       // 약간 무게감 ↑
+                                stiffness: 50,  // 스프링 강하게 ↑
+                                damping: 8,      // 감쇠 낮춰서 튕기게 ↓
+                            }}
+                        >
+                            <UI.Button
+                                className="text-white flex items-center justify-center px-[0.8rem] gap-[0.8rem]"
+                                onClick={() => {
+                                    if ( !inputMode ) {
+                                        setInputMode( true )
+                                    }
                                 }}
                             >
-                                <UI.Button
-                                    // className="w-full h-full font-bold p-[1.6rem] bg-[#000000] text-white text-[1.8rem]"
-                                    className="text-white flex items-center justify-center px-[0.8rem] gap-[0.8rem]"
-                                    onClick={() => {
-                                        pushToUrl(`/post/${postIdx}/modify`)
-                                    }}
-                                >
-                                    <p>수정하기</p>
-                                    <IconComponent type="outlined-arrow-swap" alt="테스트" className="invert-100" />
-                                </UI.Button>
-                            </motion.section>
-                        </Fragment>
-                    ) : "" }
-                    
-                    { false ? (
-                        <Fragment key={"two"}>
-                            <motion.section
-                                // key={e.id + i}
-                                key={"button3"}
-                                className="flex items-center justify-center bg-[#00000090] backdrop-blur-sm p-[1.2rem] rounded-full"
-                                whileTap={{ scale: 0.95 }}
-                                initial={{ opacity: 0, y: "5.2rem", scale: 0.9, filter: "blur(10px)" }}
-                                animate={{
-                                    opacity: 1,
-                                    scale: 1,
-                                    y: 0,
-                                    filter: "blur(0px)",
-                                }}
-                                exit={{ opacity: 0, y: "5.2rem", scale: 0.9, filter: "blur(10px)" }}
-                                transition={{
-                                    delay: 0.01 * 0,
-                                    type: "spring",
-                                    mass: 0.3,       // 약간 무게감 ↑
-                                    stiffness: 50,  // 스프링 강하게 ↑
-                                    damping: 8,      // 감쇠 낮춰서 튕기게 ↓
-                                }}
-                            >
-                                <UI.Button
-                                    className="text-white flex items-center justify-center px-[0.8rem] gap-[0.8rem]"
-                                    onClick={() => {
-                                        if ( !inputMode ) {
-                                            setInputMode( true )
-                                        }
-                                    }}
-                                >
-                                    <p>이전글</p>
-                                    <IconComponent type="outlined-arrow-swap" alt="테스트" className="invert-100" />
-                                </UI.Button>
-                            </motion.section>
-
-                            <motion.section
-                                // key={e.id + i}
-                                key={"button4"}
-                                className="flex items-center justify-center bg-[#00000090] backdrop-blur-sm p-[1.2rem] rounded-full"
-                                whileTap={{ scale: 0.95 }}
-                                initial={{ opacity: 0, y: "5.2rem", scale: 0.9, filter: "blur(10px)" }}
-                                animate={{
-                                    opacity: 1,
-                                    scale: 1,
-                                    y: 0,
-                                    filter: "blur(0px)",
-                                }}
-                                exit={{ opacity: 0, y: "5.2rem", scale: 0.9, filter: "blur(10px)" }}
-                                transition={{
-                                    delay: 0.01 * 3,
-                                    type: "spring",
-                                    mass: 0.3,       // 약간 무게감 ↑
-                                    stiffness: 50,  // 스프링 강하게 ↑
-                                    damping: 8,      // 감쇠 낮춰서 튕기게 ↓
-                                }}
-                            >
-                                <UI.Button
-                                    // className="w-full h-full font-bold p-[1.6rem] bg-[#000000] text-white text-[1.8rem]"
-                                    className="text-white flex items-center justify-center px-[0.8rem] gap-[0.8rem]"
-                                    onClick={() => {
-                                        pushToUrl(`/post/${postIdx}/modify`)
-                                    }}
-                                >
-                                    <p>다음글</p>
-                                    <IconComponent type="outlined-arrow-swap" alt="테스트" className="invert-100" />
-                                </UI.Button>
-                            </motion.section>
-                        </Fragment>
+                                <p>댓글 남기기</p>
+                                {/* <IconComponent type="outlined-arrow-swap" alt="테스트" className="invert-100" /> */}
+                            </UI.Button>
+                        </motion.section>
                     ) : "" }
                 </AnimatePresence>
             </section>

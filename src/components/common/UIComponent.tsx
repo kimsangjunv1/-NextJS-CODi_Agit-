@@ -182,7 +182,7 @@ const Input = forwardRef<{ reset: () => void }, InputProps & { phoneNumber?: boo
 
     return (
         <section
-            className={`flex items-center gap-[0.8rem] max-h-[var(--input-height)] h-full transition-colors bg-[#ffffff28] border border-[var(--color-gray-200)] px-[1.2rem] rounded-[1.2rem] hover:border-[var(--color-brand-500)] relative ${className?.container ? className?.container : " border border-[var(--color-gray-200)] hover:border-[var(--color-gray-500)] focus:border-[var(--color-gray-500)] px-[1.6rem]"}`}
+            className={`flex items-center gap-[0.8rem] max-h-[var(--input-height)] h-full transition-colors bg-[#ffffff28] border border-[var(--color-gray-200)] rounded-[1.2rem] hover:border-[var(--color-brand-500)] relative ${className?.container ? className?.container : "px-[1.2rem] border border-[var(--color-gray-200)] hover:border-[var(--color-gray-500)] focus:border-[var(--color-gray-500)]"}`}
             data-description={desc_no}
         >
             {guide && <p className="absolute top-[50%] right-[1.6rem] transform -translate-y-1/2">{guide}</p>}
@@ -273,7 +273,7 @@ const NumberInput = ({
 
 	return (
 		<section
-			className={`flex items-center gap-[0.8rem] px-[1.6rem] border border-[var(--color-gray-200)] hover:border-[var(--color-blue-1000)] focus:border-[var(--color-blue-1000)] transition-colors rounded-[0.8rem] relative ${className?.container ? className.container : ""}`}
+			className={`flex items-center gap-[0.8rem] px-[1.6rem] transition-colors rounded-[0.8rem] relative ${className?.container ? className.container : "border border-[var(--color-gray-200)] hover:border-[var(--color-blue-1000)] focus:border-[var(--color-blue-1000)]"}`}
 			data-description={desc_no}
 		>
 			{guide && (
@@ -2074,9 +2074,10 @@ const Empty = ({
 }) => {
     return (
         <div
-            className={`col-span-3 p-[2.0rem] w-full flex items-center justify-center ${ className ? className : "" }`}
+            className={`col-span-3 p-[2.0rem] w-full flex items-center justify-center flex-col gap-[2.4rem] opacity-[0.2] ${ className ? className : "" }`}
             data-description={ desc_no }
         >
+            <IconComponent type='graphic-case-empty' alt='없음' width={52} height={52} />
             <p className='text-center text-black pointer-events-none'>{ title }</p>
         </div>
     )

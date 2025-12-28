@@ -19,9 +19,9 @@ import Image from "next/image";
 
 // Response 값
 // idx, create_at,  url
-const Box = ({ onChange }: { onChange: (e: any) => void }) => {
+const Box = ({ defaultImageUrl = "/", onChange }: { defaultImageUrl: string, onChange: (e: any) => void }) => {
     const [ selectedImage, setSelectedImage ] = useState<number>();
-    const [ selectedImageUrl, setSelectedImageUrl ] = useState<string>("/");
+    const [ selectedImageUrl, setSelectedImageUrl ] = useState<string>( defaultImageUrl );
 
     return (
         <article className="flex flex-col gap-[2.4rem]">
@@ -33,7 +33,7 @@ const Box = ({ onChange }: { onChange: (e: any) => void }) => {
             <section className="flex flex-col gap-[0.4rem]">
                 <p className="text-[var(--color-gray-500)]">업로드된 이미지</p>
                 
-                <section data-lenis-prevent="true" className="grid grid-cols-[1fr_1fr_1fr_1fr] grid-rows-[7.2rem_7.2rem_7.2rem_7.2rem] pb-[3.2rem] gap-[0.8rem] h-[calc(1.6rem*10)] overflow-y-auto bg-[var(--color-gray-300)] p-[0.4rem] rounded-[1.6rem]">
+                <section className="grid grid-cols-[1fr_1fr_1fr_1fr] grid-rows-[7.2rem_7.2rem_7.2rem_7.2rem] pb-[3.2rem] gap-[0.8rem] h-[calc(1.6rem*10)] overflow-y-auto bg-[var(--color-gray-300)] p-[0.4rem] rounded-[1.6rem]">
                     { DUMMY_IMAGE_RESPONSE.map((e, i) =>
                         <UI.Button
                             key={i}

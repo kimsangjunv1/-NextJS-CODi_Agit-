@@ -95,7 +95,7 @@ const Title = ({ setCreatePostState }: { setCreatePostState: React.Dispatch<Reac
                 
                 <Edit.h2
                     defaultValue={"제목을 입력해주세요"}
-                    className='h-auto p-0 font-extrabold text-center text-[2.8rem] leading-[1.5]'
+                    className='h-auto p-0 font-extrabold text-center text-[2.0rem] leading-[1.5]'
                     onKeyUp={(e) => {
                         const value = e.currentTarget.innerText;
                         console.log("value", value)

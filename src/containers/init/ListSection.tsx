@@ -17,6 +17,12 @@ import { GetPostLatestListResponseType } from '@/types/post.type'
 const ListSection = ({ initialData }: { initialData: { header: ApiHeaderResponseType, body: GetPostLatestListResponseType } }) => {
     const { mainViewMode } = useLayoutStore();
 
+    useEffect(() => {
+        window?.scrollTo({
+            top: 0
+        });
+    }, [mainViewMode]);
+
     return (
         <AnimatePresence mode='popLayout'>
             { mainViewMode === 1 && (

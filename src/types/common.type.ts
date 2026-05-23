@@ -1,12 +1,23 @@
-export interface ApiHeaderResponseType {
-    resultMsg: string;       // 결과 메시지
-    resultCode: number;      // 상태 코드 (HTTP 200 등)
-    isSuccessful: boolean;   // 성공 여부
-    timestamp: string;       // ISO 8601 형식의 생성 시각
+export interface ApiPaginationResponseType {
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
 }
 
-export interface ApiPaginationResponseType {
-    totalCount: number;
-    pageSize: number;
-    pageNum: number;
+export interface ApiResponseType<T = unknown> {
+    pagination: ApiPaginationResponseType | null;
+    result: T;
+    resultCode: string;
+    resultMessage: string;
+}
+
+/** @deprecated ApiResponseType.resultCode / resultMessage 사용 */
+export interface ApiHeaderResponseType {
+    resultMsg: string;
+    resultCode: number;
+    isSuccessful: boolean;
+    timestamp: string;
 }

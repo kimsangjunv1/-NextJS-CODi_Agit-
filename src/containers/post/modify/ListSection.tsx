@@ -47,11 +47,11 @@ const RenderContents = ({ id }: { id: string }) => {
     return (
         <Fragment>
             <section className='py-[7.2rem] flex flex-col justify-center items-center gap-[3.2rem]'>
-                <Thumbnail imageUrl={ getPostListData?.result?.thumbnail } contents={ getPostListData?.result?.contents } />
-                <Title title={ getPostListData?.result?.title } summary={ getPostListData?.result?.summary } category_idx={ getPostListData?.result?.category_idx } />
+                <Thumbnail imageUrl={ getPostListData?.result?.thumbnail ?? "" } contents={ getPostListData?.result?.contents ?? [] } />
+                <Title title={ getPostListData?.result?.title ?? "" } summary={ getPostListData?.result?.summary ?? "" } category_idx={ getPostListData?.result?.category_idx ?? 0 } />
             </section>
             
-            <Contents contents={ getPostListData?.result?.contents } />
+            <Contents contents={ getPostListData?.result?.contents ?? [] } />
             {/* <Action id={ parseInt( id ) } createPostState={ createPostState } /> */}
         </Fragment>
     )
@@ -85,12 +85,10 @@ const Title = ({
                     trackingData={`${ getCategoryListData?.result?.filter((e) => e.is_enabled).find((e) => e.idx === category_idx)?.title }`}
                     defaultValue={ getCategoryListData?.result?.filter((e) => e.is_enabled).find((e) => e.idx === category_idx)?.idx }
 
-                    list={ getCategoryListData?.result?.filter((e) => e.is_enabled).map((e) => {
-                        return {
-                            title: e.title,
-                            value: e.idx
-                        }
-                    })}
+                    list={ getCategoryListData?.result?.filter((e) => e.is_enabled).map((e) => ({
+                        title: e.title,
+                        value: e.idx,
+                    })) ?? [] }
 
                     onChange={(e) => setCategoryIdx(e)}
                     className={{

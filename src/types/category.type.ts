@@ -1,4 +1,4 @@
-import { ApiPaginationResponseType } from "./common.type";
+import { ApiResponseType } from "./common.type";
 
 export interface setCategoryPayloadType {
     title: string;
@@ -27,12 +27,5 @@ export interface CategoryItemManager extends CategoryItem {
     created_at: string;
 }
 
-export interface GetCategoryListResponseType {
-    result: CategoryItem[];
-    pagination: ApiPaginationResponseType;
-}
-
-export interface GetCategoryListOnManagerResponseType {
-    result: CategoryItemManager[];
-    pagination: ApiPaginationResponseType;
-}
+export type GetCategoryListResponseType = ApiResponseType<CategoryItem[]>;
+export type GetCategoryListOnManagerResponseType = ApiResponseType<CategoryItemManager[]>;

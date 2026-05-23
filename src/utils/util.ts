@@ -242,14 +242,17 @@ export const util = {
 
     api: {
         checkIsSuccessful: (data: any) => {
-            if ( data ) {
-                return data.header.IsSuccessful
+            if (data) {
+                return data.resultCode === "SUCCESS";
             }
         },
 
         getBodyDataOnResponse: (data: any) => {
-            if ( data ) {
-                return data.body
+            if (data) {
+                return {
+                    result: data.result,
+                    pagination: data.pagination,
+                };
             }
         },
 

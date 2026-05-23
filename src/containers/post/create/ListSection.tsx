@@ -73,12 +73,10 @@ const Title = ({ setCreatePostState }: { setCreatePostState: React.Dispatch<Reac
                     trackingData={`${ getCategoryListData?.result?.filter((e) => e.is_enabled).find((e, idx) => idx === 0)?.title }`}
                     defaultValue={ getCategoryListData?.result?.filter((e) => e.is_enabled).find((e, idx) => idx === 0)?.idx }
 
-                    list={ getCategoryListData?.result?.filter((e) => e.is_enabled).map((e) => {
-                        return {
-                            title: e.title,
-                            value: e.idx
-                        }
-                    })}
+                    list={ getCategoryListData?.result?.filter((e) => e.is_enabled).map((e) => ({
+                        title: e.title,
+                        value: e.idx,
+                    })) ?? [] }
 
                     onChange={(e) => {
                         console.log("category_idx", e)
@@ -135,6 +133,7 @@ const Thumbnail = ({ setCreatePostState }: { setCreatePostState: React.Dispatch<
         title: "이미지 관리",
         content: (
             <ModalContent.Image.Box
+                defaultImageUrl=""
                 onChange={( url ) => {
                     setCurrentImageUrl(url);
                     setCreatePostState((prev) => ({

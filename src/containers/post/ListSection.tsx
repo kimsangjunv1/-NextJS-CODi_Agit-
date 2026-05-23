@@ -51,11 +51,11 @@ const RenderContents = ({ id }: { id: string }) => {
         <AnimatePresence mode='popLayout'>
             {/* <section className='flex flex-col justify-center items-center gap-[3.2rem] min-h-[calc(1.6rem*20)] h-[calc(100dvh-1.2rem-(var(--header-height)*0))] w-full'> */}
             <section className='flex flex-col justify-center items-center gap-[3.2rem] h-[100dvh] p-[0.8rem] w-full'>
-                <Title key={"Title"} imageUrl={ DATA?.thumbnail } title={ DATA?.title } summary={ DATA?.summary } createDate={ DATA?.created_at } viewCount={ DATA?.views } />
+                <Title key={"Title"} imageUrl={ DATA?.thumbnail ?? "" } title={ DATA?.title ?? "" } summary={ DATA?.summary ?? "" } createDate={ DATA?.created_at ?? "" } viewCount={ DATA?.views ?? 0 } />
             </section>
             
-            <Contents key={"Contents"} contents={ DATA?.contents } prev={ DATA?.prev } next={ DATA?.next } />
-            <Comment key={"Comment"} contents={ getCommentListData?.result } postIdx={ id } />
+            <Contents key={"Contents"} contents={ DATA?.contents ?? [] } prev={ DATA?.prev } next={ DATA?.next } />
+            <Comment key={"Comment"} contents={ getCommentListData?.result ?? [] } postIdx={ id } />
         </AnimatePresence>
     )
 }

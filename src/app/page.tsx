@@ -2,24 +2,18 @@
 import Main from "@/components/layout/Main";
 import ListSection from "@/containers/init/ListSection";
 import { supabaseServer } from "@/utils/supabase/supabaseServer";
+import { buildPagination } from "@/utils/apiResponse";
 
-import { ApiHeaderResponseType } from "@/types/common.type";
 import { GetPostLatestListResponseType } from "@/types/post.type";
 
 export const revalidate = 300; // ISR: 60초마다 페이지 재생성
 
 const Page = async () => {
-    let initialData: { body: GetPostLatestListResponseType; header: ApiHeaderResponseType } = {
-        body: {
-            result: [],
-            pagination: { totalCount: 0, pageSize: 10, pageNum: 1 },
-        },
-        header: {
-            resultMsg: "FAILED",
-            resultCode: 500,
-            isSuccessful: false,
-            timestamp: new Date().toISOString(),
-        },
+    let initialData: GetPostLatestListResponseType = {
+        result: [],
+        pagination: buildPagination({ page: 1, pageSize: 10, totalCount: 0 }),
+        resultCode: "ERROR",
+        resultMessage: "조회실패",
     };
 
     try {
@@ -33,26 +27,22 @@ const Page = async () => {
 
         if (error) throw error;
 
-        const formattedData = currentData?.map(item => ({
+        const formattedData = currentData?.map((item) => ({
             ...item,
-            category: item.category?.[0] ?? { title: "" }  // 배열 -> 단일 객체
+            category: item.category?.[0] ?? { title: "" },
         }));
 
+        const totalCount = currentData?.length ?? 0;
+
         initialData = {
-            body: {
-                result: formattedData ?? [],
-                pagination: {
-                    totalCount: currentData?.length ?? 0,
-                    pageSize: 10,
-                    pageNum: 1,
-                },
-            },
-            header: {
-                resultMsg: "SUCCESS",
-                resultCode: 200,
-                isSuccessful: true,
-                timestamp: new Date().toISOString(),
-            },
+            result: formattedData ?? [],
+            pagination: buildPagination({
+                page: 1,
+                pageSize: 10,
+                totalCount,
+            }),
+            resultCode: "SUCCESS",
+            resultMessage: "조회성공",
         };
     } catch (err: any) {
         console.error("SSR fetch error:", err);

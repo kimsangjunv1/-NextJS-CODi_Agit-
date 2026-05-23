@@ -10,11 +10,10 @@ import { util } from '@/utils/util'
 import UI from '@/components/common/UIComponent'
 import { useLayoutStore } from '@/stores/useLayoutStore'
 
-import { ApiHeaderResponseType } from '@/types/common.type'
 import { GetPostLatestListResponseType } from '@/types/post.type'
 
 
-const ListSection = ({ initialData }: { initialData: { header: ApiHeaderResponseType, body: GetPostLatestListResponseType } }) => {
+const ListSection = ({ initialData }: { initialData: GetPostLatestListResponseType }) => {
     const { mainViewMode } = useLayoutStore();
 
     useEffect(() => {
@@ -67,7 +66,7 @@ const ListSection = ({ initialData }: { initialData: { header: ApiHeaderResponse
     )
 }
 
-const Slider = ({ initialData }: { initialData: { header: ApiHeaderResponseType, body: GetPostLatestListResponseType } }) => {
+const Slider = ({ initialData }: { initialData: GetPostLatestListResponseType }) => {
     const { data, refetch: getPostLatestListFetch } = useGetPostLatestListQuery(initialData);
 
     const cardRefs = useRef<(HTMLElement | null)[]>([]);

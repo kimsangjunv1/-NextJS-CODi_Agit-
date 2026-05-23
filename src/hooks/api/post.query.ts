@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToastStore } from "@/stores/useToastStore";
 import { getPostLatestListFetch, getPostListFetch, patchPostFetch, setPostFetch, setPostViewIncrementFetch } from "@/services/post.api";
 
-import { ApiHeaderResponseType } from "@/types/common.type";
 import { GetPostDetailResponseType, GetPostLatestListResponseType, GetPostListResponseType, PatchPostResponseType, SetIncrementPostViewType, SetPostResponseType } from "@/types/post.type";
 import useNavigate from "../common/useNavigate";
 
@@ -13,55 +12,45 @@ import useNavigate from "../common/useNavigate";
 export const useGetPostListQuery = () => {
     const MUTATION_KEY = "post";
 
-    const { data, isLoading, isError, isFetching, refetch } = useQuery({
+    const { data, isLoading, isError, isFetching, refetch } = useQuery<GetPostListResponseType>({
         queryKey: [MUTATION_KEY, "useGetPostListQuery"],
         queryFn: () => getPostListFetch(),
         staleTime: 0,
     });
-    
-    const header: ApiHeaderResponseType = data?.header;
-    const body: GetPostListResponseType = data?.body;
 
-    return { data: body, header, isLoading, isError, isFetching, refetch };
+    return { data, isLoading, isError, isFetching, refetch };
 };
 
 /**
- * 포스트 - 글 목록 불러오기
+ * 포스트 - 최신 글 목록 불러오기
  */
-export const useGetPostLatestListQuery = (initialData?: { header: ApiHeaderResponseType, body: GetPostLatestListResponseType }) => {
+export const useGetPostLatestListQuery = (initialData?: GetPostLatestListResponseType) => {
     const MUTATION_KEY = "comment";
 
-    const { data, isLoading, isError, isFetching, refetch } = useQuery({
+    const { data, isLoading, isError, isFetching, refetch } = useQuery<GetPostLatestListResponseType>({
         queryKey: [MUTATION_KEY, "useGetPostLatestListQuery"],
         queryFn: () => getPostLatestListFetch(),
         staleTime: 0,
-        initialData
+        initialData,
     });
-    
-    const header: ApiHeaderResponseType = data?.header;
-    const body: GetPostLatestListResponseType = data?.body;
 
-    return { data: body, header, isLoading, isError, isFetching, refetch };
+    return { data, isLoading, isError, isFetching, refetch };
 };
 
 /**
- * 포스트 - 글 목록 불러오기
+ * 포스트 - 글 상세 불러오기
  */
-export const useGetPostDetailQuery = ( postIdx?: number ) => {
+export const useGetPostDetailQuery = (postIdx?: number) => {
     const MUTATION_KEY = "post";
 
-    const { data, isLoading, isError, isFetching, refetch } = useQuery({
+    const { data, isLoading, isError, isFetching, refetch } = useQuery<GetPostDetailResponseType>({
         queryKey: [MUTATION_KEY, "useGetPostDetailQuery", postIdx],
-        // queryKey: [MUTATION_KEY, "useGetPostDetailQuery", postIdx],
-        queryFn: () => getPostListFetch( postIdx ),
+        queryFn: () => getPostListFetch(postIdx),
         staleTime: 0,
-        enabled: !!postIdx
+        enabled: !!postIdx,
     });
-    
-    const header: ApiHeaderResponseType = data?.header;
-    const body: GetPostDetailResponseType = data?.body;
 
-    return { data: body, header, isLoading, isError, isFetching, refetch };
+    return { data, isLoading, isError, isFetching, refetch };
 };
 
 /**
@@ -76,39 +65,36 @@ export const useSetPostQuery = () => {
 
     const {
         data,
-        mutate,        // 뮤테이션 실행 함수
-        mutateAsync,   // 비동기 뮤테이션 실행 함수 (Promise 반환)
-        error,         // 에러 정보
-        isError,       // 에러 여부 (true/false)
-        isSuccess,     // 성공 여부 (true/false)
-        isIdle,        // 초기 상태 여부 (true/false)
-        isPending,     // 로딩 여부 (true/false) (v5에서 추가됨)
-        isPaused,      // 네트워크 등으로 인해 멈춘 상태 여부 (true/false)
-        reset          // 상태 초기화 함수
+        mutate,
+        mutateAsync,
+        error,
+        isError,
+        isSuccess,
+        isIdle,
+        isPending,
+        isPaused,
+        reset,
     } = useMutation({
         mutationKey: [MUTATION_KEY, "useSetProdGroupSimpleQuery"],
         mutationFn: (payload: any) => setPostFetch(payload),
         onSuccess: (data) => {
-            const RESULT = data.body.result.statusCode;
-            
-            if ( RESULT ) {
-                setToast({ msg: "게시물을 생성했어요", time: 2 })
-                replaceToUrl(`/post/${ data.body.result.postIdx }`);
+            const RESULT = data?.result?.statusCode;
+
+            if (RESULT) {
+                setToast({ msg: "게시물을 생성했어요", time: 2 });
+                replaceToUrl(`/post/${data.result.postIdx}`);
             } else {
                 setToast({ msg: "글 등록에 문제가 발생했습니다.", time: 2 });
             }
 
-            queryClient.invalidateQueries({ queryKey: [ MUTATION_KEY ] });
+            queryClient.invalidateQueries({ queryKey: [MUTATION_KEY] });
         },
         onError: (err: any) => {
             setToast({ msg: err.message ?? "서버 통신 중 오류가 발생했습니다.", time: 2 });
         },
     });
 
-    const header = data?.header;
-    const body: SetPostResponseType = data?.body;
-    
-    return { mutate, mutateAsync, isError, isIdle, isSuccess, isPending, isPaused, data: body, error, reset }
+    return { mutate, mutateAsync, isError, isIdle, isSuccess, isPending, isPaused, data, error, reset };
 };
 
 /**
@@ -123,39 +109,35 @@ export const usePatchPostQuery = () => {
 
     const {
         data,
-        mutate,        // 뮤테이션 실행 함수
-        mutateAsync,   // 비동기 뮤테이션 실행 함수 (Promise 반환)
-        error,         // 에러 정보
-        isError,       // 에러 여부 (true/false)
-        isSuccess,     // 성공 여부 (true/false)
-        isIdle,        // 초기 상태 여부 (true/false)
-        isPending,     // 로딩 여부 (true/false) (v5에서 추가됨)
-        isPaused,      // 네트워크 등으로 인해 멈춘 상태 여부 (true/false)
-        reset          // 상태 초기화 함수
+        mutate,
+        mutateAsync,
+        error,
+        isError,
+        isSuccess,
+        isIdle,
+        isPending,
+        isPaused,
+        reset,
     } = useMutation({
         mutationKey: [MUTATION_KEY, "usePatchPostQuery"],
-        mutationFn: (payload: { data: any, idx: number }) => patchPostFetch(payload),
+        mutationFn: (payload: { data: any; idx: number }) => patchPostFetch(payload),
         onSuccess: (data) => {
-            console.log("data", data)
-            const RESULT = data.body.result.statusCode;
-            
-            if ( RESULT ) {
-                setToast({ msg: "게시물을 수정했어요.", time: 2 })
-                replaceToUrl(`/post/${ data.body.result.postIdx }`);
+            const RESULT = data?.result?.statusCode;
+
+            if (RESULT) {
+                setToast({ msg: "게시물을 수정했어요.", time: 2 });
+                replaceToUrl(`/post/${data.result.postIdx}`);
             } else {
                 setToast({ msg: "글 등록에 문제가 발생했습니다.", time: 2 });
             }
-            queryClient.invalidateQueries({ queryKey: [ MUTATION_KEY ] });
+            queryClient.invalidateQueries({ queryKey: [MUTATION_KEY] });
         },
         onError: (err: any) => {
             setToast({ msg: err.message ?? "에러 발생", time: 2 });
         },
     });
 
-    const header = data?.header;
-    const body: PatchPostResponseType = data?.body;
-    
-    return { mutate, mutateAsync, isError, isIdle, isSuccess, isPending, isPaused, data: body, error, reset }
+    return { mutate, mutateAsync, isError, isIdle, isSuccess, isPending, isPaused, data, error, reset };
 };
 
 export const useSetIncrementViewQuery = () => {
@@ -166,29 +148,26 @@ export const useSetIncrementViewQuery = () => {
 
     const {
         data,
-        mutate,        // 뮤테이션 실행 함수
-        mutateAsync,   // 비동기 뮤테이션 실행 함수 (Promise 반환)
-        error,         // 에러 정보
-        isError,       // 에러 여부 (true/false)
-        isSuccess,     // 성공 여부 (true/false)
-        isIdle,        // 초기 상태 여부 (true/false)
-        isPending,     // 로딩 여부 (true/false) (v5에서 추가됨)
-        isPaused,      // 네트워크 등으로 인해 멈춘 상태 여부 (true/false)
-        reset          // 상태 초기화 함수
+        mutate,
+        mutateAsync,
+        error,
+        isError,
+        isSuccess,
+        isIdle,
+        isPending,
+        isPaused,
+        reset,
     } = useMutation({
         mutationKey: [MUTATION_KEY, "useSetIncrementViewQuery"],
         mutationFn: (payload: { postId: number; userId?: string }) => setPostViewIncrementFetch(payload),
-        onSuccess: (data) => {
-            setToast({ msg: "조회수를 수정했어요.", time: 2 })
-            queryClient.invalidateQueries({ queryKey: [ MUTATION_KEY ] });
+        onSuccess: () => {
+            setToast({ msg: "조회수를 수정했어요.", time: 2 });
+            queryClient.invalidateQueries({ queryKey: [MUTATION_KEY] });
         },
         onError: (err: any) => {
             setToast({ msg: err.message ?? "에러 발생", time: 2 });
         },
     });
 
-    const header = data?.header;
-    const body: SetIncrementPostViewType = data?.body;
-    
-    return { mutate, mutateAsync, isError, isIdle, isSuccess, isPending, isPaused, data: body, error, reset }
+    return { mutate, mutateAsync, isError, isIdle, isSuccess, isPending, isPaused, data, error, reset };
 };

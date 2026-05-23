@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabaseServer } from "@/utils/supabase/supabaseServer";
-import { apiError } from "@/utils/apiResponse";
+import { supabaseServer } from "@/shared/lib/supabase/supabaseServer";
+import { apiError } from "@/shared/lib/apiResponse";
 
 const TABLE_NAME = "invite_codes";
 

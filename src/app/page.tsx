@@ -1,16 +1,20 @@
-// app/(pages)/page.tsx
-import Main from "@/components/layout/Main";
-import ListSection from "@/containers/init/ListSection";
-import { supabaseServer } from "@/utils/supabase/supabaseServer";
-import { buildPagination } from "@/utils/apiResponse";
+import HomeView from "@/views/home/HomeView";
+import { supabaseServer } from "@/shared/lib/supabase/supabaseServer";
+import { buildPagination } from "@/shared/lib/utils/apiResponse";
 
-import { GetPostLatestListResponseType } from "@/types/post.type";
-
-export const revalidate = 300; // ISR: 60초마다 페이지 재생성
+export const revalidate = 300;
 
 const Page = async () => {
-    let initialData: GetPostLatestListResponseType = {
-        result: [],
+    let initialData = {
+        result: [] as Array<{
+            idx: number;
+            title: string;
+            thumbnail: string;
+            summary: string;
+            created_at: string;
+            views: number;
+            category: { title: string };
+        }>,
         pagination: buildPagination({ page: 1, pageSize: 10, totalCount: 0 }),
         resultCode: "ERROR",
         resultMessage: "조회실패",
@@ -44,15 +48,11 @@ const Page = async () => {
             resultCode: "SUCCESS",
             resultMessage: "조회성공",
         };
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error("SSR fetch error:", err);
     }
 
-    return (
-        <Main id="home" className={{ inner: "min-h-[100dvh]", container: "" }}>
-            <ListSection initialData={initialData} />
-        </Main>
-    );
+    return <HomeView initialData={initialData} />;
 };
 
 export default Page;

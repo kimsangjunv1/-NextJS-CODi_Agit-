@@ -1,5 +1,5 @@
-import { supabaseServer } from "@/utils/supabase/supabaseServer";
-import { apiError, apiSuccess, buildPagination } from "@/utils/apiResponse";
+import { supabaseServer } from "@/shared/lib/supabase/supabaseServer";
+import { apiError, apiSuccess, buildPagination } from "@/shared/lib/apiResponse";
 
 const TABLE_NAME_POST = "comments";
 

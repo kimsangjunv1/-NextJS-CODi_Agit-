@@ -1,14 +1,7 @@
-import Main from "@/components/layout/Main";
-
-import ListSection from "@/containers/login/ListSection";
-
+import LoginView from "@/views/login/LoginView";
 
 const Page = async () => {
-    return (
-        <Main id={"login"} className={{ inner: "flex flex-col gap-[2.4rem] ", container:"" }}>
-            <ListSection />
-        </Main>
-    )
-}
+    return <LoginView />;
+};
 
-export default Page
+export default Page;

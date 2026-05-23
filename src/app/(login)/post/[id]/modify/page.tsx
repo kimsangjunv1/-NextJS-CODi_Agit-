@@ -1,15 +1,8 @@
-import Main from "@/components/layout/Main";
-
-import ListSection from "@/containers/post/modify/ListSection";
+import PostModifyView from "@/views/post/modify/PostModifyView";
 
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
-    const { id } = await params;  // result 값 가져오기
+    const { id } = await params;
+    return <PostModifyView id={id} />;
+};
 
-    return (
-        <Main id={"home"} className={{ inner: "flex flex-col gap-[2.4rem] pt-[var(--header-height)] ", container:"" }}>
-            <ListSection id={ id } />
-        </Main>
-    )
-}
-
-export default Page
+export default Page;

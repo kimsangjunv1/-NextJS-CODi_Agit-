@@ -1,14 +1,7 @@
-import Main from "@/components/layout/Main";
+import CategoryManagerView from "@/views/manager/category/CategoryManagerView";
 
-import ListSection from "@/containers/manager/category/ListSection";
+const Page = async () => {
+    return <CategoryManagerView />;
+};
 
-const Page = () => {
-
-    return (
-        <Main id={"home"} className={{ inner: "flex flex-col gap-[2.4rem] pt-[var(--header-height)] pb-[calc(5.2rem+1.6rem)]", container:"" }}>
-            <ListSection />
-        </Main>
-    )
-}
-
-export default Page
+export default Page;

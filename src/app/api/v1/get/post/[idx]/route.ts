@@ -1,5 +1,5 @@
-import { supabaseServer } from "@/utils/supabase/supabaseServer";
-import { apiError, apiSuccess, singleItemPagination } from "@/utils/apiResponse";
+import { supabaseServer } from "@/shared/lib/supabase/supabaseServer";
+import { apiError, apiSuccess, singleItemPagination } from "@/shared/lib/apiResponse";
 
 export async function GET(req: Request) {
     try {

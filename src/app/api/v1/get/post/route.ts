@@ -1,5 +1,5 @@
-import { supabaseServer } from "@/utils/supabase/supabaseServer";
-import { apiError, apiSuccess, buildPaginationFromQuery, getPageParams } from "@/utils/apiResponse";
+import { supabaseServer } from "@/shared/lib/supabase/supabaseServer";
+import { apiError, apiSuccess, buildPaginationFromQuery, getPageParams } from "@/shared/lib/apiResponse";
 
 const TABLE_NAME_POST = "posts";
 const DEFAULT_PAGE_SIZE = 10;

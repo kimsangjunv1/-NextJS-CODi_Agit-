@@ -15,11 +15,17 @@ import { useToastStore } from '@/stores/useToastStore';
 import { Row, useBlockStore } from '@/stores/useEditorBlockStore';
 
 import { SectionContent } from '@/types/post.type';
-import { DUMMY_POST_RESPONSE_NEW } from '@/constants/lists/configDummyResponse';
+import { useCreatePostStore } from '@/stores/useCreatePostStore';
 
 const ListSection = ({ id }: { id: string }) => {
+    const { setPostIdx } = useCreatePostStore();
+    
+    useEffect(() => {
+        setPostIdx( parseInt(id) );
+    }, [ setPostIdx ])
+
     return (
-        <section className='flex flex-col w-full post bg-[linear-gradient(0deg,var(--color-gray-200)_80%,#00000000)]'>
+        <section className='flex flex-col w-full post'>
             <section className='mx-auto post-inner w-full max-w-[var(--size-tablet)] flex flex-col items-center gap-[1.6rem]'>
                 <RenderContents id={ id }/>
             </section>
@@ -36,25 +42,17 @@ type CreatePostState = {
 };
 
 const RenderContents = ({ id }: { id: string }) => {
-    const { data: getPostListData, refetch: getPostListFetch } = useGetPostDetailQuery(parseInt( id ));
-
-    const [ createPostState, setCreatePostState ] = useState<CreatePostState>({
-        title: "",
-        thumbnail: "",
-        summary: "",
-        category_idx: 0,
-        contents: []
-    });
+    const { data: getPostListData } = useGetPostDetailQuery(parseInt( id ));
 
     return (
         <Fragment>
             <section className='py-[7.2rem] flex flex-col justify-center items-center gap-[3.2rem]'>
-                <Thumbnail imageUrl={ getPostListData?.result?.thumbnail } contents={ getPostListData?.result?.contents } setCreatePostState={ setCreatePostState }/>
-                <Title title={ getPostListData?.result?.title } summary={ getPostListData?.result?.summary } category_idx={ getPostListData?.result?.category_idx } setCreatePostState={ setCreatePostState }/>
+                <Thumbnail imageUrl={ getPostListData?.result?.thumbnail ?? "" } contents={ getPostListData?.result?.contents ?? [] } />
+                <Title title={ getPostListData?.result?.title ?? "" } summary={ getPostListData?.result?.summary ?? "" } category_idx={ getPostListData?.result?.category_idx ?? 0 } />
             </section>
             
-            <Contents contents={ getPostListData?.result?.contents } />
-            <Action id={ parseInt( id ) } createPostState={ createPostState } />
+            <Contents contents={ getPostListData?.result?.contents ?? [] } />
+            {/* <Action id={ parseInt( id ) } createPostState={ createPostState } /> */}
         </Fragment>
     )
 }
@@ -64,47 +62,35 @@ const Title = ({
     title,
     summary,
     category_idx,
-    setCreatePostState,
 }: {
     title: string;
     summary: string;
     category_idx: number;
-    setCreatePostState: React.Dispatch<React.SetStateAction<CreatePostState>>;
 }) => {
-    const { data: getCategoryListData, refetch } = useGetCategoryListQuery();
+    const { data: getCategoryListData } = useGetCategoryListQuery();
+    const { setTitle, setSummary, setCategoryIdx } = useCreatePostStore();
     
     useEffect(() => {
         if ( title && summary ) {
-            setCreatePostState((prev) => ({
-                ...prev,
-                title: title,
-                summary: summary,
-                category_idx: category_idx,
-            }));
+            setTitle( title );
+            setSummary( summary );
+            setCategoryIdx( category_idx );
         }
     }, [ title, summary ])
 
     return (
         <article className='flex flex-col items-center justify-between gap-[1.6rem]'>
-            <section className='flex flex-col items-center justify-center gap-[1.6rem]'>
+            <section className='flex flex-col items-center justify-center gap-[1.6rem] relative'>
                 <UI.Select
                     trackingData={`${ getCategoryListData?.result?.filter((e) => e.is_enabled).find((e) => e.idx === category_idx)?.title }`}
                     defaultValue={ getCategoryListData?.result?.filter((e) => e.is_enabled).find((e) => e.idx === category_idx)?.idx }
 
-                    list={ getCategoryListData?.result?.filter((e) => e.is_enabled).map((e) => {
-                        return {
-                            title: e.title,
-                            value: e.idx
-                        }
-                    })}
+                    list={ getCategoryListData?.result?.filter((e) => e.is_enabled).map((e) => ({
+                        title: e.title,
+                        value: e.idx,
+                    })) ?? [] }
 
-                    onChange={(e) => {
-                        console.log("category_idx", e)
-                        setCreatePostState((prev) => ({
-                            ...prev,
-                            category_idx: e,
-                        }));
-                    }}
+                    onChange={(e) => setCategoryIdx(e)}
                     className={{
                         container: "px-0",
                         button: "bg-[#ffffff20] px-[0.8rem] min-w-[5.2rem]"
@@ -113,28 +99,14 @@ const Title = ({
                 
                 <Edit.h2
                     defaultValue={ title }
-                    className='h-auto p-0 font-extrabold text-center text-[2.8rem] leading-[1.5]'
-                    onKeyUp={(e) => {
-                        const value = e.currentTarget.innerText;
-                        console.log("value", value)
-                        setCreatePostState((prev) => ({
-                            ...prev,
-                            title: value,
-                        }));
-                    }}
+                    className='h-auto p-0 font-extrabold text-center text-[2.0rem] leading-[1.5]'
+                    onKeyUp={(e) => setTitle( e.currentTarget.innerText )}
                 />
                 
                 <Edit.p
                     defaultValue={ summary }
-                    className='h-auto p-0 font-medium text-[1.2rem] text-center leading-[1.5]'
-                    onKeyUp={(e) => {
-                        const value = e.currentTarget.innerText;
-                        console.log("value", value)
-                        setCreatePostState((prev) => ({
-                            ...prev,
-                            summary: value,
-                        }));
-                    }}
+                    className='h-auto p-0 font-medium text-[1.4rem] text-center leading-[1.5]'
+                    onKeyUp={(e) => setSummary( e.currentTarget.innerText )}
                 />
             </section>
         </article>
@@ -144,15 +116,13 @@ const Title = ({
 const Thumbnail = ({
     imageUrl,
     contents,
-    setCreatePostState,
 }: {
     imageUrl: string;
     contents: SectionContent[][];
-    setCreatePostState: React.Dispatch<React.SetStateAction<CreatePostState>>;
 }) => {
     const { setModal } = useModalStore();
-    const { setToast } = useToastStore();
-    
+    const { setThumbnail } = useCreatePostStore();
+
     const [ currentImageUrl, setCurrentImageUrl ] = useState<string>(imageUrl);
     const [ contentImageList, setContentImageList ] = useState<string[]>([]);
 
@@ -161,18 +131,15 @@ const Thumbnail = ({
         title: "이미지 관리",
         content: (
             <ModalContent.Image.Box
+                defaultImageUrl={currentImageUrl}
                 onChange={( url ) => {
                     setCurrentImageUrl(url);
-                    setCreatePostState((prev) => ({
-                        ...prev,
-                        thumbnail: currentImageUrl,
-                    }));
-                    // updateBlock(rowIndex, blockIndex, { imageUrl: url ?? "" })
+                    setThumbnail( currentImageUrl )
                 }}
             />
         ),
         className: {
-            container: "max-w-[calc(var(--size-pc)-(2.0rem*2))] w-full"
+            container: ""
         },
         cancel: { text: " ", },
         confirm: {
@@ -184,10 +151,7 @@ const Thumbnail = ({
 
     useEffect(() => {
         if ( currentImageUrl ) {
-            setCreatePostState((prev) => ({
-                ...prev,
-                thumbnail: currentImageUrl,
-            }));
+            setThumbnail( currentImageUrl )
         }
     }, [ currentImageUrl ])
 
@@ -209,16 +173,8 @@ const Thumbnail = ({
                 src={ currentImageUrl }
                 alt="/"
                 className="object-cover object-center w-full h-full rounded-[2.4rem] absolute top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%] z-[10] shadow-[var(--shadow-normal)]"
-                // className="object-cover object-center w-full h-full rounded-[2.4rem] absolute top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%] rotate-[7deg] z-[10] shadow-[var(--shadow-normal)]"
             />
-            {/* { contentImageList?.map((e, i) =>
-                <img
-                    key={i}
-                    src={ e }
-                    alt="/"
-                    className={`object-cover object-center w-full h-full rounded-[2.4rem] absolute top-[50%] ${ i !== 1 ? "left-[calc(50%-(1.6rem*8))] rotate-[-12deg]" : "left-[calc(50%+(1.6rem*8))] rotate-[9deg]" } transform translate-x-[-50%] translate-y-[-50%] shadow-[var(--shadow-normal)]`}
-                />
-            )} */}
+
             <UI.Button
                 onClick={() => setPreventModal()}
                 className="p-[1.6rem] bg-[white] hover:bg-[var(--color-brand-500)] backdrop-blur-sm rounded-[1.6rem] absolute top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%] shadow-[var(--shadow-normal)] font-semibold z-100"
@@ -238,24 +194,12 @@ const Contents = ({ contents }: { contents: SectionContent[][] }) => {
 }
 
 const Action = ({ id, createPostState }: { id: number, createPostState: CreatePostState }) => {
-    const {
-        rows,
-        copiedBlock,
-        selectedPosition,
-        addBlock,
-        updateBlock,
-        deleteBlock,
-        deleteRow,
-        copyBlock,
-        pasteBlock,
-        selectBlock,
-    } = useBlockStore();
+    const { rows } = useBlockStore();
     const { setToast } = useToastStore();
     
-    const { data, mutate: patchPostFetch } = usePatchPostQuery();
-    
+    const { mutate: patchPostFetch } = usePatchPostQuery();
+
     return (
-        // <article className='h-[5.2rem] fixed bottom-0 left-0 flex items-center justify-between w-full bg-black'>
         <article className='sticky bottom-0 h-[5.2rem] flex items-center justify-between w-full bg-black z-10 rounded-[2.4rem]'>
             <UI.Button
                 className="font-bold text-white text-[1.8rem] hover:bg-[var(--color-brand-500)] h-full px-[2.4rem]"

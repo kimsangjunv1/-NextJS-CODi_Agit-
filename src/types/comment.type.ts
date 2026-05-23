@@ -1,4 +1,4 @@
-import { ApiPaginationResponseType } from "./common.type";
+import { ApiResponseType } from "./common.type";
 
 export interface GetCommentDetailDataType {
     idx: number;
@@ -14,10 +14,7 @@ export interface GetCommentDetailDataType {
     updated_at: string; // ISO Date string
 }
 
-export interface GetCommentDetailResponseType {
-    result: GetCommentDetailDataType[],
-    pagination: ApiPaginationResponseType
-}
+export type GetCommentDetailResponseType = ApiResponseType<GetCommentDetailDataType[]>;
 
 export interface GetCommentLatestListType {
     idx: number;
@@ -26,10 +23,4 @@ export interface GetCommentLatestListType {
     created_at: string; // ISO Date string
 }
 
-
-export interface GetCommentLatestListResponseType {
-    result: GetCommentLatestListType[],
-    pagination: ApiPaginationResponseType
-}
-
-// ApiPaginationResponseType
+export type GetCommentLatestListResponseType = ApiResponseType<GetCommentLatestListType[]>;

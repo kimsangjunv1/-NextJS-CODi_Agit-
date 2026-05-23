@@ -1,9 +1,7 @@
-// app/api/todos/route.ts
-import { NextResponse } from "next/server";
 import { supabaseServer } from "@/utils/supabase/supabaseServer";
+import { apiError, apiSuccess } from "@/utils/apiResponse";
 
 const TABLE_NAME = "posts";
-const DEFAULT_PAGE_SIZE = 10; // 기본 페이지 크기
 
 export async function POST(req: Request) {
     const payload = await req.json();
@@ -11,49 +9,23 @@ export async function POST(req: Request) {
     try {
         const supabase = await supabaseServer();
 
-        // 기본 쿼리
-        const query = supabase.from( TABLE_NAME ).insert( payload );
+        const query = supabase.from(TABLE_NAME).insert(payload).select("idx").single();
 
-        const { data, count, error } = await query;
+        const { data, error } = await query;
 
         if (error) throw error;
 
-        return NextResponse.json(
-            { 
-                body: {
-                    result: data,
-                    pagination: {
-                        totalCount: count ?? 0,
-                        pageSize: 1,
-                        pageNum: 1,
-                    }
-                },
-                header: {
-                    resultMsg: "SUCCESS",
-                    resultCode: 200,
-                    isSuccessful: true,
-                    timestamp: new Date().toISOString(),
-                }
+        return apiSuccess(
+            {
+                statusCode: 1,
+                postIdx: data.idx,
             },
+            { resultMessage: "등록성공", pagination: null }
         );
     } catch (error: any) {
-        return NextResponse.json(
-            {
-                body: {
-                    result: null,
-                    pagination: {
-                        totalCount: 0,
-                        pageSize: 1,
-                        pageNum: 1,
-                    }
-                },
-                header: {
-                    resultMsg: error.message || "문제가 생겼습니다",
-                    resultCode: error.status ?? 500,
-                    isSuccessful: false,
-                    timestamp: new Date().toISOString(),
-                },
-            },
-        );
+        return apiError(error.message || "문제가 생겼습니다", {
+            status: error.status ?? 500,
+            result: { statusCode: 0 },
+        });
     }
 }

@@ -1,4 +1,4 @@
-import { ApiPaginationResponseType } from "./common.type";
+import { ApiResponseType } from "./common.type";
 
 export interface setInvitationCodePayloadType {
     // code: string;
@@ -26,17 +26,12 @@ export interface InvitationCodeListItem {
   expire_at: string | null;      // ISO 문자열, null 가능
 }
 
-export interface GetInvitationCodeListOnManagerResponseType {
-    result: null;
-    pagination: ApiPaginationResponseType;
-}
+export type GetInvitationCodeListOnManagerResponseType = ApiResponseType<InvitationCodeListItem[]>;
 
-export interface GetInvitationCodeCheckResponseType {
-    result: {
-        is_active: boolean,
-        is_used: boolean,
-        expire_at: string
-    };
+export type GetInvitationCodeCheckResponseType = ApiResponseType<{
+    is_active: boolean;
+    is_used: boolean;
+    expire_at: string;
+} | null> & {
     statusCode: number;
-    pagination: ApiPaginationResponseType;
-}
+};

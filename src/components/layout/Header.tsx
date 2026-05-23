@@ -1,8 +1,7 @@
 "use client"
 
+import { useState } from "react"
 import { useParams } from "next/navigation"
-import { Fragment, useEffect, useState } from "react"
-import { signOut, useSession } from "next-auth/react"
 import { AnimatePresence, motion } from "motion/react"
 
 import UI from '@/components/common/UIComponent'
@@ -11,11 +10,9 @@ import TextShimmer from "@/components/common/TextShimmerComponent"
 
 import useNavigate from "@/hooks/common/useNavigate"
 import { useGetPostDetailQuery } from "@/hooks/api/post.query"
+import { useGetCategoryListQuery } from "@/hooks/api/category.query"
 
 import { useLayoutStore } from "@/stores/useLayoutStore"
-import { useServiceStore } from "@/stores/useServiceStore"
-
-import { useGetCategoryListQuery } from "@/hooks/api/category.query"
 
 const Header = () => {
     const params = useParams();
@@ -30,7 +27,8 @@ const Header = () => {
     const { data: getPostListData } = useGetPostDetailQuery(parseInt( (params?.id) as string ));
 
     const IS_ROUTE_HOME = currentPathName === "/";
-    const IS_ROUTE_POST = currentPathName.includes("post") && !currentPathName.includes("modify") && !currentPathName.includes("create");
+    const IS_ROUTE_POST = currentPathName.includes("post");
+    // const IS_ROUTE_POST = currentPathName.includes("post") && !currentPathName.includes("modify") && !currentPathName.includes("create");
     const IS_ROUTE_POST_EDIT = currentPathName.includes("post") && currentPathName.includes("modify");
     const IS_ROUTE_POST_CREATE = currentPathName.includes("post") && currentPathName.includes("create");
     const IS_ROUTE_POST_LAB = currentPathName.includes("lab")

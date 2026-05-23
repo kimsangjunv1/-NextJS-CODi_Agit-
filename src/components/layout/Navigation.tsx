@@ -1,18 +1,19 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { Fragment, useEffect, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
 
+import UI from "@/components/common/UIComponent"
 import IconComponent from "@/components/common/IconComponent"
-import TextShimmer from "@/components/common/TextShimmerComponent"
 
 import useNavigate from "@/hooks/common/useNavigate"
 import useScrollProgress from "@/hooks/dom/useScrollProgress"
-import { useGetPostDetailQuery } from "@/hooks/api/post.query"
+import { useGetPostDetailQuery, usePatchPostQuery } from "@/hooks/api/post.query"
 
-import { useLayoutStore } from "@/stores/useLayoutStore"
-import UI from "../common/UIComponent"
+import { useCreatePostStore } from "@/stores/useCreatePostStore"
+import { useBlockStore } from "@/stores/useEditorBlockStore"
+import { useToastStore } from "@/stores/useToastStore"
 
 const Navigation = () => {
     const params = useParams();
@@ -22,13 +23,32 @@ const Navigation = () => {
     const { scrollValue } = useScrollProgress();
     const { currentPathName, pushToUrl } = useNavigate();
 
-    const { isMobileMenuOpen, setIsMobileMenuOpen } = useLayoutStore();
-
+    const { rows } = useBlockStore();
+    const { setToast } = useToastStore();
+    const { title, summary, thumbnail, category_idx, post_idx } = useCreatePostStore();
+    
+    const { mutate: patchPostFetch } = usePatchPostQuery();
     const { data: getPostListData } = useGetPostDetailQuery(parseInt( (params?.id) as string ));
 
-    const IS_ROUTE_POST = currentPathName.includes("post") && !currentPathName.includes("modify") && !currentPathName.includes("create");
+    const IS_ROUTE_POST = currentPathName.includes("post");
+    const IS_ROUTE_POST_VIEW = currentPathName.includes("post") && !currentPathName.includes("modify") && !currentPathName.includes("create");
     const IS_ROUTE_POST_EDIT = currentPathName.includes("post") && currentPathName.includes("modify");
     const IS_ROUTE_POST_CREATE = currentPathName.includes("post") && currentPathName.includes("create");
+
+    const AdditionalFunctionList = [
+        {
+            title: "공유하기",
+            icon: "outlined-copy"
+        },
+        {
+            title: "좋아요",
+            icon: "outlined-like"
+        },
+        {
+            title: "수정하기",
+            icon: "outlined-edit"
+        },
+    ]
 
     useEffect(() => {
         if ( showMenu ) {
@@ -39,158 +59,185 @@ const Navigation = () => {
     if ( !IS_ROUTE_POST ) return null;
 
     return (
-        <nav className="fixed top-[calc(1.6rem*3)] left-[50%] px-[calc(1.6rem*2)] transform translate-x-[-50%] z-[1000] w-[calc(100dvw-(1.6rem*2))]">
-            <div className="nav-inner">
-                <section className="menu flex gap-[4.8rem]">
-                    <UI.Button
-                        type="button"
-                        onClick={() => pushToUrl("/") }
-                        className="bg-[#00000090] hover:bg-[var(--color-blue-500)] transition-colors p-[1.2rem] rounded-full flex gap-[0.8rem] items-center"
-                    >
-                        <IconComponent
-                            type={`outlined-arrow-below`}
-                            alt={ "나가기" }
-                            width={32}
-                            height={32}
-                            className="rotate-90 invert-100"
+        <nav className="fixed tablet:top-[calc(1.6rem*3)] mobile:top-[calc(1.6rem*2)] left-[50%] tablet:px-[calc(1.6rem*2)] mobile:px-0 transform translate-x-[-50%] z-[1000] w-[calc(100dvw-(1.6rem*2))]">
+            <div className="nav-inner menu flex justify-between gap-[4.8rem] w-full">
+                <UI.Button
+                    type="button"
+                    onClick={() => pushToUrl("/") }
+                    className="bg-[#00000090] hover:bg-[var(--color-blue-500)] transition-colors p-[1.2rem] rounded-full flex gap-[0.8rem] items-center"
+                >
+                    <IconComponent
+                        type={`outlined-arrow-below`}
+                        alt={ "나가기" }
+                        width={32}
+                        height={32}
+                        className="rotate-90 invert-100"
+                    />
+                    <p className="text-white mr-[1.6rem] text-[1.6rem] font-semibold tablet:block mobile:hidden">{ IS_ROUTE_POST_VIEW ? "돌아가기" : "이전으로"}</p>
+                </UI.Button>
+
+                <section className="flex flex-col items-center justify-center gap-[1.6rem] flex-1 absolute left-[50%] translate-x-[-50%]">
+                    <AnimatePresence mode="popLayout">
+                        { IS_ROUTE_POST_VIEW &&
+                            <section className="flex flex-col gap-[0.8rem]">
+                                <motion.section
+                                    key={"post_title_view"}
+                                    initial={{ opacity: 0, transform: "scale(0.8)" }}
+                                    animate={{ opacity: 1, transform: "scale(1)" }}
+                                    exit={{ opacity: 0, transform: "scale(0.8)" }}
+                                    transition={{
+                                        // delay: 0.05 * (i + 1),
+                                        type: "spring",
+                                        mass: 0.1,
+                                        stiffness: 100,
+                                        damping: 10,
+                                    }}
+                                    className="flex gap-[1.6rem] flex-1 justify-center"
+                                >
+                                    <h2 className="tablet:text-[2.4rem] mobile:text-[2.0rem] font-bold text-white">{ getPostListData?.result?.title }</h2>
+                                </motion.section>
+                            </section>
+                        }
+
+                        { IS_ROUTE_POST_EDIT &&
+                            <section className="flex flex-col gap-[0.8rem]">
+                                <motion.section
+                                    key={"post_title_edit"}
+                                    initial={{ opacity: 0, transform: "scale(0.8)" }}
+                                    animate={{ opacity: 1, transform: "scale(1)" }}
+                                    exit={{ opacity: 0, transform: "scale(0.8)" }}
+                                    transition={{
+                                        // delay: 0.05 * (i + 1),
+                                        type: "spring",
+                                        mass: 0.1,
+                                        stiffness: 100,
+                                        damping: 10,
+                                    }}
+                                    className="flex gap-[1.6rem] flex-1 justify-center"
+                                >
+                                    <h2 className="tablet:text-[2.4rem] mobile:text-[2.0rem] font-bold text-black">{`${ getPostListData?.result?.title } | 수정중`}</h2>
+                                </motion.section>
+                            </section>
+                        }
+
+                        { IS_ROUTE_POST_CREATE &&
+                            <section className="flex flex-col gap-[0.8rem]">
+                                <motion.section
+                                    key={"post_title_create"}
+                                    initial={{ opacity: 0, transform: "scale(0.8)" }}
+                                    animate={{ opacity: 1, transform: "scale(1)" }}
+                                    exit={{ opacity: 0, transform: "scale(0.8)" }}
+                                    transition={{
+                                        // delay: 0.05 * (i + 1),
+                                        type: "spring",
+                                        mass: 0.1,
+                                        stiffness: 100,
+                                        damping: 10,
+                                    }}
+                                    className="flex gap-[1.6rem] flex-1 justify-center"
+                                >
+                                    <h2 className="tablet:text-[2.4rem] mobile:text-[2.0rem] font-bold text-black">생성 중</h2>
+                                </motion.section>
+                            </section>
+                        }
+                    </AnimatePresence>
+
+                    <div className="w-[7.2rem] h-[0.8rem] p-[0.2rem] bg-[#ffffff40] backdrop-blur-sm rounded-full shadow-[var(--shadow-normal)]">
+                        <motion.div
+                            className="h-full shadow-[var(--shadow-normal)] rounded-full"
+                            animate={{
+                                width: `${ scrollValue }%`,
+                                backgroundColor: scrollValue >= 99 ? IS_ROUTE_POST_VIEW ? "#000000" : "var(--color-brand-500)" : IS_ROUTE_POST_VIEW ? "#ffffff" : "#000000"
+                                // backgroundColor: scrollValue >= 99 ? "var(--color-brand-500)" : "#ffffff"
+                            }}
+                            transition={{
+                                // delay: 0.05 * (i + 1),
+                                type: "spring",
+                                mass: 0.1,
+                                stiffness: 100,
+                                damping: 10,
+                            }}
                         />
-                        <p className="text-white mr-[1.6rem] text-[1.6rem] font-semibold">이전으로</p>
-                    </UI.Button>
+                    </div>
+                    
+                    <div className={`absolute top-0 left-0 w-full h-full ${ IS_ROUTE_POST_VIEW ? "bg-[linear-gradient(90deg,_transparent,_#000000ee,_transparent)]" : IS_ROUTE_POST_CREATE || IS_ROUTE_POST_EDIT ? "bg-[linear-gradient(90deg,_transparent,_#ffffffee,_transparent)]" : "" } blur-lg z-[-1]`} />
+                </section>
 
-                    <section className="absolute top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%] flex flex-col items-center justify-center gap-[1.6rem]">
-                        <AnimatePresence mode="popLayout">
-                            { IS_ROUTE_POST &&
-                                <section className="flex flex-col gap-[0.8rem]">
-                                    <motion.section
-                                        key={"post_title"}
-                                        initial={{ opacity: 0, transform: "scale(0.8)" }}
-                                        animate={{ opacity: 1, transform: "scale(1)" }}
-                                        exit={{ opacity: 0, transform: "scale(0.8)" }}
-                                        transition={{
-                                            // delay: 0.05 * (i + 1),
-                                            type: "spring",
-                                            mass: 0.1,
-                                            stiffness: 100,
-                                            damping: 10,
-                                        }}
-                                        className="flex gap-[1.6rem] flex-1 justify-center"
-                                    >
-                                        <h2 className="text-[2.4rem] font-bold text-white">{ getPostListData?.result?.title }</h2>
-                                    </motion.section>
-                                </section>
-                            }
+                <section className="menu flex gap-[0.4rem] tablet:relative tablet:flex-row tablet:right-auto mobile:absolute mobile:flex-col mobile:right-0">
+                    { IS_ROUTE_POST_EDIT || IS_ROUTE_POST_CREATE ? (
+                        <Fragment>
+                            <UI.Button
+                                type="button"
+                                onClick={() => {
+                                    const PAYLOAD = {
+                                        title: title,
+                                        thumbnail: thumbnail,
+                                        summary: summary,
+                                        category_idx: category_idx,
+                                        contents: rows,
+                                    };
 
-                            { IS_ROUTE_POST_EDIT &&
-                                <section className="flex flex-col gap-[0.8rem]">
-                                    <motion.section
-                                        key={"post_title"}
-                                        initial={{ opacity: 0, transform: "scale(0.8)" }}
-                                        animate={{ opacity: 1, transform: "scale(1)" }}
-                                        exit={{ opacity: 0, transform: "scale(0.8)" }}
-                                        transition={{
-                                            // delay: 0.05 * (i + 1),
-                                            type: "spring",
-                                            mass: 0.1,
-                                            stiffness: 100,
-                                            damping: 10,
-                                        }}
-                                        className="flex gap-[1.6rem] flex-1 justify-center"
-                                    >
-                                        <TextShimmer
-                                            as="h2"
-                                            duration={3}
-                                            style={{
-                                                color: "#000000",
-                                                fontSize: "2.4rem",
-                                            }}
-                                            color={{
-                                                start: "#000000",
-                                                end: "#9393a0"
-                                            }}
-                                            className="font-extrabold"
-                                        >
-                                            {`${ getPostListData?.result?.title } | 수정중`}
-                                        </TextShimmer>
-                                    </motion.section>
-                                </section>
-                            }
+                                    if ( !PAYLOAD.title ) {
+                                        setToast({ msg: "제목을 입력해주세요", time: 2 })
 
-                            { IS_ROUTE_POST_CREATE &&
-                                <section className="flex flex-col gap-[0.8rem]">
-                                    <motion.section
-                                        key={"post_title"}
-                                        initial={{ opacity: 0, transform: "scale(0.8)" }}
-                                        animate={{ opacity: 1, transform: "scale(1)" }}
-                                        exit={{ opacity: 0, transform: "scale(0.8)" }}
-                                        transition={{
-                                            // delay: 0.05 * (i + 1),
-                                            type: "spring",
-                                            mass: 0.1,
-                                            stiffness: 100,
-                                            damping: 10,
-                                        }}
-                                        className="flex gap-[1.6rem] flex-1 justify-center"
-                                    >
-                                        <TextShimmer
-                                            as="h2"
-                                            duration={3}
-                                            style={{
-                                                color: "#000000",
-                                                fontSize: "2.4rem",
-                                            }}
-                                            color={{
-                                                start: "#000000",
-                                                end: "#9393a0"
-                                            }}
-                                            className="font-extrabold"
-                                        >
-                                            {`생성 중`}
-                                        </TextShimmer>
-                                    </motion.section>
-                                </section>
-                            }
-                        </AnimatePresence>
+                                        return;
+                                    }
 
-                        <div className="w-[7.2rem] h-[0.8rem] p-[0.2rem] bg-[#ffffff40] backdrop-blur-sm rounded-full shadow-[var(--shadow-normal)]">
-                            <motion.div
-                                className="h-full shadow-[var(--shadow-normal)] rounded-full"
-                                animate={{
-                                    width: `${ scrollValue }%`,
-                                    backgroundColor: scrollValue >= 99 ? "#000000" : "#ffffff"
-                                    // backgroundColor: scrollValue >= 99 ? "var(--color-brand-500)" : "#ffffff"
+                                    if ( !PAYLOAD.summary ) {
+                                        setToast({ msg: "요약을 입력해주세요", time: 2 })
+                                        
+                                        return;
+                                    }
+
+                                    if ( !PAYLOAD.thumbnail ) {
+                                        setToast({ msg: "썸네일을 선택해주세요", time: 2 })
+                                        
+                                        return;
+                                    }
+
+                                    patchPostFetch({ data: PAYLOAD, idx: post_idx });
                                 }}
-                                transition={{
-                                            // delay: 0.05 * (i + 1),
-                                            type: "spring",
-                                            mass: 0.1,
-                                            stiffness: 100,
-                                            damping: 10,
-                                        }}
-                            />
-                        </div>
-                        
-                        <div className="absolute top-0 left-0 w-full h-full bg-[#00000090] blur-lg z-[-1]" />
-                    </section>
+                                className="bg-[#00000090] hover:bg-[var(--color-blue-500)] transition-colors p-[1.2rem] rounded-full flex gap-[0.8rem] items-center"
+                            >
+                                <IconComponent
+                                    type={`outlined-arrow-below`}
+                                    alt={ "나가기" }
+                                    width={32}
+                                    height={32}
+                                    className="rotate-90 invert-100"
+                                />
+                                
+                                <p className="text-white mr-[1.6rem] text-[1.6rem] font-semibold tablet:block mobile:hidden">{ IS_ROUTE_POST_CREATE ? "작성하기" : "수정완료"}</p>
+                            </UI.Button>
+                        </Fragment>
+                    ) : (
+                        <Fragment>
+                            { AdditionalFunctionList.map((e, i) =>
+                                <UI.Button
+                                    key={ i }
+                                    type="button"
+                                    className="flex justify-center items-center bg-[#00000090] hover:bg-[var(--color-blue-500)] transition-colors rounded-full gap-[0.8rem] w-[5.6rem] h-[5.6rem]"
+                                    onClick={() => {
+                                        if ( i === 2 ) {
+                                            pushToUrl(`/post/${post_idx}/modify`)
+                                        }
+                                    }}
+                                >
+                                    <IconComponent
+                                        type={ e.icon }
+                                        alt={ e.title }
+                                        width={ 24 }
+                                        height={ 24 }
+                                        className="invert-100"
+                                    />
+                                    
+                                    {/* <p className="text-white mr-[1.6rem] text-[1.6rem] font-semibold tablet:block mobile:hidden">{ e.title }</p> */}
+                                </UI.Button>
+                            )}
+                        </Fragment>
+                    )}
                 </section>
             </div>
-            
-            {/* 모바일 버튼 */}
-            <button
-                className="hamburger w-[1.6rem] h-[1.6rem] px-[4.0rem] py-[2.0rem] absolute top-[50%] right-0 transform translate-x-[0] translate-y-[-50%] text-[2.4rem] z-[10000]"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-                <div
-                    className={`w-[2.4rem] h-[0.3rem] bg-[var(--color-gray-1000)] absolute left-[50%] transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${
-                        showMenu ? "top-[calc(50%-0rem)] rotate-[225deg]" : "top-[calc(50%-0.8rem)] rotate-0"
-                    }`}
-                />
-                <div
-                    className={`w-[2.4rem] h-[0.3rem] bg-[var(--color-gray-1000)] absolute left-[50%] transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${
-                        showMenu ? "top-[calc(50%+0rem)] rotate-[135deg]" : "top-[calc(50%+0.8rem)] rotate-0"
-                    }`}
-                />
-            </button>
-            {/* 모바일 버튼 END */}
         </nav>
     )
 }

@@ -1,10 +1,7 @@
-// app/api/todos/route.ts
-import { NextResponse } from "next/server";
 import { supabaseServer } from "@/utils/supabase/supabaseServer";
+import { apiError, apiSuccess, buildPaginationFromQuery, getPageParams } from "@/utils/apiResponse";
 
 const TABLE_NAME_POST = "posts";
-const TABLE_NAME_CATEGORY = "category";
-
 const DEFAULT_PAGE_SIZE = 10;
 
 export async function GET(req: Request) {
@@ -12,12 +9,11 @@ export async function GET(req: Request) {
         const supabase = await supabaseServer();
         const { searchParams } = new URL(req.url);
 
-        const idx = searchParams.get("idx"); // string 그대로 받음
+        const idx = searchParams.get("idx");
 
         let query;
 
-        // id가 있으면 단일 조회
-        if ( idx ) {
+        if (idx) {
             query = supabase.from(TABLE_NAME_POST).select("*", { count: "estimated" });
             query = query.eq("idx", idx);
         } else {
@@ -26,11 +22,10 @@ export async function GET(req: Request) {
                 .select("idx, title, thumbnail, summary, created_at, category_idx, views, category!left(title)", { count: "estimated" })
                 .order("idx", { ascending: true });
 
-            const pageNum = parseInt(searchParams.get("pageNum") || "1", 10);
-            const pageSize = parseInt(searchParams.get("pageSize") || `${DEFAULT_PAGE_SIZE}`, 10);
+            const { page, pageSize } = getPageParams(searchParams, DEFAULT_PAGE_SIZE);
 
             if (pageSize > 0) {
-                const from = (pageNum - 1) * pageSize;
+                const from = (page - 1) * pageSize;
                 const to = from + pageSize - 1;
                 query = query.range(from, to);
             }
@@ -40,35 +35,15 @@ export async function GET(req: Request) {
 
         if (error) throw error;
 
-        return NextResponse.json(
-            {
-                body: {
-                    result: data,
-                    pagination: idx
-                        ? undefined
-                        : { totalCount: count ?? 0, pageSize: parseInt(searchParams.get("pageSize") || "10"), pageNum: parseInt(searchParams.get("pageNum") || "1") },
-                },
-                header: {
-                    resultMsg: "SUCCESS",
-                    resultCode: 200,
-                    isSuccessful: true,
-                    timestamp: new Date().toISOString(),
-                },
-            },
-            { status: 200 }
-        );
+        return apiSuccess(data, {
+            resultMessage: "조회성공",
+            pagination: idx
+                ? null
+                : buildPaginationFromQuery(searchParams, count ?? 0, DEFAULT_PAGE_SIZE),
+        });
     } catch (error: any) {
-        return NextResponse.json(
-            {
-                body: { result: null, pagination: undefined },
-                header: {
-                    resultMsg: error.message || "문제가 생겼습니다",
-                    resultCode: error.status ?? 500,
-                    isSuccessful: false,
-                    timestamp: new Date().toISOString(),
-                },
-            },
-            { status: error.status ?? 500 }
-        );
+        return apiError(error.message || "문제가 생겼습니다", {
+            status: error.status ?? 500,
+        });
     }
 }

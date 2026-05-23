@@ -44,6 +44,7 @@ const LoginForm = () => {
                     <Item title={"게시물 관리"} url='/manager/post' />
                     <Item title={"유저 관리"} url='/manager/user' />
                     <Item title={"댓글 관리"} url='/manager/comment' />
+                    <Item title={"초대코드 관리"} url='/manager/invitation' />
                 </section>
             </article>
         </Fragment>

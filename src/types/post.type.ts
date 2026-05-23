@@ -1,4 +1,4 @@
-import { ApiPaginationResponseType } from "./common.type";
+import { ApiPaginationResponseType, ApiResponseType } from "./common.type";
 
 export interface TextStyle {
     lineHeight: number;
@@ -53,6 +53,12 @@ export interface PostResponse {
     create_at: string;
 }
 
+export interface PostPrevNextInfo {
+    idx: number;
+    title: string;
+    summary: string;
+}
+
 export interface PostItem {
     id: string;
     idx: number;
@@ -69,6 +75,8 @@ export interface PostItem {
         description: string;
         is_enabled: boolean;
     }
+    prev?: PostPrevNextInfo
+    next?: PostPrevNextInfo
 }
 
 export interface PostLatestItem {
@@ -89,22 +97,17 @@ export interface PostViewItem {
   alreadyViewed: boolean
 }
 
-export interface SetIncrementPostViewType {
-    result: PostViewItem;
-    pagination: ApiPaginationResponseType;
-}
+export type SetIncrementPostViewType = ApiResponseType<PostViewItem>;
+export type GetPostLatestListResponseType = ApiResponseType<PostLatestItem[]>;
+export type GetPostListResponseType = ApiResponseType<PostItem[]>;
+export type GetPostDetailResponseType = ApiResponseType<PostItem>;
 
-export interface GetPostLatestListResponseType {
-    result: PostLatestItem[];
-    pagination: ApiPaginationResponseType;
-}
+export type PatchPostResponseType = ApiResponseType<{
+    statusCode: number;
+    postIdx: number;
+}>;
 
-export interface GetPostListResponseType {
-    result: PostItem[];
-    pagination: ApiPaginationResponseType;
-}
-
-export interface GetPostDetailResponseType {
-    result: PostItem;
-    pagination: ApiPaginationResponseType;
-}
+export type SetPostResponseType = ApiResponseType<{
+    statusCode: number;
+    postIdx?: number;
+}>;

@@ -54,7 +54,7 @@ const Toast = () => {
                             delay: 0,
                             type: "spring",
                             mass: 0.1,
-                            stiffness: 100,
+                            stiffness: 500,
                             damping: 10,
                         }}
                     >

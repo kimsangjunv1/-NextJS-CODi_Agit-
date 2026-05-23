@@ -41,6 +41,9 @@ const IconComponent = ({ isLottie = false, type, alt, className, width = 24, hei
             case "graphic-arrow-up":
                 return PATH_DEFAULT + PATH_GRAPHIC + "arrow-up" + EXTENSION;
 
+            case "graphic-case-empty":
+                return PATH_DEFAULT + PATH_GRAPHIC + "case-empty" + EXTENSION;
+
             case "colored-information":
                 return PATH_DEFAULT + PATH_COLORED + "information" + EXTENSION;
 
@@ -61,6 +64,21 @@ const IconComponent = ({ isLottie = false, type, alt, className, width = 24, hei
 
             case "outlined-chart":
                 return PATH_DEFAULT + PATH_OUTLINED + "chart" + EXTENSION;
+
+            case "outlined-calendar":
+                return PATH_DEFAULT + PATH_OUTLINED + "calendar" + EXTENSION;
+
+            case "outlined-edit":
+                return PATH_DEFAULT + PATH_OUTLINED + "edit" + EXTENSION;
+
+            case "outlined-share":
+                return PATH_DEFAULT + PATH_OUTLINED + "share" + EXTENSION;
+
+            case "outlined-like":
+                return PATH_DEFAULT + PATH_OUTLINED + "like" + EXTENSION;
+
+            case "outlined-copy":
+                return PATH_DEFAULT + PATH_OUTLINED + "copy" + EXTENSION;
         
             default:
                 return PATH_DEFAULT + PATH_OUTLINED + "normal" + EXTENSION;

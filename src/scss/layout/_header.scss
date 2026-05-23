@@ -6,7 +6,7 @@ header {
     margin: 0 auto;
     z-index: 100;
     // z-index: 1000000;
-    background: linear-gradient(180deg, #ededed, #ededed00);
+    // background: linear-gradient(180deg, #ededed, #ededed00 30%);
     
     .header-inner {
         height: 100%;
@@ -31,6 +31,7 @@ header {
 
         margin: 0 auto;
         backdrop-filter: blur(20px);
-        mask-image: linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0) 2.5%, rgb(0, 0, 0) 50%, rgba(0, 0, 0, 0));
+        mask-image: linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0) 0%, rgb(0, 0, 0) 20%, rgba(0, 0, 0, 0));
+        // mask-image: linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0) 2.5%, rgb(0, 0, 0) 50%, rgba(0, 0, 0, 0));
     }
 }

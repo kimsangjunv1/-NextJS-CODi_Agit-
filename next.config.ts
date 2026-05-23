@@ -1,24 +1,22 @@
-import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-    webpack: (config) => {
-        // 기존 Webpack 설정을 확장합니다.
-        config.resolve.alias = {
-            ...config.resolve.alias,
-            "@": path.resolve(__dirname, "src"), // '@'를 src 디렉토리로 매핑
-        };
-
-        return config;
-    },
-
     images: {
-        domains: ['lh3.googleusercontent.com', 'nwezfnytabthwgbgajso.supabase.co'],
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "lh3.googleusercontent.com",
+            },
+            {
+                protocol: "https",
+                hostname: "nwezfnytabthwgbgajso.supabase.co",
+            },
+        ],
     },
 
     compiler: {
-        removeConsole: false
-    }
+        removeConsole: false,
+    },
 };
 
 export default nextConfig;

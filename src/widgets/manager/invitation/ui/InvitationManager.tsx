@@ -1,256 +1,140 @@
-"use client"
+"use client";
 
-import { motion } from 'motion/react'
-import { signIn } from 'next-auth/react'
-import React, { Fragment, useEffect, useRef, useState } from 'react'
+import React, { useRef } from "react";
 
-import useNavigate from '@/shared/hooks/useNavigate'
-import { useToastStore } from '@/shared/stores/useToastStore'
-import { useModalStore } from '@/shared/stores/useModalStore'
-import UI from '@/shared/ui/common/UIComponent'
-import ModalContent from '@/widgets/common/ui/ModalComponent'
-import { useDeleteCategoryQuery, useGetCategoryListOnManagerQuery, useGetCategoryListQuery, usePatchCategoryQuery, useSetCategoryQuery } from '@/entities/category/api/category.query'
-import { CategoryItemManager, patchCategoryPayloadType, setCategoryPayloadType } from '@/entities/category/model/category.type'
-import { util } from '@/shared/lib/util'
-import { useDeleteInvitationCodeQuery, useGetInvitationCodeListOnManagerQuery, usePatchInvitationCodeQuery, useSetInvitationCodeQuery } from '@/entities/invitation/api/invitation.query'
-import { InvitationCodeListItem, patchInvitationCodePayloadType, setInvitationCodePayloadType } from '@/entities/invitation/model/invitation.type'
+import { useModalStore } from "@/shared/stores/useModalStore";
+import UI from "@/shared/ui/common/UIComponent";
+import ModalContent from "@/widgets/common/ui/ModalComponent";
+import {
+    useDeleteInvitationCodeQuery,
+    useGetInvitationCodeListOnManagerQuery,
+    usePatchInvitationCodeQuery,
+    useSetInvitationCodeQuery,
+} from "@/entities/invitation/api/invitation.query";
+import {
+    InvitationCodeListItem,
+    patchInvitationCodePayloadType,
+    setInvitationCodePayloadType,
+} from "@/entities/invitation/model/invitation.type";
+import { util } from "@/shared/lib/util";
+import ManagerPageShell from "@/widgets/manager/ui/ManagerPageShell";
+import ManagerListSkeleton from "@/widgets/manager/ui/ManagerListSkeleton";
 
 const InvitationManager = () => {
-    const [ selectedMenu, setSelectedMenu ] = useState<number>(1);
-
-    const SelectedTabContent = ( value: number ) => {
-        switch ( value ) {
-            case 1:
-                return <InvitationCodeListTable />
-
-            // case 2:
-            //     return <RefundHistory />
-
-            // case 3:
-            //     return <PrintConfig />
-
-            // case 4:
-            //     return <PackageConfig />
-        
-            default:
-                return <InvitationCodeListTable />
-        }
-    }
-    
-    return (
-        <Fragment>
-            {/* 목록 */}
-            <UI.ErrorBoundaryWrapper>
-                { SelectedTabContent( selectedMenu ) }
-            </UI.ErrorBoundaryWrapper>
-            {/* 목록 END */}
-        </Fragment>
-    )
-}
-
-const InvitationCodeListTable = () => {
     const invitationCodeCreateValueRef = useRef<setInvitationCodePayloadType>({ is_active: false, expire_at: "" });
-    const invitationCodePatchValueRef = useRef<patchInvitationCodePayloadType>({ id: 0, is_active: true, expire_at: "" });
 
-    const { data: getInvitationCodeListData } = useGetInvitationCodeListOnManagerQuery();
+    const { data: getInvitationCodeListData, isLoading } = useGetInvitationCodeListOnManagerQuery();
     const { mutate: setInvitationCodeFetch } = useSetInvitationCodeQuery();
     const { mutate: patchInvitationCodeFetch } = usePatchInvitationCodeQuery();
     const { mutate: deleteInvitationCodeFetch } = useDeleteInvitationCodeQuery();
 
-    const { setToast } = useToastStore();
     const { setModal } = useModalStore();
 
-    const resetCreateValue = () => invitationCodeCreateValueRef.current = { is_active: true, expire_at: "" };
-    const resetModifyValue = () => invitationCodePatchValueRef.current = { id: 0, is_active: true, expire_at: "" };
-    
-    const createCategoryModal = () => setModal({
-        type: "CHECK",
-        title: "초대코드 생성",
-        content: (
-            <ModalContent.Invitation.AddInvitationCode
-                // info={ info }
-                onChange={(e) => invitationCodeCreateValueRef.current = e}
-            />
-        ),
-        cancel: { text: "닫기", },
-        confirm: {
-            text: "확인",
-            onClick: () => {
-                console.log("최종", invitationCodeCreateValueRef)
-                setInvitationCodeFetch(invitationCodeCreateValueRef.current)
-            }
-        },
-        isOpen: true
-    });
+    const resetCreateValue = () => (invitationCodeCreateValueRef.current = { is_active: true, expire_at: "" });
 
-    // const modifyCategoryModal = ( info: InvitationCodeListItem ) => setModal({
-    //     type: "CHECK",
-    //     title: "초대코드 수정",
-    //     content: (
-    //         <ModalContent.Post.ModifyCategory
-    //             info={ info }
-    //             onChange={(e) => categoryPatchValueRef.current = e}
-    //         />
-    //     ),
-    //     cancel: { text: "닫기", },
-    //     confirm: {
-    //         text: "확인",
-    //         onClick: () => {
-    //             if ( !categoryPatchValueRef.current.title ) {
-    //                 setToast({ msg: "카테고리 이름을 입력해주세요", time: 2 });
+    const createInvitationModal = () =>
+        setModal({
+            type: "CHECK",
+            title: "초대코드 생성",
+            content: (
+                <ModalContent.Invitation.AddInvitationCode
+                    onChange={(e) => (invitationCodeCreateValueRef.current = e)}
+                />
+            ),
+            cancel: { text: "닫기" },
+            confirm: {
+                text: "확인",
+                onClick: () => {
+                    setInvitationCodeFetch(invitationCodeCreateValueRef.current);
+                    resetCreateValue();
+                },
+            },
+            isOpen: true,
+        });
 
-    //                 return false;
-    //             }
+    const deleteInvitationModal = (info: InvitationCodeListItem) =>
+        setModal({
+            type: "CHECK",
+            title: "초대코드를 삭제할까요?",
+            content: (
+                <article className="flex flex-col gap-[1.2rem]">
+                    <p className="text-[var(--color-gray-600)]">삭제 대상: {info.code}</p>
+                </article>
+            ),
+            cancel: { text: "취소" },
+            confirm: {
+                text: "삭제하기",
+                onClick: () => deleteInvitationCodeFetch({ id: info.id }),
+            },
+            isOpen: true,
+        });
 
-    //             if ( !categoryPatchValueRef.current.description ) {
-    //                 setToast({ msg: "카테고리 이름을 입력해주세요", time: 2 });
-                    
-    //                 return false;
-    //             }
-
-    //             console.log("PAYLOAD", categoryPatchValueRef.current)
-
-    //             patchInvitationCodeFetch( categoryPatchValueRef.current )
-    //             resetModifyValue();
-    //         }
-    //     },
-    //     isOpen: true
-    // });
-
-    const deleteCategoryModal = ( info: InvitationCodeListItem ) => setModal({
-        type: "CHECK",
-        title: "초대코드를 삭제할까요?",
-        content: (
-            <article className="flex flex-col gap-[2.4rem]">
-                <section className="flex flex-col gap-[1.2rem]">
-                    <p>삭제될것: { info.code }</p>
-                </section>
-            </article>
-        ),
-        cancel: { text: "취소", },
-        confirm: {
-            text: "삭제하기",
-            onClick: () => {
-                const PAYLOAD = {
-                    id: info.id
-                }
-
-                deleteInvitationCodeFetch(PAYLOAD)
-            }
-        },
-        isOpen: true
-    });
-
-    // 메모용
-    useEffect(() => {
-        console.log("* 메모: 동일한 이름의 카테고리가 있으면 수정, 생성 막아야 함")
-    }, [])
+    const list = getInvitationCodeListData?.result ?? [];
 
     return (
-        <Fragment>
-            <article
-                id="list"
-                className="px-[2.0rem] flex-1 flex flex-col gap-[2.4rem] w-full items-center justify-start overflow-hidden max-w-[var(--size-tablet)] mx-auto"
-            >
-                <section className='w-full'>
-                    <h2>초대코드 관리</h2>
-                </section>
-
-                <section id='list' className='flex flex-col w-full gap-[1.6rem]'>
-                    { getInvitationCodeListData ? getInvitationCodeListData?.result?.map((e: any, i: number) =>
-                        <section key={i} className='flex gap-[0.8rem] bg-white rounded-[0.8rem] shadow-[var(--shadow-normal)] p-[1.2rem] flex-1'>
-                            <section className='d'>
-                                <UI.CheckBox
-                                    // guide="d"
-                                    className={{ container: "" }}
-                                    onChange={(e) => console.log("e", e)}
-                                />
-                                <UI.Switch
-                                    states={ e.is_active ? true : false }
-                                    onChange={(event) => {
-                                        const PAYLOAD = {
-                                            is_active: event,
-                                            id: e.id,
-                                            expire_at: e.expire_at
-                                        }
-
-                                        patchInvitationCodeFetch( PAYLOAD );
-                                    }}
-                                />
-                            </section>
-
-                            <section className='flex-1 description'>
-                                <p>{ e.code }</p>
-                                <p>{ util.string.getCurrentDate(e.created_at) }</p>
-                            </section>
-
-                            <section className='function flex gap-[0.8rem] items-center'>
-                                <UI.Button
-                                    className='bg-white rounded-[0.8rem] shadow-[var(--shadow-normal)] px-[0.4rem] py-[0.2rem] text-[var(--color-gray-600)]'
-                                    onClick={() => {
-                                        deleteCategoryModal(e);
-                                    }}
-                                >
-                                    삭제
-                                </UI.Button>
-
-                                {/* <UI.Button
-                                    className='bg-white rounded-[0.8rem] shadow-[var(--shadow-normal)] px-[0.4rem] py-[0.2rem] text-[var(--color-gray-600)]'
-                                    onClick={() => {
-                                        modifyCategoryModal(e);
-                                    }}
-                                >
-                                    수정
-                                </UI.Button> */}
-                            </section>
-                        </section>   
-                    ) : "" }
-                </section>
-
-                <section id='action' className='w-full'>
-                    <UI.Button
-                        
-                        onClick={() => createCategoryModal()}
-                    >
-                        생성하기
-                    </UI.Button>
-                </section>
-            </article>
-        </Fragment>
-    )
-}
-
-const Item = ({ title, url }: { title: string, url: string }) => {
-    const { replaceToUrl } = useNavigate();
-    return (
-        <motion.button
-            type='button'
-            onClick={() => replaceToUrl( url )}
-            className='bg-white p-[2.4rem] rounded-[2.4rem] text-nowrap flex items-center flex-col gap-[2.4rem] max-w-[var(--size-mobile)] w-full shadow-[var(--shadow-normal)]'
-            initial={{
-                opacity: 0,
-                scale: 0.8,
-                filter: "blur(20px)"
-            }}
-            animate={{
-                scale: 1,
-                opacity: 1,
-                filter: "blur(0px)"
-            }}
-            exit={{
-                opacity: 0,
-                scale: 0.8,
-                filter: "blur(20px)"
-            }}
-            transition={{
-                type: "spring",
-                stiffness: 100,
-                damping: 20
-            }}
+        <ManagerPageShell
+            title="초대코드 관리"
+            description="회원가입에 사용되는 초대코드를 발급·관리합니다."
+            action={
+                <UI.Button
+                    className="shrink-0 px-[1.6rem] py-[0.8rem] rounded-[0.8rem] bg-[var(--color-brand-500)] text-white font-medium shadow-[var(--shadow-normal)]"
+                    onClick={createInvitationModal}
+                >
+                    + 생성
+                </UI.Button>
+            }
         >
-            { title }
-        </motion.button>
-    )
-}
+            {isLoading ? (
+                <ManagerListSkeleton />
+            ) : list.length === 0 ? (
+                <UI.Empty title="등록된 초대코드가 없습니다" className="opacity-100" />
+            ) : (
+                <section className="flex flex-col w-full gap-[1.2rem]">
+                    {list.map((item) => (
+                        <article
+                            key={item.id}
+                            className="flex flex-col sm:flex-row sm:items-center gap-[1.2rem] bg-white rounded-[1.2rem] shadow-[var(--shadow-normal)] p-[1.6rem]"
+                        >
+                            <div className="flex flex-col gap-[0.2rem]">
+                                <span className="text-[1.2rem] text-[var(--color-gray-500)]">활성화</span>
+                                <UI.Switch
+                                    states={item.is_active}
+                                    onChange={(enabled) =>
+                                        patchInvitationCodeFetch({
+                                            is_active: enabled,
+                                            id: item.id,
+                                            expire_at: item.expire_at,
+                                        })
+                                    }
+                                />
+                            </div>
 
-export default InvitationManager
+                            <div className="flex-1 flex flex-col gap-[0.4rem] min-w-0">
+                                <p className="text-[1.6rem] font-bold font-mono tracking-wide break-all">
+                                    {item.code}
+                                </p>
+                                <p className="text-[1.2rem] text-[var(--color-gray-500)]">
+                                    생성일 {util.string.getCurrentDate(item.created_at)}
+                                </p>
+                                {item.expire_at ? (
+                                    <p className="text-[1.2rem] text-[var(--color-gray-500)]">
+                                        만료일 {util.string.getCurrentDate(item.expire_at)}
+                                    </p>
+                                ) : null}
+                            </div>
+
+                            <UI.Button
+                                className="sm:self-center bg-white rounded-[0.8rem] shadow-[var(--shadow-normal)] px-[1.2rem] py-[0.6rem] text-[var(--color-gray-600)]"
+                                onClick={() => deleteInvitationModal(item)}
+                            >
+                                삭제
+                            </UI.Button>
+                        </article>
+                    ))}
+                </section>
+            )}
+        </ManagerPageShell>
+    );
+};
+
+export default InvitationManager;

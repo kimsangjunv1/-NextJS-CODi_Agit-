@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, Reorder, useDragControls } from "framer-motion";
+import { motion, Reorder, useDragControls } from "motion/react";
 import { Fragment, useEffect, useRef, useState } from "react";
 
 import TipTap from "@/shared/ui/layout/Tiptap";
@@ -14,6 +14,10 @@ import { useToastStore } from "@/shared/stores/useToastStore";
 import { Row, useBlockStore } from "@/widgets/post/model/useEditorBlockStore";
 
 import type { SectionContent, Block } from "@/entities/post/model/post.type";
+
+const REORDER_TRANSITION = { type: "spring" as const, stiffness: 500, damping: 42 };
+
+const getRowKey = (row: Row) => row.map((b) => b.id).join("-");
 
 const SortableBlock = ({ contents }: { contents?: Row[] }) => {
     const { rows, setRows } = useBlockStore();
@@ -32,9 +36,9 @@ const SortableBlock = ({ contents }: { contents?: Row[] }) => {
             as="section"
             className="flex flex-col flex-1 gap-[0.4rem] px-[0.8rem]"
         >
-            { rows.map(( row, rowIndex ) => 
-                <Item key={rowIndex} row={row} rowIndex={ rowIndex } />
-            )}
+            { rows.map(( row, rowIndex ) => (
+                <Item key={ getRowKey( row ) } row={ row } rowIndex={ rowIndex } />
+            ))}
         </Reorder.Group>
     );
 };
@@ -49,13 +53,13 @@ const Item = ({ row, rowIndex }: { row: Row, rowIndex: number }) => {
 
     return (
         <Reorder.Item
-            key={row.map((b) => b.id).join("-")}
-            value={row} 
+            value={ row }
+            layout
+            transition={ REORDER_TRANSITION }
             className={`relative flex items-center justify-center flex-col gap-[0.8rem] bg-[#ffffff80] shadow-[var(--shadow-normal)] rounded-[2.4rem] p-[0.4rem]`}
             as="div"
-            dragControls={dragControls}
-            // transition={{ duration: 0.2, ease: "easeInOut" }}
-            dragListener={false}
+            dragControls={ dragControls }
+            dragListener={ false }
         >
             <section
                 className={`flex gap-[1.6rem] w-full justify-between ${ isGrabbing ? "cursor-grabbing" : "cursor-grab" }`}

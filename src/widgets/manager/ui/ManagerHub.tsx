@@ -1,86 +1,76 @@
-"use client"
+"use client";
 
-import React, { Fragment, useState } from 'react'
-import { motion } from 'motion/react'
+import { motion } from "motion/react";
 
-import useNavigate from '@/shared/hooks/useNavigate'
+import useNavigate from "@/shared/hooks/useNavigate";
+import { useToastStore } from "@/shared/stores/useToastStore";
+
+import { MANAGER_MENUS, ManagerMenuItem } from "./managerMenus";
 
 const ManagerHub = () => {
-    const [ selectedMenu, setSelectedMenu ] = useState<number>(1);
-
-    const SelectedTabContent = ( value: number ) => {
-        switch ( value ) {
-            case 1:
-                return <ManagerMenuLinks />
-        
-            default:
-                return <ManagerMenuLinks />
-        }
-    }
-    
     return (
-        <Fragment>
-            {/* 목록 */}
-            { SelectedTabContent( selectedMenu ) }
-            {/* 목록 END */}
-        </Fragment>
-    )
-}
+        <article className="px-[2.0rem] flex-1 flex flex-col gap-[2.4rem] w-full max-w-[var(--size-tablet)] mx-auto pb-[4.0rem]">
+            <header className="flex flex-col gap-[0.8rem]">
+                <h2 className="text-[2.4rem] font-bold">관리자</h2>
+                <p className="text-[1.4rem] text-[var(--color-gray-600)]">
+                    운영에 필요한 메뉴를 선택해주세요.
+                </p>
+            </header>
 
-const ManagerMenuLinks = () => {
-    return (
-        <Fragment>
-            <article
-                id="list"
-                className="px-[2.0rem] flex-1 flex flex-col gap-[2.4rem] w-full items-center justify-start overflow-hidden max-w-[var(--size-tablet)] mx-auto"
-            >
-                <section>
-                    <h2>아래 버튼을 클릭해 이동해주세요(임시)</h2>
-                </section>
+            <section className="grid grid-cols-1 sm:grid-cols-2 gap-[1.6rem] w-full">
+                {MANAGER_MENUS.map((menu, index) => (
+                    <MenuCard key={menu.url} menu={menu} index={index} />
+                ))}
+            </section>
+        </article>
+    );
+};
 
-                <section className='flex gap-[1.6rem]'>
-                    <Item title={"카테고리 관리"} url='/manager/category' />
-                    <Item title={"게시물 관리"} url='/manager/post' />
-                    <Item title={"유저 관리"} url='/manager/user' />
-                    <Item title={"댓글 관리"} url='/manager/comment' />
-                    <Item title={"초대코드 관리"} url='/manager/invitation' />
-                </section>
-            </article>
-        </Fragment>
-    )
-}
-
-const Item = ({ title, url }: { title: string, url: string }) => {
+const MenuCard = ({ menu, index }: { menu: ManagerMenuItem; index: number }) => {
     const { replaceToUrl } = useNavigate();
+    const { setToast } = useToastStore();
+
+    const handleClick = () => {
+        if (!menu.available) {
+            setToast({ msg: "준비 중인 메뉴입니다", time: 2 });
+            return;
+        }
+        replaceToUrl(menu.url);
+    };
+
     return (
         <motion.button
-            type='button'
-            onClick={() => replaceToUrl( url )}
-            className='bg-white p-[2.4rem] rounded-[2.4rem] text-nowrap flex items-center flex-col gap-[2.4rem] max-w-[var(--size-mobile)] w-full shadow-[var(--shadow-normal)]'
-            initial={{
-                opacity: 0,
-                scale: 0.8,
-                filter: "blur(20px)"
-            }}
-            animate={{
-                scale: 1,
-                opacity: 1,
-                filter: "blur(0px)"
-            }}
-            exit={{
-                opacity: 0,
-                scale: 0.8,
-                filter: "blur(20px)"
-            }}
+            type="button"
+            onClick={handleClick}
+            className={`relative text-left bg-white p-[2.0rem] rounded-[1.6rem] flex flex-col gap-[1.2rem] w-full shadow-[var(--shadow-normal)] border border-transparent transition-colors ${
+                menu.available
+                    ? "hover:border-[var(--color-brand-200)]"
+                    : "opacity-60 cursor-not-allowed"
+            }`}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{
+                delay: index * 0.05,
                 type: "spring",
-                stiffness: 100,
-                damping: 20
+                stiffness: 120,
+                damping: 18,
             }}
         >
-            { title }
+            <div className="flex items-center justify-between gap-[0.8rem]">
+                <h3 className="text-[1.8rem] font-bold">{menu.title}</h3>
+                <span
+                    className={`text-[1.2rem] px-[0.8rem] py-[0.2rem] rounded-full font-medium ${
+                        menu.available
+                            ? "bg-[var(--color-brand-100)] text-[var(--color-brand-600)]"
+                            : "bg-[var(--color-gray-100)] text-[var(--color-gray-600)]"
+                    }`}
+                >
+                    {menu.available ? "이용 가능" : "준비 중"}
+                </span>
+            </div>
+            <p className="text-[1.4rem] text-[var(--color-gray-600)] leading-snug">{menu.description}</p>
         </motion.button>
-    )
-}
+    );
+};
 
-export default ManagerHub
+export default ManagerHub;

@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useMotionValue, useScroll } from 'motion/react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { motion, useMotionValue, useScroll } from 'motion/react'
 
 import useNavigate from '@/shared/hooks/useNavigate'
 import { useGetPostLatestListQuery, useGetPostListQuery } from '@/entities/post/api/post.query'
@@ -13,57 +13,41 @@ import { useLayoutStore } from '@/shared/stores/useLayoutStore'
 import { GetPostLatestListResponseType } from '@/entities/post/model/post.type'
 
 
+const clampPageScroll = () => {
+    const maxScrollTop = Math.max(
+        0,
+        document.documentElement.scrollHeight - window.innerHeight,
+    );
+    if (window.scrollY > maxScrollTop) {
+        window.scrollTo({ top: maxScrollTop });
+    }
+};
+
 const ArchiveFeed = ({ initialData }: { initialData: GetPostLatestListResponseType }) => {
-    const { mainViewMode } = useLayoutStore();
+    const { mainViewMode, categoryFilter } = useLayoutStore();
 
     useEffect(() => {
-        window?.scrollTo({
-            top: 0
-        });
+        window.scrollTo({ top: 0 });
     }, [mainViewMode]);
 
-    return (
-        <AnimatePresence mode='popLayout'>
-            { mainViewMode === 1 && (
-                <motion.section
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{
-                        type: "spring",
-                        mass: 0.1,
-                        stiffness: 100,
-                        damping: 10,
-                    }}
-                    className="flex-1 w-full h-full overflow-hidden"
-                >
-                    <UI.ErrorBoundaryWrapper>
-                        <Slider initialData={initialData}/>
-                    </UI.ErrorBoundaryWrapper>
-                </motion.section>
-            )}
+    useLayoutEffect(() => {
+        clampPageScroll();
+        requestAnimationFrame(clampPageScroll);
+    }, [mainViewMode, categoryFilter]);
 
-            { mainViewMode === 2 && (
-                <motion.section
-                    key="list"
-                    initial={{ opacity: 0, transform: "scale(0.9)" }}
-                    animate={{ opacity: 1, transform: "scale(1)" }}
-                    exit={{ opacity: 0, transform: "scale(0.9)" }}
-                    transition={{
-                        type: "spring",
-                        mass: 0.1,
-                        stiffness: 100,
-                        damping: 10,
-                    }}
-                    className="w-full h-full pt-[var(--header-height)] pb-[calc(1.6rem*4)]"
-                >
-                    <UI.ErrorBoundaryWrapper>
-                        <List />
-                    </UI.ErrorBoundaryWrapper>
-                </motion.section>
-            )}
-        </AnimatePresence>
-    )
+    return mainViewMode === 1 ? (
+        <section className="flex-1 w-full h-full overflow-hidden">
+            <UI.ErrorBoundaryWrapper>
+                <Slider initialData={initialData}/>
+            </UI.ErrorBoundaryWrapper>
+        </section>
+    ) : (
+        <section className="w-full h-full pt-[var(--header-height)] pb-[calc(1.6rem*4)]">
+            <UI.ErrorBoundaryWrapper>
+                <List />
+            </UI.ErrorBoundaryWrapper>
+        </section>
+    );
 }
 
 const Slider = ({ initialData }: { initialData: GetPostLatestListResponseType }) => {
@@ -319,52 +303,53 @@ const Slider = ({ initialData }: { initialData: GetPostLatestListResponseType })
 };
 
 const List = () => {
-    const { data, refetch: getPostListDataFetch } = useGetPostListQuery();
+    const { data } = useGetPostListQuery();
 
-    const { categoryFilter, setCategoryFilter } = useLayoutStore();
+    const { categoryFilter } = useLayoutStore();
     const { pushToUrl } = useNavigate();
+    const listRef = useRef<HTMLElement | null>(null);
 
     const filtered = categoryFilter !== 999 ? data?.result?.filter(item => item.category_idx === categoryFilter) : data?.result;
 
+    useLayoutEffect(() => {
+        clampPageScroll();
+
+        const listEl = listRef.current;
+        if (!listEl || typeof ResizeObserver === "undefined") return;
+
+        const ro = new ResizeObserver(() => {
+            requestAnimationFrame(clampPageScroll);
+        });
+        ro.observe(listEl);
+
+        return () => ro.disconnect();
+    }, [categoryFilter, filtered?.length]);
+
     return (
-        <article className="flex flex-col gap-6">
-            <AnimatePresence mode='popLayout'>
-                {filtered ? filtered?.map((e, i) => (
-                    <motion.section
-                        key={ e.idx }
-                        layout
-                        initial={{ opacity: 0, transform: "scale(0.9)" }}
-                        animate={{ opacity: 1, transform: "scale(1)" }}
-                        exit={{ opacity: 0, transform: "scale(0.9)" }}
-                        transition={{
-                            delay: 0.05 * (i + 1),
-                            type: "spring",
-                            mass: 0.1,
-                            stiffness: 100,
-                            damping: 10,
+        <article ref={listRef} className="flex flex-col gap-6">
+            {filtered ? filtered.map((e) => (
+                <section
+                    key={ e.idx }
+                    className='max-w-[var(--size-tablet)] mx-auto relative w-full'
+                >
+                    <UI.Button
+                        className='flex justify-start items-center gap-[1.6rem] hover:scale-[1.04] transition-transform px-[1.2rem]'
+                        onClick={() => {
+                            pushToUrl(`/post/${e.idx}`);
                         }}
-                        // className="flex items-center gap-6 p-4 border rounded-lg shadow-md"
-                        className='max-w-[var(--size-tablet)] mx-auto relative w-full'
                     >
-                        <UI.Button
-                            className='flex justify-start items-center gap-[1.6rem] hover:scale-[1.04] transition-transform px-[1.2rem]'
-                            onClick={() => {
-                                pushToUrl(`/post/${e.idx}`);
-                            }}
-                        >
-                            <img src={ e.thumbnail } alt={ e.title } className='w-[calc(1.6rem*6)] h-[calc(1.6rem*9)] object-cover rounded-[1.6rem] shadow-[var(--shadow-normal)]'/>
+                        <img src={ e.thumbnail } alt={ e.title } className='w-[calc(1.6rem*6)] h-[calc(1.6rem*9)] object-cover rounded-[1.6rem] shadow-[var(--shadow-normal)]'/>
 
-                            <div className='flex flex-col gap-[0.8rem] flex-1'>
-                                <motion.p className={`text-left font-extrabold ${ e.category_idx === 1 ? "text-[var(--color-brand-500)]" : e.category_idx === 2 ? "text-[var(--color-blue-500)]" : "text-[var(--color-pink-500)]" }`}>{ e.category?.title }</motion.p>
-                                <motion.h5 className='text-left text-[2.0rem] font-extrabold mobile:text-[1.8rem] tablet:text-[2.2rem] '>{ e.title }</motion.h5>
-                                <motion.p className='text-left font-semibold leading-[1.5] text-[#00000090] line-clamp-2 mobile:text-[1.4rem] tablet:text-[1.8rem]'>{ e.summary }</motion.p>
-                                <motion.h5 className='text-left text-[1.4rem] font-bold text-[#00000090]'>{ util.string.getCurrentDate(e.created_at) }</motion.h5>
-                            </div>
+                        <div className='flex flex-col gap-[0.8rem] flex-1'>
+                            <p className={`text-left font-extrabold ${ e.category_idx === 1 ? "text-[var(--color-brand-500)]" : e.category_idx === 2 ? "text-[var(--color-blue-500)]" : "text-[var(--color-pink-500)]" }`}>{ e.category?.title }</p>
+                            <h5 className='text-left text-[2.0rem] font-extrabold mobile:text-[1.8rem] tablet:text-[2.2rem] '>{ e.title }</h5>
+                            <p className='text-left font-semibold leading-[1.5] text-[#00000090] line-clamp-2 mobile:text-[1.4rem] tablet:text-[1.8rem]'>{ e.summary }</p>
+                            <h5 className='text-left text-[1.4rem] font-bold text-[#00000090]'>{ util.string.getCurrentDate(e.created_at) }</h5>
+                        </div>
 
-                        </UI.Button>
-                    </motion.section>
-                )) : ""}
-            </AnimatePresence>
+                    </UI.Button>
+                </section>
+            )) : null}
         </article>
     );
 }

@@ -158,6 +158,24 @@ const Header = () => {
                                     }}
                                     className="flex gap-[2.0em] flex-1 justify-center"
                                 >
+                                    <motion.section
+                                        key="category-all"
+                                        initial={{ opacity: 0, transform: "scale(0.8)" }}
+                                        animate={{ opacity: 1, transform: "scale(1)" }}
+                                        exit={{ opacity: 0, transform: "scale(0.8)" }}
+                                        transition={{
+                                            type: "spring",
+                                            mass: 0.1,
+                                            stiffness: 100,
+                                            damping: 10,
+                                        }}
+                                        onClick={() => setCategoryFilter(999)}
+                                        className={`flex gap-[1.6rem] ${ categoryFilter === 999 ? "text-black" : "text-[#00000050]" }`}
+                                    >
+                                        <UI.Button className={"font-extrabold text-[2.4rem]"}>
+                                            전체
+                                        </UI.Button>
+                                    </motion.section>
                                     { getCategoryListData?.result?.filter((e) => e.is_enabled).map((e, i) =>
                                         <motion.section
                                             key={`${e}-${i}`}
@@ -171,9 +189,8 @@ const Header = () => {
                                                 stiffness: 100,
                                                 damping: 10,
                                             }}
-                                            onClick={() => setCategoryFilter( i === 0 ? 999 : i )}
-                                            // onClick={() => setCategoryFilter( i === 0 ? 999 : i )}
-                                            className={`flex gap-[1.6rem] ${ categoryFilter === i ? "text-black" : categoryFilter === 999 && i === 0 ? "text-black" : "text-[#00000050]" }`}
+                                            onClick={() => setCategoryFilter(e.idx)}
+                                            className={`flex gap-[1.6rem] ${ categoryFilter === e.idx ? "text-black" : "text-[#00000050]" }`}
                                         >
                                             <UI.Button
                                                 key={i}

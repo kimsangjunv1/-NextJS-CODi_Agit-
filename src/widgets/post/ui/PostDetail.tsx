@@ -1,7 +1,7 @@
 "use client"
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Block, GetPostDetailResponseType, PostPrevNextInfo, SectionContent } from '@/entities/post/model/post.type';
 import { GetCommentDetailDataType } from "@/entities/comment/model/comment.type";
@@ -19,7 +19,7 @@ import IconComponent from "@/shared/ui/common/IconComponent";
 import TextShimmer from "@/shared/ui/common/TextShimmerComponent";
 
 import { useToastStore } from "@/shared/stores/useToastStore";
-import useScrollProgress from "@/shared/hooks/useScrollProgress";
+import { useScrollPastThreshold } from "@/shared/hooks/useScrollProgress";
 import TextScreening from "@/shared/ui/common/TextComponent";
 import { ApiHeaderResponseType } from "@/shared/model/common.type";
 import { useCreatePostStore } from "@/shared/stores/useCreatePostStore";
@@ -48,15 +48,14 @@ const RenderContents = ({ id }: { id: string }) => {
     const DATA = useMemo(() => getPostListData?.result, [ getPostListData ])
 
     return (
-        <AnimatePresence mode='popLayout'>
-            {/* <section className='flex flex-col justify-center items-center gap-[3.2rem] min-h-[calc(1.6rem*20)] h-[calc(100dvh-1.2rem-(var(--header-height)*0))] w-full'> */}
+        <>
             <section className='flex flex-col justify-center items-center gap-[3.2rem] h-[100dvh] p-[0.8rem] w-full'>
-                <Title key={"Title"} imageUrl={ DATA?.thumbnail ?? "" } title={ DATA?.title ?? "" } summary={ DATA?.summary ?? "" } createDate={ DATA?.created_at ?? "" } viewCount={ DATA?.views ?? 0 } />
+                <Title imageUrl={ DATA?.thumbnail ?? "" } title={ DATA?.title ?? "" } summary={ DATA?.summary ?? "" } createDate={ DATA?.created_at ?? "" } viewCount={ DATA?.views ?? 0 } />
             </section>
-            
-            <Contents key={"Contents"} contents={ DATA?.contents ?? [] } prev={ DATA?.prev } next={ DATA?.next } />
-            <Comment key={"Comment"} contents={ getCommentListData?.result ?? [] } postIdx={ id } />
-        </AnimatePresence>
+
+            <Contents contents={ DATA?.contents ?? [] } prev={ DATA?.prev } next={ DATA?.next } />
+            <Comment contents={ getCommentListData?.result ?? [] } postIdx={ id } />
+        </>
     )
 }
 
@@ -74,19 +73,14 @@ const Title = ({
     viewCount: number
 }) => {
     const [ initGlow, setInitGlow ] = useState( false );
+    const heroImageSrc = imageUrl || undefined;
+
     return (
         <motion.article
             className='relative flex flex-col items-end justify-end gap-[1.6rem] w-full h-full rounded-[calc(1.6rem*3)] overflow-hidden'
-            initial={{ opacity: 0, transform: "scale(0.85)", filter: "blur(20px)" }}
-            animate={{ opacity: 1, transform: "scale(1)", filter: "blur(0px)" }}
-            exit={{ opacity: 0, transform: "scale(0.85)" }}
-            transition={{
-                delay: 0.1 * 2,
-                type: "spring",
-                mass: 0.3,       // 약간 무게감 ↑
-                stiffness: 50,  // 스프링 강하게 ↑
-                damping: 8,      // 감쇠 낮춰서 튕기게 ↓
-            }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.25, 0.8, 0.25, 1] }}
         >
             <section className="flex flex-col items-start justify-end gap-[2.4rem] h-full w-full max-w-[var(--size-tablet)] px-[1.2rem] py-[7.2rem] z-[100] absolute left-[50%] top-[50%] transform translate-x-[-50%] translate-y-[-50%]">
                 <section className="flex flex-col gap-[1.2rem] pointer-events-none">
@@ -109,39 +103,10 @@ const Title = ({
 
                 <section className='flex items-end flex-wrap gap-[1.6rem] pointer-events-none'>
                     <div className="relative rounded-[2.4rem] w-[9.2rem] h-[9.2rem] shadow-[var(--shadow-normal)]">
-                        <motion.img
+                        <img
                             src="https://cdn.class101.net/images/dc898138-d426-45b7-9f2d-0763b921daef"
                             alt="프로필"
                             className='object-cover rounded-[2.4rem] w-[9.2rem] h-[9.2rem] shadow-[var(--shadow-normal)]'
-                            initial={{ objectFit:"120px" }}
-                            animate={{ objectFit:"0px" }}
-                            transition={{
-                                delay: 0.1,
-                                duration: 2.5,
-                                ease: "easeOut",
-                                repeat: 10,       // 무한 반복
-                                repeatType: "loop",
-                            }}
-                        />
-
-                        <motion.div
-                            key={`glow-${ initGlow }`}
-                            className="absolute inset-0 z-[1000] pointer-events-none blur-[10px]"
-                            initial={{ scale: 0, opacity: 0.4 }}
-                            animate={{ scale: 10, opacity: -10 }}
-                            transition={{
-                                delay: 0.1,
-                                duration: 2.5,
-                                ease: "easeOut",
-                                repeat: 0,       // 무한 반복
-                                repeatType: "loop",
-                            }}
-                            style={{
-                                background: "radial-gradient(circle, rgba(255,255,255,0) 0%, var(--color-brand-500) 50%, rgba(255,255,255,0) 70%)",
-                                borderRadius: "50%",
-                                transformOrigin: "center"
-                            }}
-                            // onAnimationEnd={() => setInitGlow( true )}
                         />
                     </div>
                     
@@ -157,23 +122,16 @@ const Title = ({
             </section>
             
             <div className="absolute top-0 left-[50%] transform translate-x-[-50%] w-full h-full bg-[linear-gradient(0deg,_#000,_#00000000)] z-1 rounded-[2.4rem]" />
-            <div className='absolute top-0 left-[50%] transform translate-x-[-50%] w-full h-full mask-[linear-gradient(0deg,_#000,_#000_30%,_#0000)] bg-[#00000000] backdrop-blur-[120px] z-1' />
+            <div className='absolute top-0 left-[50%] transform translate-x-[-50%] w-full h-full mask-[linear-gradient(0deg,_#000,_#000_30%,_#0000)] bg-[#00000000] backdrop-blur-[32px] z-1' />
 
             { !initGlow ? (
                 <motion.div
-                    key={`glow-${ initGlow }`}
                     className="absolute inset-0 z-[1000] pointer-events-none blur-[10px]"
-                    initial={{ scale: 0, opacity: 0.4 }}
-                    animate={{ scale: 10, opacity: -10 }}
-                    transition={{
-                        delay: 0.1,
-                        duration: 10,
-                        ease: "easeOut",
-                        repeat: 0,       // 무한 반복
-                        repeatType: "loop",
-                    }}
+                    initial={{ scale: 0.8, opacity: 0.35 }}
+                    animate={{ scale: 1.2, opacity: 0 }}
+                    transition={{ duration: 1.2, ease: "easeOut" }}
+                    onAnimationComplete={() => setInitGlow(true)}
                     style={{
-                        // background: "radial-gradient(circle, rgba(255,255,255,0) 0%, var(--color-brand-500) 50%, rgba(255,255,255,0) 70%)",
                         background: `
                             radial-gradient(
                                 circle at 50% 50%,
@@ -189,131 +147,116 @@ const Title = ({
                         transformOrigin: "center"
                     }}
                 />
-            ) : "" }
-            <motion.img
-                src={ imageUrl }
-                alt="/"
-                className="object-cover object-center w-full h-full rounded-[2.4rem] aspect-auto"
-                // className="object-cover object-center max-w-[100%] max-h-[calc(1.6rem*20)] rounded-[calc(1.6rem*3)] shadow-[var(--shadow-normal)] aspect-auto"
-                initial={{ opacity: 0, transform: "scale(0.85)", filter: "blur(20px)" }}
-                animate={{ opacity: 1, transform: "scale(1)", filter: "blur(0px)" }}
-                exit={{ opacity: 0, transform: "scale(0.85)" }}
-                transition={{
-                    delay: 0.1 * 1,
-                    type: "spring",
-                    mass: 0.3,       // 약간 무게감 ↑
-                    stiffness: 50,  // 스프링 강하게 ↑
-                    damping: 8,      // 감쇠 낮춰서 튕기게 ↓
-                }}
-            />
+            ) : null }
+            { heroImageSrc ? (
+                <img
+                    src={ heroImageSrc }
+                    alt=""
+                    className="object-cover object-center w-full h-full rounded-[2.4rem] aspect-auto"
+                />
+            ) : (
+                <div className="w-full h-full rounded-[2.4rem] bg-[var(--color-gray-200)]" aria-hidden />
+            ) }
         </motion.article>
     )
 }
 
+const CodeBlockContent = memo(({ content }: { content: string }) => {
+    const html = useMemo(
+        () => `<pre class="code-block"><code>${highlightCode(content)}</code></pre>`,
+        [content],
+    );
+
+    return (
+        <section className="overflow-x-auto">
+            <div dangerouslySetInnerHTML={{ __html: html }} />
+        </section>
+    );
+});
+CodeBlockContent.displayName = "CodeBlockContent";
+
+const ContentColumn = memo(({
+    col,
+    rowLength,
+    onCopySentence,
+}: {
+    col: SectionContent;
+    rowLength: number;
+    onCopySentence: (text: string) => void;
+}) => {
+    const columnClassName = `flex-1 min-w-[calc((var(--size-tablet)-(1.6rem*10))/2)] ${ rowLength !== 0 ? "flex gap-[2.4rem]" : "" } ${ rowLength === 1 ? "col-span-2" : "min-h-[36.0rem]" } ${ col.type === 0 ? "flex-col" : "" } ${ col.type === 1 || col.type === 2 ? "rounded-[2.4rem] overflow-hidden" : "" } ${ col.type === 2 ? "flex-col" : "" }`;
+
+    return (
+        <section className={columnClassName}>
+            { col.type === 0 ? (
+                <Fragment>
+                    { col.title || col.subtitle ? (
+                        <section className='flex flex-col gap-[0.8rem]'>
+                            { col.subtitle ? <p className='text-[#676767]'>{ col.subtitle }</p> : null }
+                            { col.title ? <h5 className='text-[2.4rem] font-bold text-[var(--color-gray-1000)]'>{ col.title }</h5> : null }
+                        </section>
+                    ) : null }
+
+                    <section className='flex flex-col items-start gap-[1.6rem] overflow-x-auto'>
+                        { (col.content as Block[]).map((e) =>
+                            e.children.map((itemInfo, itemIdx) => (
+                                <p
+                                    key={`${col.id}-${itemIdx}`}
+                                    style={{
+                                        lineHeight: itemInfo.style?.lineHeight,
+                                        fontSize: `${itemInfo.style?.fontSize}rem`,
+                                        fontWeight: itemInfo.style?.fontWeight,
+                                        color: itemInfo.style?.color,
+                                        textAlign: itemInfo.style?.textAlign as React.CSSProperties["textAlign"],
+                                        background: `${ itemInfo.style?.backgroundColor }`,
+                                    }}
+                                    className='whitespace-break-spaces transition-colors border border-transparent cursor-pointer hover:border-[var(--color-gray-400)] rounded-[0.8rem]'
+                                    onClick={() => onCopySentence(itemInfo.value)}
+                                >
+                                    { itemInfo.value }
+                                </p>
+                            ))
+                        )}
+                    </section>
+                </Fragment>
+            ) : null}
+
+            { col.type === 1 && col.imageUrl ? (
+                <img src={ col.imageUrl } alt="" className="w-full" />
+            ) : null }
+
+            { col.type === 2 ? (
+                <CodeBlockContent content={`${col.content}`} />
+            ) : null }
+        </section>
+    );
+});
+ContentColumn.displayName = "ContentColumn";
+
 const Contents = ({ contents, prev, next }: { contents: SectionContent[][], prev?: PostPrevNextInfo, next?: PostPrevNextInfo }) => {
-    const codeRef = useRef<HTMLDivElement>(null);
-    
     const { pushToUrl } = useNavigate();
     const { setToast } = useToastStore();
 
+    const handleCopySentence = useCallback((text: string) => {
+        util.dom.setCopyOnClipboard(text);
+        setToast({ msg: "선택하신 문장을 복사했어요", time: 2 });
+    }, [setToast]);
+
     return (
-        <article className='flex gap-[0.4rem] w-full max-w-[var(--size-tablet)] px-[1.2rem]'>
+        <article className='flex gap-[0.4rem] w-full max-w-[var(--size-tablet)] px-[1.2rem] [content-visibility:auto]'>
             <section className='flex flex-col gap-[7.2rem] flex-1'>
                 { contents?.map((row, rowIdx) =>
                     <section key={ rowIdx } className={`flex flex-wrap gap-[1.6rem] ${ row.length === 1 && (row?.[0].type === 1 || row?.[0].type === 2) ? "" : "" }`}>
 
-                        { row.map((col, colIdx) =>
-                            <motion.section
-                                key={ col.id } 
-                                className={`flex-1 min-w-[calc((var(--size-tablet)-(1.6rem*10))/2)] ${ row.length !== 0 ? "flex gap-[2.4rem]" : "" } ${ row.length === 1 ? "col-span-2" : "min-h-[36.0rem]" } ${ col.type === 0 ? "flex-col" : "" } ${ col.type === 1 || col.type === 2 ? "rounded-[2.4rem] overflow-hidden" : "" } ${ col.type === 2 ? "flex-col" : "" }`}
-                                layout
-                                initial={{ opacity: 0, transform: "scale(0.9)" }}
-                                animate={{ opacity: 1, transform: "scale(1)" }}
-                                exit={{ opacity: 0, transform: "scale(0.9)" }}
-                                transition={{
-                                    delay: 0.05 * colIdx,
-                                    type: "spring",
-                                    mass: 0.1,
-                                    stiffness: 100,
-                                    damping: 10,
-                                }}
-                            >
-                                { col.type === 0 ? (
-                                    <Fragment>
-                                        { col.title || col.subtitle ? (
-                                            <section className='flex flex-col gap-[0.8rem]'>
-                                                { col.subtitle ? <p className='text-[#676767]'>{ col.subtitle }</p> : "" }
-                                                { col.title ? <h5 className='text-[2.4rem] font-bold text-[var(--color-gray-1000)]'>{ col.title }</h5> : "" }
-                                            </section>
-                                        ) : "" }
-
-                                        <section className='flex flex-col items-start gap-[1.6rem] overflow-x-auto'>
-                                            { (col.content as Block[]).map((e, rowIdx) =>
-                                                e.children.map((itemInfo, itemIdx) =>
-                                                    <p
-                                                        key={itemIdx}
-                                                        style={{
-                                                            lineHeight: itemInfo.style?.lineHeight,
-                                                            fontSize: `${itemInfo.style?.fontSize}rem`,
-                                                            fontWeight: itemInfo.style?.fontWeight,
-                                                            color: itemInfo.style?.color,
-                                                            textAlign: itemInfo.style?.textAlign as React.CSSProperties["textAlign"],
-                                                            background: `${ itemInfo.style?.backgroundColor }`
-                                                            // backgroundColor: `${ itemInfo.style?.backgroundColor }`
-                                                        }}
-                                                        className='whitespace-break-spaces transition-colors border border-transparent cursor-pointer hover:border-[var(--color-gray-400)] rounded-[0.8rem]'
-                                                        onClick={async() => {
-                                                            const text = itemInfo.value;
-
-                                                            util.dom.setCopyOnClipboard( text );
-                                                            setToast({ msg: "선택하신 문장을 복사했어요", time: 2 })
-                                                        }}
-                                                    >
-                                                        { itemInfo.value }
-                                                    </p>
-                                                )
-                                            )}
-                                        </section>
-                                    </Fragment>
-                                ) : ""}
-
-                                { col.type === 1 ? (
-                                    <Fragment>
-                                        <img
-                                            src={ col.imageUrl }
-                                            alt="/"
-                                            className={`w-full ${ row.length === 2 ? "" : "" }`}
-                                        />
-                                    </Fragment>
-                                ) : "" }
-
-                                { col.type === 2 ? (
-                                    <Fragment>
-                                        {/* <section className='flex flex-col gap-[0.8rem]'>
-                                            <p className='text-[var(--color-gray-500)]'>{ col.subtitle }</p>
-                                            <h5 className='text-[1.6rem] font-bold text-[var(--color-gray-1000)]'>{ col.title }</h5>
-                                        </section> */}
-
-                                        <section className='overflow-x-auto'>
-                                            {/* { getPureHTML( col.content )} */}
-                                            {/* {col.content} */}
-                                            
-                                            <div
-                                                ref={codeRef}
-                                                // className="p-4 font-mono text-pink-400 whitespace-pre bg-gray-900 rounded"
-                                                dangerouslySetInnerHTML={{ __html: `<pre class="code-block"><code>${ highlightCode(`${ col.content }`) }</code></pre>` }}
-                                                // dangerouslySetInnerHTML={{ __html: `<pre class="code-block"><code>${ DOMPurify.sanitize(col.content, { ALLOWED_TAGS: ['p','br'] }) }</code></pre>` }}
-                                            />
-
-                                            {/* <SyntaxHighlighter language="ts" style={materialDark}>
-                                                { JSON.stringify(col.content) }
-                                            </SyntaxHighlighter> */}
-                                        </section>
-                                    </Fragment>
-                                ) : "" }
-                            </motion.section>
+                        { row.map((col) =>
+                            <ContentColumn
+                                key={ col.id }
+                                col={ col }
+                                rowLength={ row.length }
+                                onCopySentence={ handleCopySentence }
+                            />
                         )}
-                    </section>                
+                    </section>
                 )}
 
                 <section className="flex gap-[1.6rem] flex-wrap">
@@ -365,6 +308,38 @@ const Contents = ({ contents, prev, next }: { contents: SectionContent[][], prev
     )
 }
 
+const CommentFloatingButton = memo(({
+    visible,
+    onOpen,
+}: {
+    visible: boolean;
+    onOpen: () => void;
+}) => (
+    <section className="fixed bottom-[1.6rem] left-[50%] w-full justify-center transform translate-x-[-50%] z-[100] flex gap-[1.2rem]">
+        <AnimatePresence>
+            { visible ? (
+                <motion.section
+                    key="comment-fab"
+                    className="flex items-center justify-center bg-[#00000090] backdrop-blur-sm p-[1.2rem] rounded-full"
+                    whileTap={{ scale: 0.95 }}
+                    initial={{ opacity: 0, y: "5.2rem", scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, y: "5.2rem", scale: 0.9 }}
+                    transition={{ duration: 0.25, ease: [0.25, 0.8, 0.25, 1] }}
+                >
+                    <UI.Button
+                        className="text-white flex items-center justify-center px-[0.8rem] gap-[0.8rem]"
+                        onClick={onOpen}
+                    >
+                        <p>댓글 남기기</p>
+                    </UI.Button>
+                </motion.section>
+            ) : null }
+        </AnimatePresence>
+    </section>
+));
+CommentFloatingButton.displayName = "CommentFloatingButton";
+
 const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], postIdx: string }) => {
     const [ inputMode, setInputMode ] = useState( false );
     const [ randName, setRandName ] = useState<string>("");
@@ -372,9 +347,10 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
     const [ currentContainerWidth, setCurrentContainerWidth ] = useState(0);
     const [ currentContainerHeight, setCurrentContainerHeight ] = useState(0);
 
+    const showCommentFab = useScrollPastThreshold(10);
+
     const { setToast } = useToastStore();
     const { pushToUrl } = useNavigate();
-    const { scrollValue } = useScrollProgress();
     const { data: setCommentData, mutate: setCommentFetch } = useSetCommentQuery();
 
     const commentContainerRef = useRef<HTMLDivElement>(null);
@@ -587,47 +563,10 @@ const Comment = ({ contents, postIdx }: { contents: GetCommentDetailDataType[], 
             {/* 목록 END */}
 
 
-            {/* 입력 */}
-            <section className="fixed bottom-[1.6rem] left-[50%] w-full justify-center transform translate-x-[-50%] z-[100] flex gap-[1.2rem]">
-                <AnimatePresence>
-                    { scrollValue >= 10 ? (
-                        <motion.section
-                            // key={e.id + i}
-                            key={"button"}
-                            className="flex items-center justify-center bg-[#00000090] backdrop-blur-sm p-[1.2rem] rounded-full"
-                            whileTap={{ scale: 0.95 }}
-                            initial={{ opacity: 0, y: "5.2rem", scale: 0.9, filter: "blur(10px)" }}
-                            animate={{
-                                opacity: 1,
-                                scale: 1,
-                                y: 0,
-                                filter: "blur(0px)",
-                            }}
-                            exit={{ opacity: 0, y: "5.2rem", scale: 0.9, filter: "blur(10px)" }}
-                            transition={{
-                                delay: 0.01 * 0,
-                                type: "spring",
-                                mass: 0.3,       // 약간 무게감 ↑
-                                stiffness: 50,  // 스프링 강하게 ↑
-                                damping: 8,      // 감쇠 낮춰서 튕기게 ↓
-                            }}
-                        >
-                            <UI.Button
-                                className="text-white flex items-center justify-center px-[0.8rem] gap-[0.8rem]"
-                                onClick={() => {
-                                    if ( !inputMode ) {
-                                        setInputMode( true )
-                                    }
-                                }}
-                            >
-                                <p>댓글 남기기</p>
-                                {/* <IconComponent type="outlined-arrow-swap" alt="테스트" className="invert-100" /> */}
-                            </UI.Button>
-                        </motion.section>
-                    ) : "" }
-                </AnimatePresence>
-            </section>
-            {/* 입력 */}
+            <CommentFloatingButton
+                visible={ showCommentFab && !inputMode }
+                onOpen={() => setInputMode(true)}
+            />
         </Fragment>
     )
 }

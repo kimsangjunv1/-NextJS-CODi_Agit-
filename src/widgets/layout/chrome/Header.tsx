@@ -27,12 +27,23 @@ const Header = () => {
     const { data: getPostListData } = useGetPostDetailQuery(parseInt( (params?.id) as string ));
 
     const IS_ROUTE_HOME = currentPathName === "/";
-    const IS_ROUTE_POST = currentPathName.includes("post");
+    const IS_ROUTE_POST = /\/post(\/|$)/.test(currentPathName);
     // const IS_ROUTE_POST = currentPathName.includes("post") && !currentPathName.includes("modify") && !currentPathName.includes("create");
     const IS_ROUTE_POST_EDIT = currentPathName.includes("post") && currentPathName.includes("modify");
     const IS_ROUTE_POST_CREATE = currentPathName.includes("post") && currentPathName.includes("create");
     const IS_ROUTE_POST_LAB = currentPathName.includes("lab")
-    const IS_ROUTE_POST_MANAGER = currentPathName.includes("manager")
+    const IS_ROUTE_MANAGER = currentPathName.startsWith("/manager");
+    const MANAGER_HEADER_TITLE: Record<string, string> = {
+        "/manager": "관리자",
+        "/manager/category": "카테고리 관리",
+        "/manager/invitation": "초대코드 관리",
+        "/manager/post": "게시물 관리",
+        "/manager/user": "유저 관리",
+        "/manager/comment": "댓글 관리",
+    };
+    const managerHeaderTitle =
+        MANAGER_HEADER_TITLE[currentPathName] ??
+        (IS_ROUTE_MANAGER ? "관리자" : "");
 
     // useEffect(() => {
     //     if ( showMenu ) {
@@ -345,7 +356,7 @@ const Header = () => {
                                 </section>
                             }
 
-                            { IS_ROUTE_POST_MANAGER &&
+                            { IS_ROUTE_MANAGER &&
                                 <section className="flex flex-col gap-[0.8rem]">
                                     <motion.section
                                         key={"post_title"}
@@ -374,7 +385,7 @@ const Header = () => {
                                             }}
                                             className="font-extrabold"
                                         >
-                                            {`어드민`}
+                                            {managerHeaderTitle}
                                         </TextShimmer>
                                     </motion.section>
                                 </section>

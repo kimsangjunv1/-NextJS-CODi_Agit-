@@ -21,3 +21,9 @@ export const getCommentLatestListFetch = () => {
  */
 export const setCommentFetch = (data: any) =>
     clientApi("/api/v1/set/comment/create", { method: "POST", body: data });
+
+export const getCommentManagerListFetch = () =>
+    clientApi("/api/v1/get/comment/manager", { method: "GET" });
+
+export const deleteCommentManagerFetch = (data: { idx: number }) =>
+    clientApi("/api/v1/delete/comment/manager", { method: "DELETE", body: data });

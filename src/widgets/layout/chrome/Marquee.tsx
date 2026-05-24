@@ -10,24 +10,29 @@ const Marquee = () => {
     const { currentPathName } = useNavigate();
     const { data: getCommentLatestListData, refetch: getCommentLatestListFetch } = useGetCommentLatestListQuery();
 
-    const items = useMemo(() => (
-        getCommentLatestListData?.result?.map((e, i) => (
-            <div key={ e.idx } className="flex gap-[0.8rem] px-4">
-                <p className="whitespace-nowrap text-[#00000050]">{ util.string.getCurrentDate(e.created_at) }</p>
-                <p className="font-bold text-black whitespace-nowrap">{ e.author }</p>
-                <p className="font-bold whitespace-nowrap text-[var(--color-brand-500)]">{ e.msg }</p>
-            </div>
-        ) )
-    ), [ getCommentLatestListData?.result ])
+    const items = useMemo(
+        () =>
+            getCommentLatestListData?.result?.map((e, i) => (
+                <div
+                    key={e.idx}
+                    className="flex gap-[0.8rem] px-4"
+                >
+                    <p className="whitespace-nowrap text-white">{util.string.getCurrentDate(e.created_at)}</p>
+                    <p className="font-bold text-white whitespace-nowrap">{e.author}</p>
+                    <p className="font-bold whitespace-nowrap text-[var(--color-brand-500)]">{e.msg}</p>
+                </div>
+            )),
+        [getCommentLatestListData?.result],
+    );
 
-    const RENDERING = currentPathName === "/" || currentPathName === "/profile"
+    const RENDERING = currentPathName === "/" || currentPathName === "/profile";
 
     return (
         <AnimatePresence mode="wait">
-            { RENDERING ? (
+            {RENDERING ? (
                 <motion.div
                     key={"marquee"}
-                    className="fixed bottom-0 left-0 w-full overflow-hidden py-[1.2rem] z-10"
+                    className="fixed bottom-0 left-0 w-full overflow-hidden py-[1.2rem] z-10 bg-black"
                     // initial={{ y: 100 }}
                     // exit={{ y: 100 }}
                     // animate={{ y: 0 }}
@@ -39,7 +44,7 @@ const Marquee = () => {
                         type: "spring",
                         mass: 0.1,
                         stiffness: 100,
-                        damping: 10
+                        damping: 10,
                     }}
                 >
                     <motion.div
@@ -51,12 +56,14 @@ const Marquee = () => {
                             duration: 30, // 속도 조절
                         }}
                     >
-                    {/* 같은 내용 두 번 렌더링 (loop 효과) */}
-                    {items}
-                    {items}
+                        {/* 같은 내용 두 번 렌더링 (loop 효과) */}
+                        {items}
+                        {items}
                     </motion.div>
                 </motion.div>
-            ) : "" }
+            ) : (
+                ""
+            )}
         </AnimatePresence>
     );
 };

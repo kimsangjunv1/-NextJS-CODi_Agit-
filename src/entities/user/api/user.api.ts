@@ -30,6 +30,9 @@ export const setUserFetch = (data: setUserPayloadType) =>
 export const setLoginFetch = (data: setLoginPayloadType) =>
     serverApi("/api/v1/set/login", { method: "POST", body: data });
 
+export const getUserManagerListFetch = () =>
+    clientApi("/api/v1/get/users/manager", { method: "GET" });
+
 // /**
 //  * 포스트 - 수정
 //  */

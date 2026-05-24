@@ -24,3 +24,22 @@ export interface GetCommentLatestListType {
 }
 
 export type GetCommentLatestListResponseType = ApiResponseType<GetCommentLatestListType[]>;
+
+export interface CommentManagerItem {
+    idx: number;
+    post_id: number;
+    author: string;
+    msg: string;
+    is_admin: boolean;
+    created_at: string;
+    posts?: {
+        title: string;
+    };
+}
+
+export interface deleteCommentManagerPayloadType {
+    idx: number;
+}
+
+export type GetCommentManagerListResponseType = ApiResponseType<CommentManagerItem[]>;
+export type DeleteCommentManagerResponseType = ApiResponseType<unknown>;

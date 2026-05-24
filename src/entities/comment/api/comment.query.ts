@@ -1,8 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { getCommentLatestListFetch, getCommentListFetch, setCommentFetch } from "@/entities/comment/api/comment.api";
+import { getCommentLatestListFetch, getCommentListFetch, getCommentManagerListFetch, deleteCommentManagerFetch, setCommentFetch } from "@/entities/comment/api/comment.api";
 
-import { GetCommentDetailResponseType, GetCommentLatestListResponseType } from "@/entities/comment/model/comment.type";
+import {
+    GetCommentDetailResponseType,
+    GetCommentLatestListResponseType,
+    GetCommentManagerListResponseType,
+    deleteCommentManagerPayloadType,
+} from "@/entities/comment/model/comment.type";
 
 import { useToastStore } from "@/shared/stores/useToastStore";
 
@@ -62,6 +67,50 @@ export const useSetCommentQuery = () => {
         mutationFn: (payload: any) => setCommentFetch(payload),
         onSuccess: () => {
             setToast({ msg: "댓글을 생성했어요", time: 2 });
+            queryClient.invalidateQueries({ queryKey: [MUTATION_KEY] });
+        },
+        onError: (err: any) => {
+            setToast({ msg: err.message ?? "에러 발생", time: 2 });
+        },
+    });
+
+    return { mutate, mutateAsync, isError, isIdle, isSuccess, isPending, isPaused, data, error, reset };
+};
+
+export const useGetCommentManagerListQuery = () => {
+    const MUTATION_KEY = "comment";
+
+    const { data, isLoading, isError, isFetching, refetch } = useQuery<GetCommentManagerListResponseType>({
+        queryKey: [MUTATION_KEY, "useGetCommentManagerListQuery"],
+        queryFn: () => getCommentManagerListFetch(),
+        staleTime: 0,
+    });
+
+    return { data, isLoading, isError, isFetching, refetch };
+};
+
+export const useDeleteCommentManagerQuery = () => {
+    const { setToast } = useToastStore();
+
+    const MUTATION_KEY = "comment";
+    const queryClient = useQueryClient();
+
+    const {
+        data,
+        mutate,
+        mutateAsync,
+        error,
+        isError,
+        isSuccess,
+        isIdle,
+        isPending,
+        isPaused,
+        reset,
+    } = useMutation({
+        mutationKey: [MUTATION_KEY, "useDeleteCommentManagerQuery"],
+        mutationFn: (payload: deleteCommentManagerPayloadType) => deleteCommentManagerFetch(payload),
+        onSuccess: () => {
+            setToast({ msg: "댓글을 삭제했어요", time: 2 });
             queryClient.invalidateQueries({ queryKey: [MUTATION_KEY] });
         },
         onError: (err: any) => {

@@ -111,3 +111,23 @@ export type SetPostResponseType = ApiResponseType<{
     statusCode: number;
     postIdx?: number;
 }>;
+
+export interface PostManagerItem {
+    idx: number;
+    title: string;
+    thumbnail: string;
+    summary: string;
+    created_at: string;
+    category_idx: number;
+    views: number;
+    category?: {
+        title: string;
+    };
+}
+
+export interface deletePostManagerPayloadType {
+    idx: number;
+}
+
+export type GetPostManagerListResponseType = ApiResponseType<PostManagerItem[]>;
+export type DeletePostManagerResponseType = ApiResponseType<unknown>;

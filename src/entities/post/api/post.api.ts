@@ -28,6 +28,12 @@ export const setPostFetch = (data: any) =>
 export const patchPostFetch = ({ data, idx }: { data: any, idx: number }) =>
     clientApi(`/api/v1/patch/post/${idx}`, { method: "PATCH", body: data });
 
+export const getPostManagerListFetch = () =>
+    clientApi("/api/v1/get/post/manager", { method: "GET" });
+
+export const deletePostManagerFetch = (data: { idx: number }) =>
+    clientApi("/api/v1/delete/post/manager", { method: "DELETE", body: data });
+
 
 /**
  * 포스트 - 조회수 증가(사용안함)

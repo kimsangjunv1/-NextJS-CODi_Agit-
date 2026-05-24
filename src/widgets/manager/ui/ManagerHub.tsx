@@ -3,13 +3,12 @@
 import { motion } from "motion/react";
 
 import useNavigate from "@/shared/hooks/useNavigate";
-import { useToastStore } from "@/shared/stores/useToastStore";
 
 import { MANAGER_MENUS, ManagerMenuItem } from "./managerMenus";
 
 const ManagerHub = () => {
     return (
-        <article className="px-[2.0rem] flex-1 flex flex-col gap-[2.4rem] w-full max-w-[var(--size-tablet)] mx-auto pb-[4.0rem]">
+        <article className="flex-1 flex flex-col gap-[2.4rem] w-full">
             <header className="flex flex-col gap-[0.8rem]">
                 <h2 className="text-[2.4rem] font-bold">관리자</h2>
                 <p className="text-[1.4rem] text-[var(--color-gray-600)]">
@@ -28,25 +27,12 @@ const ManagerHub = () => {
 
 const MenuCard = ({ menu, index }: { menu: ManagerMenuItem; index: number }) => {
     const { replaceToUrl } = useNavigate();
-    const { setToast } = useToastStore();
-
-    const handleClick = () => {
-        if (!menu.available) {
-            setToast({ msg: "준비 중인 메뉴입니다", time: 2 });
-            return;
-        }
-        replaceToUrl(menu.url);
-    };
 
     return (
         <motion.button
             type="button"
-            onClick={handleClick}
-            className={`relative text-left bg-white p-[2.0rem] rounded-[1.6rem] flex flex-col gap-[1.2rem] w-full shadow-[var(--shadow-normal)] border border-transparent transition-colors ${
-                menu.available
-                    ? "hover:border-[var(--color-brand-200)]"
-                    : "opacity-60 cursor-not-allowed"
-            }`}
+            onClick={() => replaceToUrl(menu.url)}
+            className="relative text-left bg-white p-[2.0rem] rounded-[1.6rem] flex flex-col gap-[1.2rem] w-full shadow-[var(--shadow-normal)] border border-transparent transition-colors hover:border-[var(--color-brand-200)]"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
@@ -58,14 +44,8 @@ const MenuCard = ({ menu, index }: { menu: ManagerMenuItem; index: number }) => 
         >
             <div className="flex items-center justify-between gap-[0.8rem]">
                 <h3 className="text-[1.8rem] font-bold">{menu.title}</h3>
-                <span
-                    className={`text-[1.2rem] px-[0.8rem] py-[0.2rem] rounded-full font-medium ${
-                        menu.available
-                            ? "bg-[var(--color-brand-100)] text-[var(--color-brand-600)]"
-                            : "bg-[var(--color-gray-100)] text-[var(--color-gray-600)]"
-                    }`}
-                >
-                    {menu.available ? "이용 가능" : "준비 중"}
+                <span className="text-[1.2rem] px-[0.8rem] py-[0.2rem] rounded-full font-medium bg-[var(--color-brand-100)] text-[var(--color-brand-600)]">
+                    바로가기
                 </span>
             </div>
             <p className="text-[1.4rem] text-[var(--color-gray-600)] leading-snug">{menu.description}</p>

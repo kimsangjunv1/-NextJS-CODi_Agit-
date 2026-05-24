@@ -30,7 +30,7 @@ const Navigation = () => {
     const { mutate: patchPostFetch } = usePatchPostQuery();
     const { data: getPostListData } = useGetPostDetailQuery(parseInt( (params?.id) as string ));
 
-    const IS_ROUTE_POST = currentPathName.includes("post");
+    const IS_ROUTE_POST = /\/post(\/|$)/.test(currentPathName);
     const IS_ROUTE_POST_VIEW = currentPathName.includes("post") && !currentPathName.includes("modify") && !currentPathName.includes("create");
     const IS_ROUTE_POST_EDIT = currentPathName.includes("post") && currentPathName.includes("modify");
     const IS_ROUTE_POST_CREATE = currentPathName.includes("post") && currentPathName.includes("create");

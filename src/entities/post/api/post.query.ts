@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useToastStore } from "@/shared/stores/useToastStore";
-import { getPostLatestListFetch, getPostListFetch, patchPostFetch, setPostFetch, setPostViewIncrementFetch } from "@/entities/post/api/post.api";
+import { getPostLatestListFetch, getPostListFetch, getPostManagerListFetch, deletePostManagerFetch, patchPostFetch, setPostFetch, setPostViewIncrementFetch } from "@/entities/post/api/post.api";
 
-import { GetPostDetailResponseType, GetPostLatestListResponseType, GetPostListResponseType, PatchPostResponseType, SetIncrementPostViewType, SetPostResponseType } from "@/entities/post/model/post.type";
+import { GetPostDetailResponseType, GetPostLatestListResponseType, GetPostListResponseType, GetPostManagerListResponseType, PatchPostResponseType, SetIncrementPostViewType, SetPostResponseType, deletePostManagerPayloadType } from "@/entities/post/model/post.type";
 import useNavigate from "@/shared/hooks/useNavigate";
 
 /**
@@ -162,6 +162,50 @@ export const useSetIncrementViewQuery = () => {
         mutationFn: (payload: { postId: number; userId?: string }) => setPostViewIncrementFetch(payload),
         onSuccess: () => {
             setToast({ msg: "조회수를 수정했어요.", time: 2 });
+            queryClient.invalidateQueries({ queryKey: [MUTATION_KEY] });
+        },
+        onError: (err: any) => {
+            setToast({ msg: err.message ?? "에러 발생", time: 2 });
+        },
+    });
+
+    return { mutate, mutateAsync, isError, isIdle, isSuccess, isPending, isPaused, data, error, reset };
+};
+
+export const useGetPostManagerListQuery = () => {
+    const MUTATION_KEY = "post";
+
+    const { data, isLoading, isError, isFetching, refetch } = useQuery<GetPostManagerListResponseType>({
+        queryKey: [MUTATION_KEY, "useGetPostManagerListQuery"],
+        queryFn: () => getPostManagerListFetch(),
+        staleTime: 0,
+    });
+
+    return { data, isLoading, isError, isFetching, refetch };
+};
+
+export const useDeletePostManagerQuery = () => {
+    const { setToast } = useToastStore();
+
+    const MUTATION_KEY = "post";
+    const queryClient = useQueryClient();
+
+    const {
+        data,
+        mutate,
+        mutateAsync,
+        error,
+        isError,
+        isSuccess,
+        isIdle,
+        isPending,
+        isPaused,
+        reset,
+    } = useMutation({
+        mutationKey: [MUTATION_KEY, "useDeletePostManagerQuery"],
+        mutationFn: (payload: deletePostManagerPayloadType) => deletePostManagerFetch(payload),
+        onSuccess: () => {
+            setToast({ msg: "게시물을 삭제했어요", time: 2 });
             queryClient.invalidateQueries({ queryKey: [MUTATION_KEY] });
         },
         onError: (err: any) => {

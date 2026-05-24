@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { setUserFetch } from "@/entities/user/api/user.api";
-import { setUserPayloadType } from "@/entities/user/model/user.type";
+import { getUserManagerListFetch, setUserFetch } from "@/entities/user/api/user.api";
+import { GetUserManagerListResponseType, setUserPayloadType } from "@/entities/user/model/user.type";
 import { useToastStore } from "@/shared/stores/useToastStore";
 
 /**
@@ -37,4 +37,16 @@ export const useSetUserQuery = () => {
     });
 
     return { mutate, mutateAsync, isError, isIdle, isSuccess, isPending, isPaused, data, error, reset };
+};
+
+export const useGetUserManagerListQuery = () => {
+    const MUTATION_KEY = "user";
+
+    const { data, isLoading, isError, isFetching, refetch } = useQuery<GetUserManagerListResponseType>({
+        queryKey: [MUTATION_KEY, "useGetUserManagerListQuery"],
+        queryFn: () => getUserManagerListFetch(),
+        staleTime: 0,
+    });
+
+    return { data, isLoading, isError, isFetching, refetch };
 };
